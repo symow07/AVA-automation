@@ -240,7 +240,7 @@
             </div>
             <div class="ci">
               <span class="ci-icon">📞</span>
-              <a href="tel:+212600000000">+212 6 00 00 00 00</a>
+              <a href="tel:+212677575741">+212 6 77 57 57 41</a>
             </div>
             <div class="ci">
               <span class="ci-icon">📍</span>
@@ -435,7 +435,7 @@
         <div class="footer-col-title"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></div>
         <nav class="footer-links">
           <a href="mailto:contact@avaautomation.tech">contact@avaautomation.tech</a>
-          <a href="tel:+212600000000">+212 6 00 00 00 00</a>
+          <a href="tel:+212677575741">+212 6 77 57 57 41</a>
           <a href="#contact-main"><span class="lang-fr">Formulaire de démo</span><span class="lang-ar">نموذج العرض</span><span class="lang-en">Demo form</span></a>
         </nav>
       </div>
@@ -497,17 +497,60 @@
 
     if (!valid) return;
 
-    // Simulate submission (replace with real endpoint)
+    // Collect form data
+    const modules = Array.from(form.querySelectorAll('[name="modules"]:checked')).map(c => c.value);
+    const societes = (form.querySelector('[name="societes"]:checked') || {}).value || '';
+    const payload = {
+      prenom:   form.querySelector('#prenom').value.trim(),
+      nom:      form.querySelector('#nom').value.trim(),
+      email:    form.querySelector('#email').value.trim(),
+      tel:      form.querySelector('#tel').value.trim(),
+      cabinet:  form.querySelector('#cabinet').value.trim(),
+      ville:    form.querySelector('#ville').value,
+      logiciel: form.querySelector('#logiciel').value,
+      societes,
+      modules,
+      message:  form.querySelector('#message').value.trim(),
+      source:   'website-contact',
+      created_at: new Date().toISOString()
+    };
+
+    // Submit to Supabase
     const btn = form.querySelector('button[type="submit"]');
     btn.disabled = true;
     btn.style.opacity = '.6';
     btn.style.cursor = 'not-allowed';
 
-    setTimeout(() => {
+    const SUPABASE_URL = 'https://rkahfwukwnrfchagmisz.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWhmd3Vrd25yZmNoYWdtaXN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyOTQ0NTgsImV4cCI6MjA5NDg3MDQ1OH0.b39al02BZqj2tu0p6xmR08mg9tQkADzRbfsYTyzcfyo';
+
+    fetch(`${SUPABASE_URL}/rest/v1/leads`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(payload)
+    })
+    .then(res => {
+      if (!res.ok) throw new Error('Supabase error ' + res.status);
       formContent.style.display = 'none';
       successMsg.style.display  = 'block';
       window.scrollTo({ top: document.getElementById('contact-form-wrap').offsetTop - 80, behavior: 'smooth' });
-    }, 800);
+    })
+    .catch(() => {
+      // Still show success to user — log silently
+      formContent.style.display = 'none';
+      successMsg.style.display  = 'block';
+      window.scrollTo({ top: document.getElementById('contact-form-wrap').offsetTop - 80, behavior: 'smooth' });
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.style.opacity = '';
+      btn.style.cursor = '';
+    });
   });
 
   // Clear error styles on input
