@@ -50,10 +50,10 @@
   /* Pipeline widget */
   .pipeline-card {
     background: var(--surface); border:1px solid var(--border2); border-radius:var(--r2);
-    padding:1.5rem; position:relative; overflow:hidden;
+    padding:1.5rem; padding-top:2.75rem; position:relative; overflow:hidden;
     box-shadow:0 0 40px rgba(0,212,255,.08), inset 0 1px 0 rgba(0,212,255,.06);
   }
-  .pipeline-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,212,255,.03) 0%,transparent 60%); pointer-events:none; }
+  .pipeline-card::before { content:''; position:absolute; inset:0; border-radius:var(--r2); background:linear-gradient(135deg,rgba(0,212,255,.03) 0%,transparent 60%); pointer-events:none; overflow:hidden; }
   .pc-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
   .pc-title { font-family:var(--font-h); font-size:.75rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:.1em; display:flex; align-items:center; gap:.45rem; }
   .pc-dot { width:7px; height:7px; background:var(--cyan); border-radius:50%; box-shadow:0 0 8px var(--cyan); animation:pdot 2s infinite; }
@@ -79,7 +79,7 @@
   .pf-dot.g { background:var(--green); box-shadow:0 0 5px var(--green); }
   .pf-dot.b { background:var(--blue); box-shadow:0 0 5px var(--blue); }
   .pf-ts { margin-left:auto; color:var(--fg3); font-size:.68rem; flex-shrink:0; }
-  .float-badge { position:absolute; top:-12px; right:16px; background:var(--cyan); color:#0B1628; font-family:var(--font-h); font-size:.68rem; font-weight:700; padding:.28rem .8rem; border-radius:2rem; box-shadow:0 0 16px rgba(0,212,255,.4); white-space:nowrap; }
+  .float-badge { position:absolute; top:10px; right:16px; background:var(--cyan); color:#0B1628; font-family:var(--font-h); font-size:.68rem; font-weight:700; padding:.28rem .8rem; border-radius:2rem; box-shadow:0 0 16px rgba(0,212,255,.4); white-space:nowrap; }
 
   /* PROBLEM */
   #problem { padding:6rem 0; background:var(--bg2); }
