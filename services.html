@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AVA — Services & Modules d'automatisation</title>
+  <meta name="description" content="Découvrez les 6 modules AVA : saisie OCR, réconciliation bancaire, écritures PCM, liasses DGI, tableaux de bord et gestion multi-sociétés."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/shared.css"/>
+  <style>
+  /* ── PAGE HERO ──────────────────────────────── */
+  #page-hero {
+    padding: calc(var(--nav-h) + 4rem) 0 5rem;
+    background: var(--bg3); position: relative; overflow: hidden; text-align: center;
+  }
+  .ph-tag { display:inline-block; font-size:.74rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:.12em; margin-bottom:1rem; }
+  .ph-title { font-family:var(--font-h); font-size:clamp(2rem,4.5vw,3.2rem); font-weight:700; color:var(--white); letter-spacing:-.02em; line-height:1.15; margin-bottom:1rem; }
+  .ph-title em { font-style:normal; color:var(--cyan); text-shadow:0 0 24px rgba(0,212,255,.4); }
+  .ph-desc { font-size:1.05rem; color:var(--fg2); max-width:600px; margin:0 auto 2rem; line-height:1.75; }
+  .ph-breadcrumb { display:flex; align-items:center; justify-content:center; gap:.5rem; font-size:.8rem; color:var(--fg3); }
+  .ph-breadcrumb a { color:var(--fg3); transition:color .2s; }
+  .ph-breadcrumb a:hover { color:var(--cyan); }
+  .ph-breadcrumb span { opacity:.4; }
+
+  /* ── MODULE DEEP-DIVES ──────────────────────── */
+  .module-section { padding:6rem 0; }
+  .module-section:nth-child(even) { background:var(--bg2); }
+  .module-section:nth-child(odd)  { background:var(--bg); }
+
+  .module-inner {
+    display:grid; grid-template-columns:1fr 1fr; gap:4.5rem; align-items:start;
+  }
+  .module-inner.reverse .module-text { order:2; }
+  .module-inner.reverse .module-visual { order:1; }
+
+  .module-num {
+    display:inline-flex; align-items:center; gap:.5rem;
+    font-size:.7rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:.12em; margin-bottom:.8rem;
+  }
+  .module-num-badge {
+    width:26px; height:26px; border-radius:50%; background:rgba(0,212,255,.12); border:1px solid rgba(0,212,255,.3);
+    display:flex; align-items:center; justify-content:center; font-family:var(--font-h); font-size:.75rem; font-weight:700; color:var(--cyan);
+  }
+  .module-title { font-family:var(--font-h); font-size:clamp(1.35rem,2.5vw,1.9rem); font-weight:700; color:var(--white); margin-bottom:.85rem; line-height:1.2; letter-spacing:-.02em; }
+  .module-desc { font-size:.97rem; color:var(--fg2); line-height:1.75; margin-bottom:1.5rem; }
+  .module-features { display:flex; flex-direction:column; gap:.65rem; margin-bottom:1.5rem; }
+  .mf { display:flex; align-items:flex-start; gap:.75rem; }
+  .mf-icon { width:20px; height:20px; border-radius:50%; background:rgba(0,212,255,.1); border:1px solid rgba(0,212,255,.25); display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:.15rem; }
+  .mf-icon svg { width:10px; height:10px; stroke:var(--cyan); stroke-width:2.5; fill:none; }
+  .mf-text { font-size:.9rem; color:var(--fg2); line-height:1.55; }
+  .mf-text strong { color:var(--white); }
+  .module-badge-row { display:flex; flex-wrap:wrap; gap:.5rem; }
+
+  /* Module visual cards */
+  .module-visual {
+    background:var(--surface); border:1px solid var(--border2); border-radius:var(--r2);
+    padding:1.5rem; position:relative; overflow:hidden;
+  }
+  .module-visual::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,212,255,.04) 0%,transparent 60%); pointer-events:none; }
+  .mv-header { font-family:var(--font-h); font-size:.72rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:.1em; margin-bottom:1.2rem; display:flex; align-items:center; gap:.45rem; }
+  .mv-dot { width:6px; height:6px; background:var(--cyan); border-radius:50%; box-shadow:0 0 6px var(--cyan); animation:pulse-dot 2s infinite; }
+  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+
+  /* Flow steps visual */
+  .flow-steps { display:flex; flex-direction:column; gap:.5rem; }
+  .flow-step { display:flex; align-items:center; gap:.75rem; padding:.65rem .9rem; border-radius:var(--r); font-size:.82rem; color:var(--fg2); position:relative; }
+  .flow-step.done { background:rgba(34,211,160,.07); border:1px solid rgba(34,211,160,.2); color:var(--green); }
+  .flow-step.active { background:rgba(0,212,255,.1); border:1px solid var(--cyan); color:var(--cyan); }
+  .flow-step.pending { background:rgba(255,255,255,.03); border:1px solid var(--border); }
+  .flow-step-num { width:22px; height:22px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--font-h); font-size:.7rem; font-weight:700; flex-shrink:0; }
+  .flow-step.done .flow-step-num { background:rgba(34,211,160,.2); color:var(--green); }
+  .flow-step.active .flow-step-num { background:rgba(0,212,255,.2); color:var(--cyan); }
+  .flow-step.pending .flow-step-num { background:rgba(255,255,255,.05); color:var(--fg3); }
+  .flow-arrow { display:flex; padding-left:1.5rem; color:var(--fg3); font-size:.65rem; opacity:.45; margin:.15rem 0; }
+
+  /* Data rows */
+  .data-rows { display:flex; flex-direction:column; gap:.45rem; }
+  .data-row { display:flex; align-items:center; gap:.65rem; padding:.55rem .75rem; border-radius:var(--r); background:rgba(0,212,255,.05); border:1px solid rgba(0,212,255,.08); font-size:.8rem; color:var(--fg2); }
+  .data-row.hi { border-color:var(--cyan); background:rgba(0,212,255,.1); color:var(--cyan); }
+  .data-row.green { border-color:var(--green); background:rgba(34,211,160,.07); color:var(--green); }
+  .data-row.warn { border-color:rgba(251,191,36,.4); background:rgba(251,191,36,.07); color:#fbbf24; }
+  .dr-icon { font-size:.9rem; flex-shrink:0; }
+  .dr-label { flex:1; }
+  .dr-badge { font-size:.68rem; font-weight:700; padding:.18rem .55rem; border-radius:2rem; }
+  .badge-ok { background:rgba(34,211,160,.15); color:var(--green); }
+  .badge-ai { background:rgba(0,212,255,.15); color:var(--cyan); }
+  .badge-warn { background:rgba(251,191,36,.12); color:#fbbf24; }
+  .badge-pcm { background:rgba(59,130,246,.15); color:var(--blue); }
+
+  /* Progress bars */
+  .pbar-rows { display:flex; flex-direction:column; gap:.55rem; margin-top:.5rem; }
+  .pbar-row { display:flex; align-items:center; gap:.65rem; }
+  .pbar-label { font-size:.78rem; color:var(--fg2); width:120px; flex-shrink:0; }
+  .pbar { flex:1; height:6px; background:rgba(255,255,255,.06); border-radius:3px; overflow:hidden; }
+  .pbar-fill { height:100%; border-radius:3px; }
+  .fill-cyan { background:linear-gradient(90deg,var(--cyan),rgba(0,212,255,.5)); }
+  .fill-green { background:linear-gradient(90deg,var(--green),rgba(34,211,160,.5)); }
+  .fill-blue { background:linear-gradient(90deg,var(--blue),rgba(59,130,246,.5)); }
+  .fill-gold { background:linear-gradient(90deg,#C9A84C,rgba(201,168,76,.5)); }
+  .pbar-pct { font-size:.72rem; color:var(--fg3); width:30px; text-align:right; flex-shrink:0; }
+
+  /* KPI grid */
+  .kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+  .kpi-card { background:rgba(0,212,255,.04); border:1px solid var(--border); border-radius:var(--r); padding:.75rem .9rem; }
+  .kpi-val { font-family:var(--font-h); font-size:1.3rem; font-weight:700; color:var(--cyan); line-height:1; margin-bottom:.2rem; }
+  .kpi-val.green { color:var(--green); }
+  .kpi-val.blue { color:var(--blue); }
+  .kpi-val.warn { color:#fbbf24; }
+  .kpi-lbl { font-size:.73rem; color:var(--fg3); line-height:1.35; }
+
+  /* Client grid */
+  .client-list { display:flex; flex-direction:column; gap:.5rem; }
+  .client-item { display:flex; align-items:center; gap:.7rem; padding:.6rem .85rem; border-radius:var(--r); background:rgba(255,255,255,.03); border:1px solid var(--border); }
+  .client-av { width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--font-h); font-size:.72rem; font-weight:700; flex-shrink:0; }
+  .client-name { font-size:.82rem; color:var(--fg2); flex:1; }
+  .client-status { font-size:.68rem; padding:.15rem .5rem; border-radius:2rem; font-weight:700; }
+  .st-ok { background:rgba(34,211,160,.12); color:var(--green); }
+  .st-sync { background:rgba(0,212,255,.12); color:var(--cyan); }
+  .st-warn { background:rgba(251,191,36,.1); color:#fbbf24; }
+
+  /* ── CTA BANNER ─────────────────────────────── */
+  #services-cta { padding:6rem 0; background:var(--bg3); position:relative; overflow:hidden; text-align:center; }
+  .scta-title { font-family:var(--font-h); font-size:clamp(1.6rem,3.5vw,2.4rem); font-weight:700; color:var(--white); margin-bottom:.8rem; letter-spacing:-.02em; }
+  .scta-title em { font-style:normal; color:var(--cyan); text-shadow:0 0 22px rgba(0,212,255,.4); }
+  .scta-desc { font-size:1rem; color:var(--fg2); max-width:500px; margin:0 auto 2rem; line-height:1.7; }
+  .scta-actions { display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap; }
+
+  /* ── RESPONSIVE ─────────────────────────────── */
+  @media(max-width:1024px){
+    .module-inner { grid-template-columns:1fr; gap:2.5rem; }
+    .module-inner.reverse .module-text { order:0; }
+    .module-inner.reverse .module-visual { order:0; }
+  }
+  @media(max-width:768px){
+    .kpi-grid { grid-template-columns:1fr; }
+    .ph-breadcrumb { flex-wrap:wrap; justify-content:center; }
+  }
+  html[dir="rtl"] .module-num { flex-direction:row-reverse; }
+  html[dir="rtl"] .mf { flex-direction:row-reverse; }
+  </style>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://avaautomation.tech/services"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://avaautomation.tech/services"/>
+  <meta property="og:title" content="AVA — 6 Modules d'automatisation comptable"/>
+  <meta property="og:description" content="Découvrez les 6 modules AVA : saisie OCR, réconciliation bancaire, écritures PCM, liasses DGI, tableaux de bord et gestion multi-sociétés."/>
+  <meta property="og:site_name" content="AVA Automation"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:title" content="AVA — 6 Modules d'automatisation comptable"/>
+  <meta name="twitter:description" content="Découvrez les 6 modules AVA : saisie OCR, réconciliation bancaire, écritures PCM, liasses DGI, tableaux de bord et gestion multi-sociétés."/>
+</head>
+<body class="lang-active-fr">
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">AV<span>A</span></a>
+      <ul class="nav-links">
+        <li><a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a></li>
+        <li><a href="/services" class="active"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a></li>
+        <li><a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a></li>
+        <li><a href="/contact"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></a></li>
+      </ul>
+      <div class="nav-right">
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="ar">AR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a href="/contact" class="btn btn-cyan"><span class="lang-fr">Demander une démo</span><span class="lang-ar">طلب عرض</span><span class="lang-en">Request Demo</span></a>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-mobile" id="nav-mobile">
+    <a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a>
+    <a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a>
+    <a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a>
+    <a href="/contact"><span class="lang-fr">Contact & Démo</span><span class="lang-ar">تواصل وعرض</span><span class="lang-en">Contact & Demo</span></a>
+    <a href="/contact" class="btn btn-cyan"><span class="lang-fr">Demander une démo</span><span class="lang-ar">طلب عرض</span><span class="lang-en">Request Demo</span></a>
+    <div class="lang-switcher"><button class="lang-btn active" data-lang="fr">FR</button><button class="lang-btn" data-lang="ar">AR</button><button class="lang-btn" data-lang="en">EN</button></div>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<section id="page-hero">
+  <div class="blob blob-cyan" style="width:480px;height:480px;top:-100px;right:-80px;" aria-hidden="true"></div>
+  <div class="blob blob-blue" style="width:320px;height:320px;bottom:0;left:5%;" aria-hidden="true"></div>
+  <div class="container" style="position:relative;z-index:2;">
+    <div class="ph-breadcrumb reveal">
+      <a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a>
+      <span>›</span>
+      <span><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></span>
+    </div>
+    <p class="ph-tag reveal d1"><span class="lang-fr">6 modules d'automatisation</span><span class="lang-ar">٦ وحدات أتمتة</span><span class="lang-en">6 Automation Modules</span></p>
+    <h1 class="ph-title reveal d2">
+      <span class="lang-fr">Tout le cycle comptable,<br><em>automatisé</em></span>
+      <span class="lang-ar">دورة محاسبية كاملة،<br><em>مؤتمتة</em></span>
+      <span class="lang-en">The complete accounting cycle,<br><em>automated</em></span>
+    </h1>
+    <p class="ph-desc reveal d3">
+      <span class="lang-fr">AVA couvre l'intégralité du cycle comptable marocain — de l'ingestion des documents à la liasse DGI — avec six modules spécialisés qui s'intègrent directement dans votre système existant.</span>
+      <span class="lang-ar">تغطي AVA دورة المحاسبة المغربية بالكامل — من استيعاب المستندات إلى ملف DGI — بستة وحدات متخصصة تتكامل مباشرة مع نظامك الحالي.</span>
+      <span class="lang-en">AVA covers the entire Moroccan accounting cycle — from document ingestion to DGI filing — with six specialized modules that integrate directly into your existing system.</span>
+    </p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- M1 — SAISIE DOCUMENTAIRE                       -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="module-section" id="m1">
+  <div class="container">
+    <div class="module-inner reveal">
+      <div class="module-text">
+        <div class="module-num">
+          <div class="module-num-badge">1</div>
+          <span class="lang-fr">Module 01</span><span class="lang-ar">الوحدة ٠١</span><span class="lang-en">Module 01</span>
+        </div>
+        <h2 class="module-title">
+          <span class="lang-fr">Saisie automatique des documents</span>
+          <span class="lang-ar">الإدخال التلقائي للوثائق</span>
+          <span class="lang-en">Automatic Document Entry</span>
+        </h2>
+        <p class="module-desc">
+          <span class="lang-fr">AVA lit vos factures, relevés bancaires et notes de frais — en PDF ou image, en arabe ou en français — et crée les entrées dans votre système directement. Plus de saisie manuelle.</span>
+          <span class="lang-ar">تقرأ AVA فواتيرك وكشوف حساباتك البنكية وملاحظات المصاريف — بصيغة PDF أو صورة، بالعربية أو الفرنسية — وتنشئ الإدخالات في نظامك مباشرة. لا مزيد من الإدخال اليدوي.</span>
+          <span class="lang-en">AVA reads your invoices, bank statements and expense reports — PDF or image, in Arabic or French — and creates entries in your system directly. No more manual data entry.</span>
+        </p>
+        <div class="module-features">
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>OCR multilingue</strong> — Traitement des documents en arabe, français et chiffres mixtes via Mistral OCR, optimisé pour les documents marocains.</span><span class="lang-ar"><strong>OCR متعدد اللغات</strong> — معالجة المستندات بالعربية والفرنسية والأرقام المختلطة.</span><span class="lang-en"><strong>Multilingual OCR</strong> — Processes documents in Arabic, French and mixed numerals via Mistral OCR, optimized for Moroccan documents.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Extraction IA structurée</strong> — Claude AI extrait fournisseur, montant HT, taux TVA, date, numéro de facture avec un score de confiance.</span><span class="lang-ar"><strong>استخراج ذكي منظم</strong> — يستخرج Claude AI المورد والمبالغ ومعدل الضريبة والتاريخ مع درجة ثقة.</span><span class="lang-en"><strong>Structured AI extraction</strong> — Claude AI extracts vendor, amount, VAT rate, date, invoice number with a confidence score.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Validation automatique</strong> — Confiance ≥ 85% : écriture créée automatiquement. En dessous : alerte Slack pour revue humaine.</span><span class="lang-ar"><strong>التحقق التلقائي</strong> — ثقة ≥ 85%: إنشاء القيد تلقائياً. أقل من ذلك: تنبيه Slack للمراجعة البشرية.</span><span class="lang-en"><strong>Automatic validation</strong> — Confidence ≥ 85%: entry created automatically. Below: Slack alert for human review.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Entrée multi-canal</strong> — Upload direct, pièce jointe email, ou scan depuis mobile. AVA s'adapte à votre flux existant.</span><span class="lang-ar"><strong>إدخال متعدد القنوات</strong> — رفع مباشر أو مرفق بريد إلكتروني أو مسح من الهاتف المحمول.</span><span class="lang-en"><strong>Multi-channel input</strong> — Direct upload, email attachment, or mobile scan. AVA adapts to your existing flow.</span></span>
+          </div>
+        </div>
+        <div class="module-badge-row">
+          <span class="chip">OCR Mistral</span>
+          <span class="chip chip-blue">Claude AI</span>
+          <span class="chip chip-green">98% précision</span>
+        </div>
+      </div>
+      <div class="module-visual">
+        <div class="mv-header"><div class="mv-dot"></div> <span class="lang-fr">Pipeline de traitement</span><span class="lang-ar">خط معالجة</span><span class="lang-en">Processing Pipeline</span></div>
+        <div class="flow-steps">
+          <div class="flow-step done">
+            <div class="flow-step-num">1</div>
+            <span class="lang-fr">📄 Réception document (email / upload)</span><span class="lang-ar">📄 استلام المستند</span><span class="lang-en">📄 Document received (email / upload)</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step done">
+            <div class="flow-step-num">2</div>
+            <span class="lang-fr">🔍 OCR Mistral — extraction texte</span><span class="lang-ar">🔍 OCR Mistral — استخراج النص</span><span class="lang-en">🔍 Mistral OCR — text extraction</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step active">
+            <div class="flow-step-num">3</div>
+            <span class="lang-fr">🤖 Claude AI — structuration des données</span><span class="lang-ar">🤖 Claude AI — هيكلة البيانات</span><span class="lang-en">🤖 Claude AI — data structuring</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step pending">
+            <div class="flow-step-num">4</div>
+            <span class="lang-fr">✅ Validation confiance ≥ 85%</span><span class="lang-ar">✅ التحقق من الثقة ≥ 85%</span><span class="lang-en">✅ Confidence validation ≥ 85%</span>
+          </div>
+          <div class="flow-arrow">↓</div>
+          <div class="flow-step pending">
+            <div class="flow-step-num">5</div>
+            <span class="lang-fr">📋 Écriture créée dans votre système</span><span class="lang-ar">📋 إنشاء القيد في نظامك</span><span class="lang-en">📋 Entry created in your system</span>
+          </div>
+        </div>
+        <div style="margin-top:1.25rem;">
+          <div style="font-size:.72rem;color:var(--fg3);margin-bottom:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;"><span class="lang-fr">Précision par type de document</span><span class="lang-ar">الدقة حسب نوع المستند</span><span class="lang-en">Accuracy by document type</span></div>
+          <div class="pbar-rows">
+            <div class="pbar-row">
+              <span class="pbar-label lang-fr">Factures</span><span class="pbar-label lang-ar">الفواتير</span><span class="pbar-label lang-en">Invoices</span>
+              <div class="pbar"><div class="pbar-fill fill-cyan" style="width:98%"></div></div>
+              <span class="pbar-pct">98%</span>
+            </div>
+            <div class="pbar-row">
+              <span class="pbar-label lang-fr">Relevés bancaires</span><span class="pbar-label lang-ar">الكشوف البنكية</span><span class="pbar-label lang-en">Bank statements</span>
+              <div class="pbar"><div class="pbar-fill fill-green" style="width:96%"></div></div>
+              <span class="pbar-pct">96%</span>
+            </div>
+            <div class="pbar-row">
+              <span class="pbar-label lang-fr">Notes de frais</span><span class="pbar-label lang-ar">ملاحظات المصاريف</span><span class="pbar-label lang-en">Expense reports</span>
+              <div class="pbar"><div class="pbar-fill fill-blue" style="width:94%"></div></div>
+              <span class="pbar-pct">94%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- M2 — RÉCONCILIATION BANCAIRE                   -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="module-section" id="m2">
+  <div class="container">
+    <div class="module-inner reverse reveal">
+      <div class="module-text">
+        <div class="module-num">
+          <div class="module-num-badge">2</div>
+          <span class="lang-fr">Module 02</span><span class="lang-ar">الوحدة ٠٢</span><span class="lang-en">Module 02</span>
+        </div>
+        <h2 class="module-title">
+          <span class="lang-fr">Réconciliation bancaire intelligente</span>
+          <span class="lang-ar">المطابقة البنكية الذكية</span>
+          <span class="lang-en">Intelligent Bank Reconciliation</span>
+        </h2>
+        <p class="module-desc">
+          <span class="lang-fr">AVA rapproche automatiquement vos transactions bancaires avec vos factures ouvertes. Le matching flou par IA gère les écarts d'arrondi, les délais de paiement et les noms de partenaires approximatifs.</span>
+          <span class="lang-ar">تطابق AVA تلقائياً معاملاتك البنكية مع فواتيرك المفتوحة. يتعامل الذكاء الاصطناعي مع فروق التقريب وتأخيرات الدفع والأسماء التقريبية.</span>
+          <span class="lang-en">AVA automatically matches your bank transactions with open invoices. AI fuzzy matching handles rounding differences, payment delays and approximate partner names.</span>
+        </p>
+        <div class="module-features">
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Matching flou IA</strong> — Tolérance ±1 MAD sur les montants, fenêtre ±14 jours, similarité fournisseur ≥ 70%.</span><span class="lang-ar"><strong>مطابقة ضبابية بالذكاء الاصطناعي</strong> — تسامح ±1 درهم، نافذة ±14 يوماً، تشابه المورد ≥ 70%.</span><span class="lang-en"><strong>AI fuzzy matching</strong> — ±1 MAD amount tolerance, ±14 day window, vendor similarity ≥ 70%.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Lettrage automatique</strong> — Les factures réconciliées sont marquées comme payées dans votre système en temps réel.</span><span class="lang-ar"><strong>الترحيل التلقائي</strong> — تُحدَّد الفواتير المطابقة كمدفوعة في نظامك في الوقت الفعلي.</span><span class="lang-en"><strong>Automatic lettrage</strong> — Reconciled invoices are marked as paid in your system in real time.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>File de revue</strong> — Les transactions non matchées sont envoyées dans une queue Google Sheets + alerte Slack pour traitement humain.</span><span class="lang-ar"><strong>قائمة المراجعة</strong> — المعاملات غير المتطابقة في Google Sheets + تنبيه Slack.</span><span class="lang-en"><strong>Review queue</strong> — Unmatched transactions sent to Google Sheets + Slack alert for human processing.</span></span>
+          </div>
+        </div>
+        <div class="module-badge-row">
+          <span class="chip">Matching flou</span>
+          <span class="chip chip-blue">Auto-lettrage</span>
+          <span class="chip chip-green">Temps réel</span>
+        </div>
+      </div>
+      <div class="module-visual">
+        <div class="mv-header"><div class="mv-dot"></div> <span class="lang-fr">Résultats de réconciliation</span><span class="lang-ar">نتائج المطابقة</span><span class="lang-en">Reconciliation results</span></div>
+        <div class="data-rows">
+          <div class="data-row hi">
+            <span class="dr-icon">🏦</span>
+            <span class="dr-label"><span class="lang-fr">Virement SARL Atlas — 14,400 MAD</span><span class="lang-ar">تحويل SARL Atlas — 14,400 درهم</span><span class="lang-en">Transfer SARL Atlas — MAD 14,400</span></span>
+            <span class="dr-badge badge-ok"><span class="lang-fr">Matchée</span><span class="lang-ar">متطابقة</span><span class="lang-en">Matched</span></span>
+          </div>
+          <div class="data-row green">
+            <span class="dr-icon">🏦</span>
+            <span class="dr-label"><span class="lang-fr">Règlement Facture #2847 — 8,160 MAD</span><span class="lang-ar">تسوية الفاتورة #2847 — 8,160 درهم</span><span class="lang-en">Payment Invoice #2847 — MAD 8,160</span></span>
+            <span class="dr-badge badge-ok"><span class="lang-fr">Lettrée</span><span class="lang-ar">مُرحَّلة</span><span class="lang-en">Lettered</span></span>
+          </div>
+          <div class="data-row">
+            <span class="dr-icon">🏦</span>
+            <span class="dr-label"><span class="lang-fr">Charge CNSS — 3,250 MAD</span><span class="lang-ar">رسوم CNSS — 3,250 درهم</span><span class="lang-en">CNSS charge — MAD 3,250</span></span>
+            <span class="dr-badge badge-ai"><span class="lang-fr">IA: 92%</span><span class="lang-ar">ذكاء اصطناعي: 92%</span><span class="lang-en">AI: 92%</span></span>
+          </div>
+          <div class="data-row warn">
+            <span class="dr-icon">⚠️</span>
+            <span class="dr-label"><span class="lang-fr">Transaction inconnue — 1,800 MAD</span><span class="lang-ar">معاملة مجهولة — 1,800 درهم</span><span class="lang-en">Unknown transaction — MAD 1,800</span></span>
+            <span class="dr-badge badge-warn"><span class="lang-fr">À revoir</span><span class="lang-ar">للمراجعة</span><span class="lang-en">Review</span></span>
+          </div>
+        </div>
+        <div style="margin-top:1.2rem;padding:1rem;background:rgba(34,211,160,.06);border:1px solid rgba(34,211,160,.18);border-radius:var(--r);display:flex;gap:1.5rem;justify-content:center;">
+          <div style="text-align:center;">
+            <div style="font-family:var(--font-h);font-size:1.6rem;font-weight:700;color:var(--green);">94%</div>
+            <div style="font-size:.72rem;color:var(--fg3);"><span class="lang-fr">taux de match</span><span class="lang-ar">معدل المطابقة</span><span class="lang-en">match rate</span></div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:var(--font-h);font-size:1.6rem;font-weight:700;color:var(--cyan);">±0.5</div>
+            <div style="font-size:.72rem;color:var(--fg3);"><span class="lang-fr">MAD écart moyen</span><span class="lang-ar">درهم متوسط الفرق</span><span class="lang-en">MAD avg diff</span></div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-family:var(--font-h);font-size:1.6rem;font-weight:700;color:var(--blue);">&lt;2s</div>
+            <div style="font-size:.72rem;color:var(--fg3);"><span class="lang-fr">par transaction</span><span class="lang-ar">لكل معاملة</span><span class="lang-en">per transaction</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- M3 — ÉCRITURES COMPTABLES                      -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="module-section" id="m3">
+  <div class="container">
+    <div class="module-inner reveal">
+      <div class="module-text">
+        <div class="module-num">
+          <div class="module-num-badge">3</div>
+          <span class="lang-fr">Module 03</span><span class="lang-ar">الوحدة ٠٣</span><span class="lang-en">Module 03</span>
+        </div>
+        <h2 class="module-title">
+          <span class="lang-fr">Écritures comptables automatiques (PCM)</span>
+          <span class="lang-ar">القيود المحاسبية التلقائية (PCM)</span>
+          <span class="lang-en">Automatic Journal Entries (PCM)</span>
+        </h2>
+        <p class="module-desc">
+          <span class="lang-fr">À partir des données extraites, AVA génère des écritures conformes au Plan Comptable Marocain — avec les bons comptes de charge, TVA déductible et fournisseurs — et les écrit directement dans votre système.</span>
+          <span class="lang-ar">من البيانات المستخرجة، تنشئ AVA قيوداً متوافقة مع المخطط المحاسبي المغربي وتكتبها مباشرة في نظامك.</span>
+          <span class="lang-en">From extracted data, AVA generates entries compliant with the Moroccan Chart of Accounts and writes them directly into your system.</span>
+        </p>
+        <div class="module-features">
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Moteur de règles PCM</strong> — Comptes 6111, 3455, 4411 mappés automatiquement selon la catégorie de la pièce.</span><span class="lang-ar"><strong>محرك قواعد PCM</strong> — حسابات 6111 و3455 و4411 مُعيَّنة تلقائياً حسب فئة المستند.</span><span class="lang-en"><strong>PCM rules engine</strong> — Accounts 6111, 3455, 4411 automatically mapped by document category.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Fallback IA pour cas complexes</strong> — Quand les règles ne suffisent pas, Claude AI génère l'écriture et garantit l'équilibre débit/crédit.</span><span class="lang-ar"><strong>ذكاء اصطناعي للحالات المعقدة</strong> — عندما لا تكفي القواعد، يُنشئ Claude AI القيد ويضمن توازن المدين/الدائن.</span><span class="lang-en"><strong>AI fallback for complex cases</strong> — When rules aren't enough, Claude AI generates the entry and guarantees debit/credit balance.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>TVA marocaine intégrée</strong> — Taux 7%, 10%, 14%, 20% reconnus et comptabilisés automatiquement en compte 3455/4455.</span><span class="lang-ar"><strong>ضريبة القيمة المضافة المغربية مدمجة</strong> — معدلات 7% و10% و14% و20% معترف بها وتُرحَّل تلقائياً.</span><span class="lang-en"><strong>Integrated Moroccan VAT</strong> — Rates 7%, 10%, 14%, 20% recognized and automatically posted to account 3455/4455.</span></span>
+          </div>
+        </div>
+        <div class="module-badge-row">
+          <span class="chip">PCM conforme</span>
+          <span class="chip chip-blue">TVA 7–20%</span>
+          <span class="chip chip-green">Auto-équilibre</span>
+        </div>
+      </div>
+      <div class="module-visual">
+        <div class="mv-header"><div class="mv-dot"></div> <span class="lang-fr">Écriture générée</span><span class="lang-ar">القيد المنشأ</span><span class="lang-en">Generated journal entry</span></div>
+        <div style="font-size:.75rem;color:var(--fg3);margin-bottom:.75rem;"><span class="lang-fr">Facture achat — Fournisseur Maroc Print SARL — 12,000 MAD TTC</span><span class="lang-ar">فاتورة شراء — المورد Maroc Print SARL — 12,000 درهم شاملاً الضريبة</span><span class="lang-en">Purchase invoice — Vendor Maroc Print SARL — MAD 12,000 incl. VAT</span></div>
+        <div class="data-rows">
+          <div class="data-row hi">
+            <span class="dr-icon">📊</span>
+            <div style="flex:1;">
+              <div style="font-weight:600;"><span class="lang-fr">6111 — Achats marchandises</span><span class="lang-ar">6111 — مشتريات البضائع</span><span class="lang-en">6111 — Merchandise purchases</span></div>
+              <div style="font-size:.72rem;color:var(--fg3);">Débit: 10,000.00 MAD</div>
+            </div>
+            <span class="dr-badge badge-pcm">PCM</span>
+          </div>
+          <div class="data-row hi">
+            <span class="dr-icon">📊</span>
+            <div style="flex:1;">
+              <div style="font-weight:600;"><span class="lang-fr">3455 — TVA déductible (20%)</span><span class="lang-ar">3455 — ضريبة مستردة (20%)</span><span class="lang-en">3455 — Deductible VAT (20%)</span></div>
+              <div style="font-size:.72rem;color:var(--fg3);">Débit: 2,000.00 MAD</div>
+            </div>
+            <span class="dr-badge badge-ai">IA</span>
+          </div>
+          <div class="data-row green">
+            <span class="dr-icon">📊</span>
+            <div style="flex:1;">
+              <div style="font-weight:600;"><span class="lang-fr">4411 — Fournisseur Maroc Print</span><span class="lang-ar">4411 — المورد Maroc Print</span><span class="lang-en">4411 — Vendor Maroc Print</span></div>
+              <div style="font-size:.72rem;color:var(--fg3);">Crédit: 12,000.00 MAD</div>
+            </div>
+            <span class="dr-badge badge-ok"><span class="lang-fr">Équilibré</span><span class="lang-ar">متوازن</span><span class="lang-en">Balanced</span></span>
+          </div>
+        </div>
+        <div style="margin-top:1rem;padding:.75rem;background:rgba(0,212,255,.06);border-radius:var(--r);font-size:.78rem;color:var(--fg2);text-align:center;">
+          <span class="lang-fr">∑ Débit = ∑ Crédit = 12,000 MAD ✓</span>
+          <span class="lang-ar">∑ مدين = ∑ دائن = 12,000 درهم ✓</span>
+          <span class="lang-en">∑ Debit = ∑ Credit = MAD 12,000 ✓</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- M4 — LIASSES FISCALES DGI                      -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="module-section" id="m4">
+  <div class="container">
+    <div class="module-inner reverse reveal">
+      <div class="module-text">
+        <div class="module-num">
+          <div class="module-num-badge">4</div>
+          <span class="lang-fr">Module 04</span><span class="lang-ar">الوحدة ٠٤</span><span class="lang-en">Module 04</span>
+        </div>
+        <h2 class="module-title">
+          <span class="lang-fr">Liasses fiscales & déclarations DGI</span>
+          <span class="lang-ar">الملفات الجبائية وتصريحات DGI</span>
+          <span class="lang-en">Tax Returns & DGI Declarations</span>
+        </h2>
+        <p class="module-desc">
+          <span class="lang-fr">AVA agrège automatiquement les données comptables et génère les déclarations DGI — TVA mensuelle, IS annuel, IR — dans le format FEC compatible avec le portail fiscal marocain.</span>
+          <span class="lang-ar">تجمع AVA تلقائياً البيانات المحاسبية وتنشئ تصريحات DGI — TVA الشهرية والضريبة على الشركات والضريبة على الدخل — بصيغة FEC.</span>
+          <span class="lang-en">AVA automatically aggregates accounting data and generates DGI declarations — monthly VAT, annual corporate tax, income tax — in FEC format compatible with the Moroccan tax portal.</span>
+        </p>
+        <div class="module-features">
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Génération FEC automatique</strong> — Export conforme à la norme légale marocaine, prêt pour dépôt au portail DGI.</span><span class="lang-ar"><strong>توليد FEC تلقائي</strong> — تصدير متوافق مع المعيار القانوني المغربي، جاهز للإيداع في بوابة DGI.</span><span class="lang-en"><strong>Automatic FEC generation</strong> — Export compliant with Moroccan legal standards, ready for DGI portal submission.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>TVA, IS, IR, liasses de synthèse</strong> — Toutes les déclarations périodiques générées depuis les mêmes données source sans ressaisie.</span><span class="lang-ar"><strong>TVA وIS وIR وملفات التوليف</strong> — جميع التصريحات الدورية من نفس مصادر البيانات بدون إعادة إدخال.</span><span class="lang-en"><strong>VAT, corporate tax, income tax, synthesis</strong> — All periodic declarations from the same source data without re-entry.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Détection d'anomalies pré-export</strong> — Vérification de cohérence avant chaque génération : comptes déséquilibrés, TVA incohérente, pièces manquantes.</span><span class="lang-ar"><strong>اكتشاف الشذوذات قبل التصدير</strong> — التحقق من الاتساق قبل كل توليد.</span><span class="lang-en"><strong>Pre-export anomaly detection</strong> — Consistency check before each generation: unbalanced accounts, incoherent VAT, missing documents.</span></span>
+          </div>
+        </div>
+        <div class="module-badge-row">
+          <span class="chip">FEC marocain</span>
+          <span class="chip chip-blue">TVA·IS·IR</span>
+          <span class="chip chip-green">DGI conforme</span>
+        </div>
+      </div>
+      <div class="module-visual">
+        <div class="mv-header"><div class="mv-dot"></div> <span class="lang-fr">Déclarations du trimestre</span><span class="lang-ar">تصريحات الفصل</span><span class="lang-en">Quarterly declarations</span></div>
+        <div class="data-rows">
+          <div class="data-row green">
+            <span class="dr-icon">📑</span>
+            <span class="dr-label"><span class="lang-fr">TVA — Déclaration mensuelle T1</span><span class="lang-ar">TVA — التصريح الشهري T1</span><span class="lang-en">VAT — Monthly declaration Q1</span></span>
+            <span class="dr-badge badge-ok"><span class="lang-fr">Générée</span><span class="lang-ar">مُولَّدة</span><span class="lang-en">Generated</span></span>
+          </div>
+          <div class="data-row green">
+            <span class="dr-icon">📑</span>
+            <span class="dr-label"><span class="lang-fr">IS — Acomptes provisionnels</span><span class="lang-ar">IS — الدفعات المؤقتة</span><span class="lang-en">Corporate Tax — Provisional payments</span></span>
+            <span class="dr-badge badge-ok"><span class="lang-fr">Générée</span><span class="lang-ar">مُولَّدة</span><span class="lang-en">Generated</span></span>
+          </div>
+          <div class="data-row hi">
+            <span class="dr-icon">📑</span>
+            <span class="dr-label"><span class="lang-fr">FEC Export — Période Jan–Mar</span><span class="lang-ar">FEC Export — الفترة يناير-مارس</span><span class="lang-en">FEC Export — Period Jan–Mar</span></span>
+            <span class="dr-badge badge-ai"><span class="lang-fr">En cours</span><span class="lang-ar">جارٍ</span><span class="lang-en">In progress</span></span>
+          </div>
+        </div>
+        <div style="margin-top:1.1rem;display:grid;grid-template-columns:1fr 1fr;gap:.6rem;">
+          <div class="kpi-card">
+            <div class="kpi-val">247k</div>
+            <div class="kpi-lbl lang-fr">TVA collectée (MAD)</div>
+            <div class="kpi-lbl lang-ar">TVA المحصلة (درهم)</div>
+            <div class="kpi-lbl lang-en">VAT collected (MAD)</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val green">89k</div>
+            <div class="kpi-lbl lang-fr">TVA déductible</div>
+            <div class="kpi-lbl lang-ar">TVA المستردة</div>
+            <div class="kpi-lbl lang-en">Deductible VAT</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val blue">158k</div>
+            <div class="kpi-lbl lang-fr">TVA nette à payer</div>
+            <div class="kpi-lbl lang-ar">TVA الصافية المستحقة</div>
+            <div class="kpi-lbl lang-en">Net VAT payable</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val warn">0</div>
+            <div class="kpi-lbl lang-fr">Anomalies détectées</div>
+            <div class="kpi-lbl lang-ar">الشذوذات المكتشفة</div>
+            <div class="kpi-lbl lang-en">Anomalies detected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- M5 — TABLEAU DE BORD                           -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="module-section" id="m5">
+  <div class="container">
+    <div class="module-inner reveal">
+      <div class="module-text">
+        <div class="module-num">
+          <div class="module-num-badge">5</div>
+          <span class="lang-fr">Module 05</span><span class="lang-ar">الوحدة ٠٥</span><span class="lang-en">Module 05</span>
+        </div>
+        <h2 class="module-title">
+          <span class="lang-fr">Analyse financière & tableaux de bord</span>
+          <span class="lang-ar">التحليل المالي ولوحات المعلومات</span>
+          <span class="lang-en">Financial Analysis & Dashboards</span>
+        </h2>
+        <p class="module-desc">
+          <span class="lang-fr">AVA calcule en temps réel les KPIs financiers clés pour chaque société de votre portefeuille — chiffre d'affaires, trésorerie, créances en retard — et vous alerte avant que les problèmes deviennent critiques.</span>
+          <span class="lang-ar">تحسب AVA في الوقت الفعلي مؤشرات الأداء المالية الرئيسية لكل شركة في محفظتك وتنبهك قبل أن تصبح المشاكل حرجة.</span>
+          <span class="lang-en">AVA calculates real-time financial KPIs for each company in your portfolio — turnover, cash position, overdue receivables — and alerts you before problems become critical.</span>
+        </p>
+        <div class="module-features">
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>7 KPIs clés calculés</strong> — CA HT, charges, marge brute, trésorerie, créances en retard, dettes fournisseurs, TVA nette.</span><span class="lang-ar"><strong>٧ مؤشرات أداء رئيسية</strong> — رقم الأعمال والتكاليف والهامش والخزينة والذمم والديون وTVA الصافية.</span><span class="lang-en"><strong>7 key KPIs calculated</strong> — Revenue, charges, gross margin, cash position, overdue receivables, payables, net VAT.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Alertes intelligentes</strong> — Si marge &lt; seuil ou créances &gt; X jours, notification automatique Slack avec détail des lignes concernées.</span><span class="lang-ar"><strong>تنبيهات ذكية</strong> — إذا كان الهامش أقل من الحد أو الذمم أكثر من X يوماً، إشعار Slack تلقائي.</span><span class="lang-en"><strong>Smart alerts</strong> — If margin &lt; threshold or receivables &gt; X days, automatic Slack notification with detail of affected lines.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Google Sheets live</strong> — Tableau de bord mis à jour quotidiennement dans un onglet dédié, consultable depuis n'importe quel appareil.</span><span class="lang-ar"><strong>Google Sheets حية</strong> — لوحة معلومات محدَّثة يومياً في علامة تبويب مخصصة يمكن الوصول إليها من أي جهاز.</span><span class="lang-en"><strong>Live Google Sheets</strong> — Dashboard updated daily in a dedicated tab, accessible from any device.</span></span>
+          </div>
+        </div>
+        <div class="module-badge-row">
+          <span class="chip">7 KPIs temps réel</span>
+          <span class="chip chip-blue">Alertes Slack</span>
+          <span class="chip chip-green">Google Sheets</span>
+        </div>
+      </div>
+      <div class="module-visual">
+        <div class="mv-header"><div class="mv-dot"></div> <span class="lang-fr">Tableau de bord financier</span><span class="lang-ar">لوحة المعلومات المالية</span><span class="lang-en">Financial dashboard</span></div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-val">3.2M</div>
+            <div class="kpi-lbl lang-fr">CA HT (MAD)</div>
+            <div class="kpi-lbl lang-ar">رقم الأعمال (درهم)</div>
+            <div class="kpi-lbl lang-en">Revenue excl. VAT</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val green">38.4%</div>
+            <div class="kpi-lbl lang-fr">Marge brute</div>
+            <div class="kpi-lbl lang-ar">الهامش الإجمالي</div>
+            <div class="kpi-lbl lang-en">Gross margin</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val blue">842k</div>
+            <div class="kpi-lbl lang-fr">Trésorerie (MAD)</div>
+            <div class="kpi-lbl lang-ar">الخزينة (درهم)</div>
+            <div class="kpi-lbl lang-en">Cash position</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val warn">18</div>
+            <div class="kpi-lbl lang-fr">Créances en retard</div>
+            <div class="kpi-lbl lang-ar">الذمم المتأخرة</div>
+            <div class="kpi-lbl lang-en">Overdue receivables</div>
+          </div>
+        </div>
+        <div style="margin-top:1.1rem;">
+          <div style="font-size:.72rem;color:var(--fg3);margin-bottom:.55rem;font-weight:600;text-transform:uppercase;letter-spacing:.08em;"><span class="lang-fr">Répartition des charges</span><span class="lang-ar">توزيع التكاليف</span><span class="lang-en">Cost breakdown</span></div>
+          <div class="pbar-rows">
+            <div class="pbar-row">
+              <span class="pbar-label lang-fr">Achats</span><span class="pbar-label lang-ar">المشتريات</span><span class="pbar-label lang-en">Purchases</span>
+              <div class="pbar"><div class="pbar-fill fill-cyan" style="width:61%"></div></div>
+              <span class="pbar-pct">61%</span>
+            </div>
+            <div class="pbar-row">
+              <span class="pbar-label lang-fr">Salaires</span><span class="pbar-label lang-ar">الرواتب</span><span class="pbar-label lang-en">Salaries</span>
+              <div class="pbar"><div class="pbar-fill fill-blue" style="width:24%"></div></div>
+              <span class="pbar-pct">24%</span>
+            </div>
+            <div class="pbar-row">
+              <span class="pbar-label lang-fr">Autres charges</span><span class="pbar-label lang-ar">رسوم أخرى</span><span class="pbar-label lang-en">Other charges</span>
+              <div class="pbar"><div class="pbar-fill fill-gold" style="width:15%"></div></div>
+              <span class="pbar-pct">15%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- M6 — MULTI-CLIENTS                             -->
+<!-- ══════════════════════════════════════════════ -->
+<section class="module-section" id="m6">
+  <div class="container">
+    <div class="module-inner reverse reveal">
+      <div class="module-text">
+        <div class="module-num">
+          <div class="module-num-badge">6</div>
+          <span class="lang-fr">Module 06</span><span class="lang-ar">الوحدة ٠٦</span><span class="lang-en">Module 06</span>
+        </div>
+        <h2 class="module-title">
+          <span class="lang-fr">Multi-sociétés & collaboration</span>
+          <span class="lang-ar">تعدد الشركات والتعاون</span>
+          <span class="lang-en">Multi-entity & Collaboration</span>
+        </h2>
+        <p class="module-desc">
+          <span class="lang-fr">Gérez tout votre portefeuille clients depuis une interface centrale. Chaque société dispose de ses propres workflows, données isolées et alertes. AVA grandit avec votre cabinet.</span>
+          <span class="lang-ar">أدر محفظة عملائك بالكامل من واجهة مركزية. كل شركة لها سير عمل خاص وبيانات معزولة وتنبيهات. تنمو AVA مع مكتبك.</span>
+          <span class="lang-en">Manage your entire client portfolio from a central interface. Each company has its own workflows, isolated data and alerts. AVA grows with your firm.</span>
+        </p>
+        <div class="module-features">
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Isolation complète des données</strong> — Chaque client a ses propres credentials, son propre espace Google Sheets et son propre canal Slack.</span><span class="lang-ar"><strong>عزل كامل للبيانات</strong> — كل عميل لديه بيانات اعتماده ومساحة Google Sheets وقناة Slack الخاصة به.</span><span class="lang-en"><strong>Complete data isolation</strong> — Each client has their own credentials, Google Sheets space and Slack channel.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Routage par client_id</strong> — Tous les workflows reçoivent client_id + URL système à l'entrée et routent automatiquement vers les bons contextes.</span><span class="lang-ar"><strong>التوجيه بواسطة client_id</strong> — جميع سير العمل تتلقى client_id وURL النظام عند المدخل وتوجه تلقائياً إلى السياقات الصحيحة.</span><span class="lang-en"><strong>client_id routing</strong> — All workflows receive client_id + system URL at entry and automatically route to the right contexts.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Dashboard admin global</strong> — Vue d'ensemble du statut de synchronisation de tous vos clients, avec dernière exécution et alertes actives.</span><span class="lang-ar"><strong>لوحة تحكم المسؤول</strong> — نظرة عامة على حالة مزامنة جميع عملائك مع آخر تنفيذ والتنبيهات النشطة.</span><span class="lang-en"><strong>Global admin dashboard</strong> — Overview of sync status for all your clients, with last execution and active alerts.</span></span>
+          </div>
+          <div class="mf">
+            <div class="mf-icon"><svg viewBox="0 0 10 10"><polyline points="1,5 4,8 9,2"/></svg></div>
+            <span class="mf-text"><span class="lang-fr"><strong>Scalabilité par pack</strong> — Pack Essentiel: 5 sociétés. Pack Performance: 20. Pack Premium: illimité avec intégrations personnalisées.</span><span class="lang-ar"><strong>قابلية التوسع حسب الباقة</strong> — الأساسية: 5 شركات. الأداء: 20. المتميزة: غير محدودة مع تكاملات مخصصة.</span><span class="lang-en"><strong>Scalability by pack</strong> — Essential Pack: 5 entities. Performance: 20. Premium: unlimited with custom integrations.</span></span>
+          </div>
+        </div>
+        <div class="module-badge-row">
+          <span class="chip">Multi-clients</span>
+          <span class="chip chip-blue">Données isolées</span>
+          <span class="chip chip-green">Jusqu'à illimité</span>
+        </div>
+      </div>
+      <div class="module-visual">
+        <div class="mv-header"><div class="mv-dot"></div> <span class="lang-fr">Portefeuille cabinet</span><span class="lang-ar">محفظة المكتب</span><span class="lang-en">Firm portfolio</span></div>
+        <div class="client-list">
+          <div class="client-item">
+            <div class="client-av" style="background:linear-gradient(135deg,var(--cyan),var(--blue));">SA</div>
+            <div class="client-name">SARL Atlas Distribution</div>
+            <span class="client-status st-ok">✓ <span class="lang-fr">Sync</span><span class="lang-ar">مزامنة</span><span class="lang-en">Sync</span></span>
+          </div>
+          <div class="client-item">
+            <div class="client-av" style="background:linear-gradient(135deg,var(--blue),#7c3aed);">MR</div>
+            <div class="client-name">Maroc Retail Group</div>
+            <span class="client-status st-sync">⟳ <span class="lang-fr">En cours</span><span class="lang-ar">جارٍ</span><span class="lang-en">Running</span></span>
+          </div>
+          <div class="client-item">
+            <div class="client-av" style="background:linear-gradient(135deg,var(--green),var(--cyan));">CI</div>
+            <div class="client-name">Casa Invest SARL</div>
+            <span class="client-status st-ok">✓ <span class="lang-fr">Sync</span><span class="lang-ar">مزامنة</span><span class="lang-en">Sync</span></span>
+          </div>
+          <div class="client-item">
+            <div class="client-av" style="background:linear-gradient(135deg,#fbbf24,var(--blue));">RI</div>
+            <div class="client-name">Riad Immobilier</div>
+            <span class="client-status st-warn">⚠ <span class="lang-fr">Alerte</span><span class="lang-ar">تنبيه</span><span class="lang-en">Alert</span></span>
+          </div>
+          <div class="client-item">
+            <div class="client-av" style="background:linear-gradient(135deg,#ec4899,var(--blue));">TM</div>
+            <div class="client-name">Techno Maroc</div>
+            <span class="client-status st-ok">✓ <span class="lang-fr">Sync</span><span class="lang-ar">مزامنة</span><span class="lang-en">Sync</span></span>
+          </div>
+        </div>
+        <div style="margin-top:1rem;padding:.75rem;background:rgba(0,212,255,.05);border:1px solid var(--border);border-radius:var(--r);display:flex;justify-content:space-around;font-size:.8rem;color:var(--fg2);">
+          <div style="text-align:center;"><div style="font-family:var(--font-h);font-weight:700;color:var(--green);font-size:1.2rem;">4/5</div><span class="lang-fr">Sync actif</span><span class="lang-ar">مزامنة نشطة</span><span class="lang-en">Active sync</span></div>
+          <div style="text-align:center;"><div style="font-family:var(--font-h);font-weight:700;color:var(--cyan);font-size:1.2rem;">142</div><span class="lang-fr">Docs traités</span><span class="lang-ar">وثائق معالجة</span><span class="lang-en">Docs processed</span></div>
+          <div style="text-align:center;"><div style="font-family:var(--font-h);font-weight:700;color:var(--blue);font-size:1.2rem;">99.2%</div><span class="lang-fr">Disponibilité</span><span class="lang-ar">توفر</span><span class="lang-en">Uptime</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="services-cta">
+  <div class="blob blob-cyan" style="width:400px;height:400px;top:0;left:50%;transform:translateX(-50%);" aria-hidden="true"></div>
+  <div class="container" style="position:relative;z-index:2;">
+    <p class="ph-tag reveal"><span class="lang-fr">Prêt à automatiser ?</span><span class="lang-ar">هل أنت مستعد للأتمتة؟</span><span class="lang-en">Ready to automate?</span></p>
+    <h2 class="scta-title reveal d1">
+      <span class="lang-fr">Déployez les modules<br><em>adaptés à votre cabinet</em></span>
+      <span class="lang-ar">نشر الوحدات<br><em>المناسبة لمكتبك</em></span>
+      <span class="lang-en">Deploy the modules<br><em>right for your firm</em></span>
+    </h2>
+    <p class="scta-desc reveal d2">
+      <span class="lang-fr">Chaque cabinet est différent. AVA s'adapte à votre logiciel, vos processus et votre volume. Commencez par M1+M3 et ajoutez les modules au fur et à mesure.</span>
+      <span class="lang-ar">كل مكتب مختلف. تتكيف AVA مع برنامجك وعملياتك وحجمك. ابدأ بـ M1+M3 وأضف الوحدات تدريجياً.</span>
+      <span class="lang-en">Every firm is different. AVA adapts to your software, processes and volume. Start with M1+M3 and add modules progressively.</span>
+    </p>
+    <div class="scta-actions reveal d3">
+      <a href="/contact" class="btn btn-cyan btn-lg"><span class="lang-fr">Demander une démo gratuite</span><span class="lang-ar">طلب عرض تجريبي مجاني</span><span class="lang-en">Request a free demo</span></a>
+      <a href="/tarifs" class="btn btn-ghost btn-lg"><span class="lang-fr">Voir les tarifs</span><span class="lang-ar">عرض الأسعار</span><span class="lang-en">View pricing</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">AV<span>A</span></div>
+        <p class="footer-tagline lang-fr">Automatisation comptable intelligente pour les cabinets marocains.</p>
+        <p class="footer-tagline lang-ar">أتمتة محاسبية ذكية للمكاتب المغربية.</p>
+        <p class="footer-tagline lang-en">Intelligent accounting automation for Moroccan firms.</p>
+        <div class="footer-badge"><span>●</span> <span class="lang-fr">Conforme</span><span class="lang-ar">متوافق</span><span class="lang-en">Compliant</span> DGI · PCM · TVA</div>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Produit</span><span class="lang-ar">المنتج</span><span class="lang-en">Product</span></div>
+        <nav class="footer-links">
+          <a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a>
+          <a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a>
+          <a href="/#how"><span class="lang-fr">Fonctionnement</span><span class="lang-ar">كيف يعمل</span><span class="lang-en">How it works</span></a>
+        </nav>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Modules</span><span class="lang-ar">الوحدات</span><span class="lang-en">Modules</span></div>
+        <nav class="footer-links">
+          <a href="#m1">M1 — <span class="lang-fr">Saisie</span><span class="lang-ar">الإدخال</span><span class="lang-en">Entry</span></a>
+          <a href="#m2">M2 — <span class="lang-fr">Réconciliation</span><span class="lang-ar">المطابقة</span><span class="lang-en">Reconciliation</span></a>
+          <a href="#m3">M3 — <span class="lang-fr">Écritures PCM</span><span class="lang-ar">قيود PCM</span><span class="lang-en">PCM Entries</span></a>
+          <a href="#m4">M4 — <span class="lang-fr">Liasses DGI</span><span class="lang-ar">ملفات DGI</span><span class="lang-en">DGI Returns</span></a>
+          <a href="#m5"><span class="lang-fr">M5 — Tableau de bord</span><span class="lang-ar">M5 — لوحة التحكم</span><span class="lang-en">M5 — Dashboard</span></a>
+          <a href="#m6"><span class="lang-fr">M6 — Multi-clients</span><span class="lang-ar">M6 — تعدد العملاء</span><span class="lang-en">M6 — Multi-entity</span></a>
+        </nav>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></div>
+        <nav class="footer-links">
+          <a href="/contact"><span class="lang-fr">Demander une démo</span><span class="lang-ar">طلب عرض</span><span class="lang-en">Request a demo</span></a>
+          <a href="/contact"><span class="lang-fr">Nous contacter</span><span class="lang-ar">اتصل بنا</span><span class="lang-en">Contact us</span></a>
+        </nav>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 AVA. <span class="lang-fr">Tous droits réservés.</span><span class="lang-ar">جميع الحقوق محفوظة.</span><span class="lang-en">All rights reserved.</span></span>
+      <div class="footer-tags">
+        <span class="f-tag">DGI</span><span class="f-tag">PCM</span><span class="f-tag">TVA</span><span class="f-tag">FEC</span><span class="f-tag">n8n</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/shared.js"></script>
+</body>
+</html>

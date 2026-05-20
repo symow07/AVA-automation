@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AVA — Page introuvable</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@400;500;600&family=Noto+Naskh+Arabic:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/shared.css"/>
+  <style>
+  #not-found {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: var(--bg3); position: relative; overflow: hidden; text-align: center;
+  }
+  .nf-inner { position: relative; z-index: 2; padding: 2rem; }
+  .nf-code {
+    font-family: var(--font-h); font-size: clamp(5rem, 15vw, 10rem);
+    font-weight: 700; color: var(--cyan); line-height: 1;
+    text-shadow: 0 0 60px rgba(0,212,255,.3); margin-bottom: .5rem;
+    opacity: .15;
+  }
+  .nf-title {
+    font-family: var(--font-h); font-size: clamp(1.4rem, 3vw, 2rem);
+    font-weight: 700; color: var(--white); margin-bottom: .75rem; letter-spacing: -.02em;
+  }
+  .nf-desc { font-size: 1rem; color: var(--fg2); max-width: 400px; margin: 0 auto 2rem; line-height: 1.7; }
+  .nf-actions { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+  </style>
+</head>
+<body class="lang-active-fr">
+
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">AV<span>A</span></a>
+      <ul class="nav-links">
+        <li><a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a></li>
+        <li><a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a></li>
+        <li><a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a></li>
+        <li><a href="/contact"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></a></li>
+      </ul>
+      <div class="nav-right">
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="ar">AR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-mobile" id="nav-mobile">
+    <a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a>
+    <a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a>
+    <a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a>
+    <a href="/contact"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></a>
+    <div class="lang-switcher"><button class="lang-btn active" data-lang="fr">FR</button><button class="lang-btn" data-lang="ar">AR</button><button class="lang-btn" data-lang="en">EN</button></div>
+  </div>
+</nav>
+
+<section id="not-found">
+  <div class="blob blob-cyan" style="width:500px;height:500px;top:-80px;right:-80px;" aria-hidden="true"></div>
+  <div class="blob blob-blue" style="width:340px;height:340px;bottom:0;left:5%;" aria-hidden="true"></div>
+  <div class="nf-inner">
+    <div class="nf-code">404</div>
+    <h1 class="nf-title">
+      <span class="lang-fr">Page introuvable</span>
+      <span class="lang-ar">الصفحة غير موجودة</span>
+      <span class="lang-en">Page not found</span>
+    </h1>
+    <p class="nf-desc">
+      <span class="lang-fr">Cette page n'existe pas ou a été déplacée. Retournez à l'accueil pour continuer.</span>
+      <span class="lang-ar">هذه الصفحة غير موجودة أو تم نقلها. عد إلى الصفحة الرئيسية للمتابعة.</span>
+      <span class="lang-en">This page doesn't exist or has been moved. Head back home to continue.</span>
+    </p>
+    <div class="nf-actions">
+      <a href="/" class="btn btn-cyan"><span class="lang-fr">← Retour à l'accueil</span><span class="lang-ar">→ العودة للرئيسية</span><span class="lang-en">← Back to home</span></a>
+      <a href="/contact" class="btn btn-ghost"><span class="lang-fr">Nous contacter</span><span class="lang-ar">اتصل بنا</span><span class="lang-en">Contact us</span></a>
+    </div>
+  </div>
+</section>
+
+<script src="/shared.js"></script>
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AVA — Demander une démo gratuite</title>
+  <meta name="description" content="Demandez une démo gratuite d'AVA. 30 minutes avec un expert, sur votre logiciel existant. Réponse sous 24h, sans engagement."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/shared.css"/>
+  <style>
+  /* ── PAGE HERO ──────────────────────────────── */
+  #page-hero {
+    padding: calc(var(--nav-h) + 4rem) 0 5rem;
+    background: var(--bg3); position: relative; overflow: hidden; text-align: center;
+  }
+  .ph-tag { display:inline-block; font-size:.74rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:.12em; margin-bottom:1rem; }
+  .ph-title { font-family:var(--font-h); font-size:clamp(2rem,4.5vw,3.2rem); font-weight:700; color:var(--white); letter-spacing:-.02em; line-height:1.15; margin-bottom:1rem; }
+  .ph-title em { font-style:normal; color:var(--cyan); text-shadow:0 0 24px rgba(0,212,255,.4); }
+  .ph-desc { font-size:1.05rem; color:var(--fg2); max-width:580px; margin:0 auto 2rem; line-height:1.75; }
+  .ph-breadcrumb { display:flex; align-items:center; justify-content:center; gap:.5rem; font-size:.8rem; color:var(--fg3); margin-bottom:2rem; }
+  .ph-breadcrumb a { color:var(--fg3); transition:color .2s; }
+  .ph-breadcrumb a:hover { color:var(--cyan); }
+  .ph-breadcrumb span { opacity:.4; }
+
+  /* ── CONTACT LAYOUT ─────────────────────────── */
+  #contact-main { padding:5rem 0 7rem; background:var(--bg); }
+  .contact-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:4rem; align-items:start; }
+
+  /* ── SIDEBAR ────────────────────────────────── */
+  .contact-sidebar {}
+  .sidebar-block { margin-bottom:2.5rem; }
+  .sb-title { font-family:var(--font-h); font-size:1.1rem; font-weight:600; color:var(--white); margin-bottom:.8rem; }
+  .sb-desc { font-size:.9rem; color:var(--fg2); line-height:1.7; }
+
+  .what-to-expect { display:flex; flex-direction:column; gap:.8rem; }
+  .wte { display:flex; align-items:flex-start; gap:.8rem; }
+  .wte-num { width:28px; height:28px; border-radius:50%; background:rgba(0,212,255,.12); border:1px solid rgba(0,212,255,.28); color:var(--cyan); font-family:var(--font-h); font-size:.8rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:.1rem; }
+  .wte-text { font-size:.9rem; color:var(--fg2); line-height:1.55; }
+  .wte-text strong { color:var(--white); }
+
+  .contact-info { display:flex; flex-direction:column; gap:.65rem; }
+  .ci { display:flex; align-items:center; gap:.75rem; font-size:.9rem; color:var(--fg2); }
+  .ci-icon { font-size:1.1rem; flex-shrink:0; }
+  .ci a { color:var(--fg2); transition:color .2s; }
+  .ci a:hover { color:var(--cyan); }
+
+  .trust-pills { display:flex; flex-wrap:wrap; gap:.5rem; margin-top:1rem; }
+
+  /* ── FORM CARD ──────────────────────────────── */
+  .form-card {
+    background:var(--surface); border:1px solid var(--border2); border-radius:var(--r2);
+    padding:2.5rem; position:relative; overflow:hidden;
+  }
+  .form-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(0,212,255,.03) 0%,transparent 60%); pointer-events:none; }
+  .form-title { font-family:var(--font-h); font-size:1.25rem; font-weight:700; color:var(--white); margin-bottom:.4rem; }
+  .form-subtitle { font-size:.87rem; color:var(--fg2); margin-bottom:2rem; }
+
+  /* Form fields */
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+  .form-group { display:flex; flex-direction:column; gap:.4rem; }
+  .form-group.full { grid-column:1/-1; }
+  .form-label { font-size:.82rem; font-weight:600; color:var(--fg2); letter-spacing:.02em; }
+  .form-label .req { color:var(--cyan); margin-left:.2rem; }
+  .form-input, .form-select, .form-textarea {
+    background:rgba(255,255,255,.04); border:1px solid var(--border);
+    border-radius:var(--r); padding:.7rem 1rem; font-family:var(--font-b); font-size:.92rem; color:var(--fg);
+    transition:border-color .2s, background .2s; width:100%;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    outline:none; border-color:var(--cyan); background:rgba(0,212,255,.04);
+    box-shadow:0 0 0 3px rgba(0,212,255,.08);
+  }
+  .form-input::placeholder, .form-textarea::placeholder { color:var(--fg3); }
+  .form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 1rem center; padding-right:2.5rem; cursor:pointer; }
+  .form-select option { background:var(--bg2); color:var(--fg); }
+  .form-textarea { resize:vertical; min-height:110px; line-height:1.6; }
+
+  /* Radio group */
+  .radio-group { display:flex; flex-wrap:wrap; gap:.6rem; }
+  .radio-pill { position:relative; }
+  .radio-pill input { position:absolute; opacity:0; width:0; height:0; }
+  .radio-pill label {
+    display:inline-flex; align-items:center; gap:.4rem; cursor:pointer;
+    padding:.4rem .9rem; border-radius:2rem; border:1px solid var(--border);
+    font-size:.82rem; color:var(--fg2); transition:all .2s;
+    background:rgba(255,255,255,.03);
+  }
+  .radio-pill input:checked + label { border-color:var(--cyan); background:rgba(0,212,255,.1); color:var(--cyan); }
+  .radio-pill label:hover { border-color:var(--border2); color:var(--fg); }
+
+  /* Checkbox */
+  .checkbox-group { display:flex; align-items:flex-start; gap:.75rem; }
+  .checkbox-group input { width:18px; height:18px; border-radius:4px; border:1px solid var(--border2); background:rgba(255,255,255,.04); cursor:pointer; flex-shrink:0; margin-top:.15rem; accent-color:var(--cyan); }
+  .checkbox-label { font-size:.85rem; color:var(--fg2); line-height:1.55; }
+
+  /* Submit */
+  .form-submit { width:100%; justify-content:center; margin-top:.5rem; font-size:1rem; padding:.9rem 2rem; }
+
+  /* Success state */
+  .form-success { display:none; text-align:center; padding:2.5rem 1rem; }
+  .form-success-icon { font-size:3rem; margin-bottom:1rem; }
+  .form-success-title { font-family:var(--font-h); font-size:1.3rem; font-weight:700; color:var(--white); margin-bottom:.65rem; }
+  .form-success-desc { font-size:.92rem; color:var(--fg2); line-height:1.65; }
+
+  /* ── WHY NOW ────────────────────────────────── */
+  #why-now { padding:6rem 0; background:var(--bg2); }
+  .why-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.25rem; }
+  .why-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--r2); padding:1.75rem; text-align:center; }
+  .why-icon { font-size:2rem; margin-bottom:.9rem; }
+  .why-stat { font-family:var(--font-h); font-size:2.2rem; font-weight:700; color:var(--cyan); line-height:1; margin-bottom:.3rem; text-shadow:0 0 16px rgba(0,212,255,.3); }
+  .why-label { font-size:.87rem; color:var(--fg2); line-height:1.55; }
+
+  /* ── RESPONSIVE ─────────────────────────────── */
+  @media(max-width:1024px) {
+    .contact-grid { grid-template-columns:1fr; gap:3rem; }
+    .form-grid { grid-template-columns:1fr; }
+    .form-group.full { grid-column:1; }
+    .why-grid { grid-template-columns:1fr; max-width:420px; margin:0 auto; }
+  }
+  @media(max-width:768px) {
+    .form-card { padding:1.75rem; }
+  }
+  html[dir="rtl"] .form-select { background-position:left 1rem center; padding-right:1rem; padding-left:2.5rem; }
+  </style>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://avaautomation.tech/contact"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://avaautomation.tech/contact"/>
+  <meta property="og:title" content="AVA — Démo gratuite sans engagement"/>
+  <meta property="og:description" content="Demandez une démo gratuite d'AVA. 30 minutes avec un expert, sur votre logiciel existant. Réponse sous 24h, sans engagement."/>
+  <meta property="og:site_name" content="AVA Automation"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:title" content="AVA — Démo gratuite sans engagement"/>
+  <meta name="twitter:description" content="Demandez une démo gratuite d'AVA. 30 minutes avec un expert, sur votre logiciel existant. Réponse sous 24h, sans engagement."/>
+</head>
+<body class="lang-active-fr">
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">AV<span>A</span></a>
+      <ul class="nav-links">
+        <li><a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a></li>
+        <li><a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a></li>
+        <li><a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a></li>
+        <li><a href="/contact" class="active"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></a></li>
+      </ul>
+      <div class="nav-right">
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="ar">AR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a href="/contact" class="btn btn-cyan"><span class="lang-fr">Demander une démo</span><span class="lang-ar">طلب عرض</span><span class="lang-en">Request Demo</span></a>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-mobile" id="nav-mobile">
+    <a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a>
+    <a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a>
+    <a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a>
+    <a href="/contact"><span class="lang-fr">Contact & Démo</span><span class="lang-ar">تواصل وعرض</span><span class="lang-en">Contact & Demo</span></a>
+    <div class="lang-switcher"><button class="lang-btn active" data-lang="fr">FR</button><button class="lang-btn" data-lang="ar">AR</button><button class="lang-btn" data-lang="en">EN</button></div>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<section id="page-hero">
+  <div class="blob blob-cyan" style="width:460px;height:460px;top:-100px;right:-80px;" aria-hidden="true"></div>
+  <div class="blob blob-blue" style="width:300px;height:300px;bottom:0;left:6%;" aria-hidden="true"></div>
+  <div class="container" style="position:relative;z-index:2;">
+    <div class="ph-breadcrumb reveal">
+      <a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a>
+      <span>›</span>
+      <span><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></span>
+    </div>
+    <p class="ph-tag reveal d1"><span class="lang-fr">Démo gratuite · Sans engagement</span><span class="lang-ar">عرض مجاني · بدون التزام</span><span class="lang-en">Free demo · No commitment</span></p>
+    <h1 class="ph-title reveal d2">
+      <span class="lang-fr">Voyons ensemble<br><em>votre potentiel d'automatisation</em></span>
+      <span class="lang-ar">لنرى معاً<br><em>إمكانات الأتمتة لديك</em></span>
+      <span class="lang-en">Let's explore together<br><em>your automation potential</em></span>
+    </h1>
+    <p class="ph-desc reveal d3">
+      <span class="lang-fr">30 minutes avec un expert AVA. On analyse votre processus actuel, on vous montre AVA sur un cas réel de votre cabinet, et on vous remet une estimation personnalisée.</span>
+      <span class="lang-ar">30 دقيقة مع خبير AVA. نحلل عملياتك الحالية، نعرض AVA على حالة حقيقية من مكتبك، ونقدم لك تقديراً مخصصاً.</span>
+      <span class="lang-en">30 minutes with an AVA expert. We analyze your current process, show you AVA on a real case from your firm, and give you a personalized estimate.</span>
+    </p>
+  </div>
+</section>
+
+<!-- CONTACT MAIN -->
+<section id="contact-main">
+  <div class="container">
+    <div class="contact-grid">
+
+      <!-- Sidebar -->
+      <div class="contact-sidebar reveal">
+        <div class="sidebar-block">
+          <div class="sb-title"><span class="lang-fr">Ce qui se passe pendant la démo</span><span class="lang-ar">ما يحدث خلال العرض</span><span class="lang-en">What happens during the demo</span></div>
+          <div class="what-to-expect">
+            <div class="wte">
+              <div class="wte-num">1</div>
+              <div class="wte-text"><span class="lang-fr"><strong>Analyse de votre situation</strong> — Votre logiciel, votre volume mensuel, vos douleurs actuelles.</span><span class="lang-ar"><strong>تحليل وضعك</strong> — برنامجك وحجمك الشهري وآلامك الحالية.</span><span class="lang-en"><strong>Analysis of your situation</strong> — Your software, your monthly volume, your current pain points.</span></div>
+            </div>
+            <div class="wte">
+              <div class="wte-num">2</div>
+              <div class="wte-text"><span class="lang-fr"><strong>Démo live</strong> — On traite un de vos vrais documents en direct. OCR, extraction IA, écriture PCM générée.</span><span class="lang-ar"><strong>عرض مباشر</strong> — نعالج أحد مستنداتك الحقيقية مباشرةً. OCR واستخراج AI وقيد PCM منشأ.</span><span class="lang-en"><strong>Live demo</strong> — We process one of your real documents live. OCR, AI extraction, PCM entry generated.</span></div>
+            </div>
+            <div class="wte">
+              <div class="wte-num">3</div>
+              <div class="wte-text"><span class="lang-fr"><strong>Recommandation de pack</strong> — En fonction de votre volume et vos modules utiles, on vous conseille le pack adapté.</span><span class="lang-ar"><strong>توصية بالباقة</strong> — بناءً على حجمك والوحدات المفيدة، ننصحك بالباقة المناسبة.</span><span class="lang-en"><strong>Pack recommendation</strong> — Based on your volume and useful modules, we advise the right pack.</span></div>
+            </div>
+            <div class="wte">
+              <div class="wte-num">4</div>
+              <div class="wte-text"><span class="lang-fr"><strong>Estimation personnalisée</strong> — Frais de setup + abonnement trimestriel détaillé. Aucune surprise.</span><span class="lang-ar"><strong>تقدير مخصص</strong> — رسوم الإعداد + تفاصيل الاشتراك الفصلي. لا مفاجآت.</span><span class="lang-en"><strong>Personalized estimate</strong> — Setup fee + detailed quarterly subscription. No surprises.</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="sb-title"><span class="lang-fr">Nos engagements</span><span class="lang-ar">التزاماتنا</span><span class="lang-en">Our commitments</span></div>
+          <div class="trust-pills">
+            <span class="chip chip-green">✓ <span class="lang-fr">Réponse sous 24h</span><span class="lang-ar">رد خلال 24 ساعة</span><span class="lang-en">Reply within 24h</span></span>
+            <span class="chip">✓ <span class="lang-fr">Démo gratuite</span><span class="lang-ar">عرض مجاني</span><span class="lang-en">Free demo</span></span>
+            <span class="chip chip-blue">✓ <span class="lang-fr">Sans engagement</span><span class="lang-ar">بدون التزام</span><span class="lang-en">No commitment</span></span>
+            <span class="chip chip-green">✓ <span class="lang-fr">100% confidentiel</span><span class="lang-ar">سري تماماً</span><span class="lang-en">100% confidential</span></span>
+          </div>
+        </div>
+
+        <div class="sidebar-block">
+          <div class="sb-title"><span class="lang-fr">Nous contacter directement</span><span class="lang-ar">اتصل بنا مباشرة</span><span class="lang-en">Contact us directly</span></div>
+          <div class="contact-info">
+            <div class="ci">
+              <span class="ci-icon">📧</span>
+              <a href="mailto:contact@avaautomation.tech">contact@avaautomation.tech</a>
+            </div>
+            <div class="ci">
+              <span class="ci-icon">📞</span>
+              <a href="tel:+212600000000">+212 6 00 00 00 00</a>
+            </div>
+            <div class="ci">
+              <span class="ci-icon">📍</span>
+              <span><span class="lang-fr">Casablanca, Maroc</span><span class="lang-ar">الدار البيضاء، المغرب</span><span class="lang-en">Casablanca, Morocco</span></span>
+            </div>
+            <div class="ci">
+              <span class="ci-icon">🕐</span>
+              <span><span class="lang-fr">Lun – Ven, 9h – 18h</span><span class="lang-ar">الاثنين – الجمعة، 9 – 18</span><span class="lang-en">Mon – Fri, 9am – 6pm</span></span>
+            </div>
+          </div>
+        </div>
+      </div><!-- /sidebar -->
+
+      <!-- Form -->
+      <div class="form-card reveal d1" id="contact-form-wrap">
+        <div id="form-content">
+          <div class="form-title"><span class="lang-fr">Demander une démo gratuite</span><span class="lang-ar">طلب عرض تجريبي مجاني</span><span class="lang-en">Request a free demo</span></div>
+          <p class="form-subtitle"><span class="lang-fr">Remplissez le formulaire — nous vous recontactons sous 24h pour planifier la démo.</span><span class="lang-ar">أكمل النموذج — سنتواصل معك خلال 24 ساعة لتحديد موعد العرض.</span><span class="lang-en">Fill in the form — we'll get back to you within 24h to schedule the demo.</span></p>
+
+          <form id="demo-form" novalidate>
+            <div class="form-grid">
+
+              <div class="form-group">
+                <label class="form-label" for="prenom"><span class="lang-fr">Prénom</span><span class="lang-ar">الاسم الأول</span><span class="lang-en">First name</span><span class="req">*</span></label>
+                <input type="text" id="prenom" name="prenom" class="form-input" placeholder="Karim" required autocomplete="given-name"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="nom"><span class="lang-fr">Nom</span><span class="lang-ar">اللقب</span><span class="lang-en">Last name</span><span class="req">*</span></label>
+                <input type="text" id="nom" name="nom" class="form-input" placeholder="El Fassi" required autocomplete="family-name"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="email"><span class="lang-fr">Email professionnel</span><span class="lang-ar">البريد الإلكتروني المهني</span><span class="lang-en">Professional email</span><span class="req">*</span></label>
+                <input type="email" id="email" name="email" class="form-input" placeholder="k.elfassi@cabinet.ma" required autocomplete="email"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="tel"><span class="lang-fr">Téléphone</span><span class="lang-ar">الهاتف</span><span class="lang-en">Phone</span></label>
+                <input type="tel" id="tel" name="tel" class="form-input" placeholder="+212 6 XX XX XX XX" autocomplete="tel"/>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label" for="cabinet"><span class="lang-fr">Nom du cabinet</span><span class="lang-ar">اسم المكتب</span><span class="lang-en">Firm name</span><span class="req">*</span></label>
+                <input type="text" id="cabinet" name="cabinet" class="form-input" placeholder="Cabinet El Fassi & Associés" required autocomplete="organization"/>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="ville"><span class="lang-fr">Ville</span><span class="lang-ar">المدينة</span><span class="lang-en">City</span></label>
+                <select id="ville" name="ville" class="form-select" data-placeholder-fr="Sélectionner" data-placeholder-ar="اختر" data-placeholder-en="Select">
+                  <option value="" disabled selected>Sélectionner</option>
+                  <option value="casablanca">Casablanca</option>
+                  <option value="rabat">Rabat</option>
+                  <option value="marrakech">Marrakech</option>
+                  <option value="fes">Fès</option>
+                  <option value="tanger">Tanger</option>
+                  <option value="agadir">Agadir</option>
+                  <option value="meknes">Meknès</option>
+                  <option value="oujda">Oujda</option>
+                  <option value="autre">Autre</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="logiciel"><span class="lang-fr">Logiciel comptable actuel</span><span class="lang-ar">برنامج المحاسبة الحالي</span><span class="lang-en">Current accounting software</span><span class="req">*</span></label>
+                <select id="logiciel" name="logiciel" class="form-select" required data-placeholder-fr="Sélectionner" data-placeholder-ar="اختر" data-placeholder-en="Select">
+                  <option value="" disabled selected>Sélectionner</option>
+                  <option value="odoo">Odoo</option>
+                  <option value="sage">Sage</option>
+                  <option value="microsoft-dynamics">Microsoft Dynamics</option>
+                  <option value="excel">Excel / Tableur</option>
+                  <option value="cegid">Cegid</option>
+                  <option value="autre">Autre</option>
+                  <option value="aucun">Aucun pour l'instant</option>
+                </select>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label"><span class="lang-fr">Nombre de sociétés gérées</span><span class="lang-ar">عدد الشركات المدارة</span><span class="lang-en">Number of entities managed</span><span class="req">*</span></label>
+                <div class="radio-group">
+                  <div class="radio-pill"><input type="radio" id="s1" name="societes" value="1-5" required><label for="s1">1–5</label></div>
+                  <div class="radio-pill"><input type="radio" id="s2" name="societes" value="6-10"><label for="s2">6–10</label></div>
+                  <div class="radio-pill"><input type="radio" id="s3" name="societes" value="11-20"><label for="s3">11–20</label></div>
+                  <div class="radio-pill"><input type="radio" id="s4" name="societes" value="20+"><label for="s4">20+</label></div>
+                </div>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label"><span class="lang-fr">Modules qui vous intéressent</span><span class="lang-ar">الوحدات التي تهمك</span><span class="lang-en">Modules of interest</span></label>
+                <div class="radio-group" style="flex-wrap:wrap;">
+                  <div class="radio-pill"><input type="checkbox" id="m1cb" name="modules" value="m1"><label for="m1cb">M1 — <span class="lang-fr">Saisie</span><span class="lang-ar">الإدخال</span><span class="lang-en">Entry</span></label></div>
+                  <div class="radio-pill"><input type="checkbox" id="m2cb" name="modules" value="m2"><label for="m2cb">M2 — <span class="lang-fr">Réconciliation</span><span class="lang-ar">المطابقة</span><span class="lang-en">Reconciliation</span></label></div>
+                  <div class="radio-pill"><input type="checkbox" id="m3cb" name="modules" value="m3"><label for="m3cb">M3 — PCM</label></div>
+                  <div class="radio-pill"><input type="checkbox" id="m4cb" name="modules" value="m4"><label for="m4cb">M4 — DGI</label></div>
+                  <div class="radio-pill"><input type="checkbox" id="m5cb" name="modules" value="m5"><label for="m5cb">M5 — <span class="lang-fr">Dashboard</span><span class="lang-ar">لوحة</span><span class="lang-en">Dashboard</span></label></div>
+                  <div class="radio-pill"><input type="checkbox" id="m6cb" name="modules" value="m6"><label for="m6cb">M6 — <span class="lang-fr">Multi-clients</span><span class="lang-ar">متعدد</span><span class="lang-en">Multi-entity</span></label></div>
+                </div>
+              </div>
+
+              <div class="form-group full">
+                <label class="form-label" for="message"><span class="lang-fr">Message (optionnel)</span><span class="lang-ar">رسالة (اختياري)</span><span class="lang-en">Message (optional)</span></label>
+                <textarea id="message" name="message" class="form-textarea" placeholder="Décrivez votre situation, vos défis actuels ou vos questions spécifiques..."></textarea>
+              </div>
+
+              <div class="form-group full">
+                <div class="checkbox-group">
+                  <input type="checkbox" id="consent" name="consent" required/>
+                  <label class="checkbox-label" for="consent">
+                    <span class="lang-fr">J'accepte que l'équipe AVA me recontacte à l'adresse fournie pour planifier la démo. <span style="color:var(--fg3)">Vos données ne seront pas partagées avec des tiers.</span></span>
+                    <span class="lang-ar">أوافق على أن يتواصل معي فريق AVA على العنوان المقدم لتحديد موعد العرض. <span style="color:var(--fg3)">لن يتم مشاركة بياناتك مع أطراف ثالثة.</span></span>
+                    <span class="lang-en">I agree to be contacted by the AVA team at the provided address to schedule the demo. <span style="color:var(--fg3)">Your data will not be shared with third parties.</span></span>
+                  </label>
+                </div>
+              </div>
+
+            </div><!-- /form-grid -->
+
+            <button type="submit" class="btn btn-cyan btn-lg form-submit">
+              <span class="lang-fr">Envoyer ma demande de démo →</span>
+              <span class="lang-ar">إرسال طلب العرض ←</span>
+              <span class="lang-en">Send my demo request →</span>
+            </button>
+          </form>
+        </div><!-- /form-content -->
+
+        <!-- Success message (hidden by default) -->
+        <div class="form-success" id="form-success">
+          <div class="form-success-icon">✅</div>
+          <div class="form-success-title"><span class="lang-fr">Demande reçue !</span><span class="lang-ar">تم استلام الطلب!</span><span class="lang-en">Request received!</span></div>
+          <p class="form-success-desc">
+            <span class="lang-fr">Merci pour votre intérêt. Un membre de l'équipe AVA vous contactera <strong>dans les 24 heures</strong> pour planifier votre démo personnalisée.</span>
+            <span class="lang-ar">شكراً لاهتمامك. سيتواصل معك أحد أعضاء فريق AVA <strong>خلال 24 ساعة</strong> لتحديد موعد عرضك المخصص.</span>
+            <span class="lang-en">Thank you for your interest. An AVA team member will contact you <strong>within 24 hours</strong> to schedule your personalized demo.</span>
+          </p>
+          <a href="/" class="btn btn-ghost" style="margin-top:1.5rem;">
+            <span class="lang-fr">← Retour à l'accueil</span><span class="lang-ar">→ العودة للرئيسية</span><span class="lang-en">← Back to home</span>
+          </a>
+        </div>
+      </div><!-- /form-card -->
+
+    </div><!-- /contact-grid -->
+  </div>
+</section>
+
+<!-- WHY NOW -->
+<section id="why-now">
+  <div class="container">
+    <div class="sec-hdr reveal">
+      <span class="sec-tag"><span class="lang-fr">Pourquoi maintenant ?</span><span class="lang-ar">لماذا الآن؟</span><span class="lang-en">Why now?</span></span>
+      <h2 class="sec-title"><span class="lang-fr">Les cabinets qui automatisent aujourd'hui<br>gagnent demain</span><span class="lang-ar">المكاتب التي تؤتمت اليوم<br>تفوز غداً</span><span class="lang-en">Firms that automate today<br>win tomorrow</span></h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <div class="why-icon">⏱️</div>
+        <div class="why-stat">+40h</div>
+        <p class="why-label"><span class="lang-fr">économisées par mois par cabinet en moyenne, libérées pour le conseil à valeur ajoutée.</span><span class="lang-ar">توفيرها شهرياً لكل مكتب في المتوسط، تُحرَّر للاستشارات ذات القيمة المضافة.</span><span class="lang-en">saved per month per firm on average, freed up for high-value advisory work.</span></p>
+      </div>
+      <div class="why-card reveal d1">
+        <div class="why-icon">🎯</div>
+        <div class="why-stat">98%</div>
+        <p class="why-label"><span class="lang-fr">de précision OCR sur les documents marocains — arabe, français, chiffres mixtes.</span><span class="lang-ar">دقة OCR على المستندات المغربية — عربية وفرنسية وأرقام مختلطة.</span><span class="lang-en">OCR accuracy on Moroccan documents — Arabic, French, mixed numerals.</span></p>
+      </div>
+      <div class="why-card reveal d2">
+        <div class="why-icon">🚀</div>
+        <div class="why-stat">2 sem.</div>
+        <p class="why-label"><span class="lang-fr">suffisent pour être opérationnel. Notre équipe gère l'intégration complète sans perturber votre activité.</span><span class="lang-ar">تكفي لتكون جاهزاً للعمل. يتولى فريقنا التكامل الكامل دون تعطيل نشاطك.</span><span class="lang-en">to be fully operational. Our team handles the complete integration without disrupting your business.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">AV<span>A</span></div>
+        <p class="footer-tagline lang-fr">Automatisation comptable intelligente pour les cabinets marocains.</p>
+        <p class="footer-tagline lang-ar">أتمتة محاسبية ذكية للمكاتب المغربية.</p>
+        <p class="footer-tagline lang-en">Intelligent accounting automation for Moroccan firms.</p>
+        <div class="footer-badge"><span>●</span> <span class="lang-fr">Conforme</span><span class="lang-ar">متوافق</span><span class="lang-en">Compliant</span> DGI · PCM · TVA</div>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Produit</span><span class="lang-ar">المنتج</span><span class="lang-en">Product</span></div>
+        <nav class="footer-links">
+          <a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a>
+          <a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a>
+          <a href="/#how"><span class="lang-fr">Fonctionnement</span><span class="lang-ar">كيف يعمل</span><span class="lang-en">How it works</span></a>
+        </nav>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></div>
+        <nav class="footer-links">
+          <a href="mailto:contact@avaautomation.tech">contact@avaautomation.tech</a>
+          <a href="tel:+212600000000">+212 6 00 00 00 00</a>
+          <a href="#contact-main"><span class="lang-fr">Formulaire de démo</span><span class="lang-ar">نموذج العرض</span><span class="lang-en">Demo form</span></a>
+        </nav>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Légal</span><span class="lang-ar">قانوني</span><span class="lang-en">Legal</span></div>
+        <nav class="footer-links">
+          <a href="#"><span class="lang-fr">Mentions légales</span><span class="lang-ar">الإشعارات القانونية</span><span class="lang-en">Legal notices</span></a>
+          <a href="#"><span class="lang-fr">Politique de confidentialité</span><span class="lang-ar">سياسة الخصوصية</span><span class="lang-en">Privacy policy</span></a>
+        </nav>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 AVA. <span class="lang-fr">Tous droits réservés.</span><span class="lang-ar">جميع الحقوق محفوظة.</span><span class="lang-en">All rights reserved.</span></span>
+      <div class="footer-tags">
+        <span class="f-tag">DGI</span><span class="f-tag">PCM</span><span class="f-tag">TVA</span><span class="f-tag">FEC</span><span class="f-tag">n8n</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/shared.js"></script>
+<script>
+/* ── FORM LOGIC ───────────────────────────────────── */
+(function() {
+  const form = document.getElementById('demo-form');
+  const formContent = document.getElementById('form-content');
+  const successMsg  = document.getElementById('form-success');
+
+  if (!form) return;
+
+  // Checkbox styling — treat them like radio pills
+  form.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    if (cb.id === 'consent') return; // skip consent
+    cb.addEventListener('change', function() {
+      this.closest('.radio-pill').querySelector('label').style.borderColor = this.checked ? 'var(--cyan)' : '';
+    });
+  });
+
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Basic validation
+    let valid = true;
+    const required = form.querySelectorAll('[required]');
+    required.forEach(el => {
+      el.style.borderColor = '';
+      if (el.type === 'radio') {
+        const group = form.querySelectorAll(`[name="${el.name}"]`);
+        const checked = Array.from(group).some(r => r.checked);
+        if (!checked) valid = false;
+      } else if (el.type === 'checkbox') {
+        if (!el.checked) { el.style.outline = '2px solid rgba(239,68,68,.6)'; valid = false; }
+        else el.style.outline = '';
+      } else {
+        if (!el.value.trim()) { el.style.borderColor = 'rgba(239,68,68,.6)'; valid = false; }
+        else el.style.borderColor = '';
+      }
+    });
+
+    if (!valid) return;
+
+    // Simulate submission (replace with real endpoint)
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.style.opacity = '.6';
+    btn.style.cursor = 'not-allowed';
+
+    setTimeout(() => {
+      formContent.style.display = 'none';
+      successMsg.style.display  = 'block';
+      window.scrollTo({ top: document.getElementById('contact-form-wrap').offsetTop - 80, behavior: 'smooth' });
+    }, 800);
+  });
+
+  // Clear error styles on input
+  form.querySelectorAll('.form-input, .form-select, .form-textarea').forEach(el => {
+    el.addEventListener('input', () => { el.style.borderColor = ''; });
+  });
+})();
+
+/* ── SELECT PLACEHOLDER I18N ──────────────────────── */
+(function() {
+  function updateSelectPlaceholders() {
+    const lang = document.documentElement.lang || 'fr';
+    document.querySelectorAll('select[data-placeholder-fr]').forEach(sel => {
+      const ph = sel.dataset['placeholder' + lang.charAt(0).toUpperCase() + lang.slice(1)]
+                 || sel.dataset.placeholderFr;
+      const first = sel.querySelector('option[value=""]');
+      if (first) first.textContent = ph;
+    });
+  }
+  // Run on load
+  updateSelectPlaceholders();
+  // Re-run when language changes (observe html[lang] attribute)
+  const observer = new MutationObserver(updateSelectPlaceholders);
+  observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+})();
+</script>
+</body>
+</html>

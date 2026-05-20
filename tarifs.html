@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AVA — Tarifs & Packs d'automatisation</title>
+  <meta name="description" content="Automatisation comptable à partir de 2 000 DH/trimestre. 3 packs : Essentiel, Performance, Premium. Setup inclus, DGI conforme."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/shared.css"/>
+  <style>
+  /* ── PAGE HERO ──────────────────────────────── */
+  #page-hero {
+    padding: calc(var(--nav-h) + 4rem) 0 5rem;
+    background: var(--bg3); position: relative; overflow: hidden; text-align: center;
+  }
+  .ph-tag { display:inline-block; font-size:.74rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:.12em; margin-bottom:1rem; }
+  .ph-title { font-family:var(--font-h); font-size:clamp(2rem,4.5vw,3.2rem); font-weight:700; color:var(--white); letter-spacing:-.02em; line-height:1.15; margin-bottom:1rem; }
+  .ph-title em { font-style:normal; color:var(--cyan); text-shadow:0 0 24px rgba(0,212,255,.4); }
+  .ph-desc { font-size:1.05rem; color:var(--fg2); max-width:580px; margin:0 auto 2rem; line-height:1.75; }
+  .ph-breadcrumb { display:flex; align-items:center; justify-content:center; gap:.5rem; font-size:.8rem; color:var(--fg3); margin-bottom:2rem; }
+  .ph-breadcrumb a { color:var(--fg3); transition:color .2s; }
+  .ph-breadcrumb a:hover { color:var(--cyan); }
+  .ph-breadcrumb span { opacity:.4; }
+
+  /* ── PRICING ────────────────────────────────── */
+  #pricing { padding:5rem 0 7rem; background:var(--bg); }
+  .pricing-grid {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; align-items:start;
+  }
+  .pack-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--r2);
+    padding:2rem; position:relative; transition:transform .25s, border-color .25s, box-shadow .25s;
+  }
+  .pack-card:hover { transform:translateY(-4px); box-shadow:0 16px 50px rgba(0,0,0,.3); }
+  .pack-card.featured {
+    border-color:var(--cyan); background:var(--surface2);
+    box-shadow:0 0 0 1px rgba(0,212,255,.25), 0 20px 60px rgba(0,212,255,.1);
+    transform:scale(1.03);
+  }
+  .pack-card.featured:hover { transform:scale(1.03) translateY(-4px); }
+  .pack-badge {
+    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+    background:var(--cyan); color:#0B1628; font-family:var(--font-h); font-size:.7rem; font-weight:700;
+    padding:.28rem 1.1rem; border-radius:2rem; white-space:nowrap; box-shadow:0 0 16px rgba(0,212,255,.45);
+  }
+  .pack-num { font-size:.7rem; font-weight:700; color:var(--cyan); text-transform:uppercase; letter-spacing:.12em; margin-bottom:.5rem; }
+  .pack-name { font-family:var(--font-h); font-size:1.4rem; font-weight:700; color:var(--white); margin-bottom:.4rem; }
+  .pack-tagline { font-size:.85rem; color:var(--fg3); margin-bottom:1.5rem; line-height:1.5; }
+  .pack-price-block { margin-bottom:1.5rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border); }
+  .pack-setup { font-size:.8rem; color:var(--fg3); margin-bottom:.35rem; }
+  .pack-setup strong { color:var(--fg2); }
+  .pack-price { display:flex; align-items:baseline; gap:.4rem; }
+  .pack-price-val { font-family:var(--font-h); font-size:2.2rem; font-weight:700; color:var(--white); line-height:1; }
+  .pack-price-val.featured { color:var(--cyan); text-shadow:0 0 16px rgba(0,212,255,.3); }
+  .pack-price-currency { font-size:.85rem; color:var(--fg3); }
+  .pack-price-period { font-size:.8rem; color:var(--fg3); }
+  .pack-cta { display:block; width:100%; text-align:center; margin-bottom:1.5rem; }
+  .pack-features-title { font-size:.72rem; font-weight:700; color:var(--fg3); text-transform:uppercase; letter-spacing:.1em; margin-bottom:.9rem; }
+  .pack-features { display:flex; flex-direction:column; gap:.55rem; }
+  .pf { display:flex; align-items:flex-start; gap:.65rem; font-size:.87rem; color:var(--fg2); }
+  .pf-ok { color:var(--green); font-size:.8rem; flex-shrink:0; margin-top:.1rem; }
+  .pf-no { color:var(--fg3); font-size:.8rem; flex-shrink:0; margin-top:.1rem; }
+  .pf-text { line-height:1.45; }
+  .pf-text.disabled { color:var(--fg3); text-decoration:line-through; }
+
+  /* ── COMPARISON TABLE ───────────────────────── */
+  #compare { padding:6rem 0; background:var(--bg2); }
+  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .compare-table {
+    width:100%; border-collapse:collapse; font-size:.88rem;
+  }
+  .compare-table th, .compare-table td {
+    padding:.85rem 1.1rem; text-align:left; border-bottom:1px solid var(--border);
+    vertical-align:middle;
+  }
+  .compare-table th { font-family:var(--font-h); font-weight:600; color:var(--white); background:var(--surface); font-size:.82rem; }
+  .compare-table th:first-child { color:var(--fg3); }
+  .compare-table td:first-child { color:var(--fg2); font-weight:500; }
+  .compare-table th.featured, .compare-table td.featured { background:rgba(0,212,255,.06); }
+  .compare-table th.featured { color:var(--cyan); }
+  .compare-table tr:last-child td { border-bottom:none; }
+  .compare-table tr:hover td { background:rgba(255,255,255,.02); }
+  .ct-yes { color:var(--green); font-weight:700; }
+  .ct-no { color:var(--fg3); }
+  .ct-partial { color:#fbbf24; font-size:.82rem; }
+  .compare-table th:not(:first-child) { text-align:center; }
+  .compare-table td:not(:first-child) { text-align:center; }
+  .compare-table th.featured { border-top:2px solid var(--cyan); }
+
+  /* ── FAQ ────────────────────────────────────── */
+  #faq { padding:6rem 0; background:var(--bg); }
+  .faq-grid { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; max-width:900px; margin:0 auto; }
+  .faq-item {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--r2);
+    padding:1.5rem; transition:border-color .25s;
+  }
+  .faq-item:hover { border-color:var(--border2); }
+  .faq-q { font-family:var(--font-h); font-size:.97rem; font-weight:600; color:var(--white); margin-bottom:.65rem; line-height:1.3; }
+  .faq-a { font-size:.88rem; color:var(--fg2); line-height:1.68; }
+  .faq-a strong { color:var(--cyan); }
+
+  /* ── GUARANTEE ──────────────────────────────── */
+  #guarantee { padding:5rem 0; background:var(--bg2); }
+  .guarantee-inner {
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem;
+  }
+  .guarantee-card {
+    text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:var(--r2);
+    padding:2rem 1.5rem;
+  }
+  .guarantee-icon { font-size:2.2rem; margin-bottom:1rem; }
+  .guarantee-title { font-family:var(--font-h); font-size:1rem; font-weight:600; color:var(--white); margin-bottom:.5rem; }
+  .guarantee-desc { font-size:.87rem; color:var(--fg2); line-height:1.6; }
+
+  /* ── CTA ────────────────────────────────────── */
+  #tarifs-cta { padding:6rem 0; background:var(--bg3); position:relative; overflow:hidden; text-align:center; }
+  .scta-title { font-family:var(--font-h); font-size:clamp(1.6rem,3.5vw,2.4rem); font-weight:700; color:var(--white); margin-bottom:.8rem; letter-spacing:-.02em; }
+  .scta-title em { font-style:normal; color:var(--cyan); text-shadow:0 0 22px rgba(0,212,255,.4); }
+  .scta-desc { font-size:1rem; color:var(--fg2); max-width:500px; margin:0 auto 2rem; line-height:1.7; }
+  .scta-actions { display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap; }
+
+  /* ── RESPONSIVE ─────────────────────────────── */
+  @media(max-width:1024px) {
+    .pricing-grid { grid-template-columns:1fr; max-width:460px; margin:0 auto; }
+    .pack-card.featured { transform:scale(1); }
+    .pack-card.featured:hover { transform:translateY(-4px); }
+    .faq-grid { grid-template-columns:1fr; }
+    .guarantee-inner { grid-template-columns:1fr; max-width:460px; margin:0 auto; }
+  }
+  @media(max-width:768px) {
+    .compare-table th, .compare-table td { padding:.65rem .75rem; font-size:.8rem; }
+    .pack-price-val { font-size:1.8rem; }
+  }
+  html[dir="rtl"] .compare-table th, html[dir="rtl"] .compare-table td { text-align:right; }
+  html[dir="rtl"] .compare-table th:not(:first-child), html[dir="rtl"] .compare-table td:not(:first-child) { text-align:center; }
+  </style>
+  <meta name="robots" content="index, follow"/>
+  <link rel="canonical" href="https://avaautomation.tech/tarifs"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://avaautomation.tech/tarifs"/>
+  <meta property="og:title" content="AVA — Tarifs : à partir de 2 000 DH/trimestre"/>
+  <meta property="og:description" content="Automatisation comptable à partir de 2 000 DH/trimestre. 3 packs : Essentiel, Performance, Premium. Setup inclus, DGI conforme."/>
+  <meta property="og:site_name" content="AVA Automation"/>
+  <meta name="twitter:card" content="summary"/>
+  <meta name="twitter:title" content="AVA — Tarifs : à partir de 2 000 DH/trimestre"/>
+  <meta name="twitter:description" content="Automatisation comptable à partir de 2 000 DH/trimestre. 3 packs : Essentiel, Performance, Premium. Setup inclus, DGI conforme."/>
+</head>
+<body class="lang-active-fr">
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">AV<span>A</span></a>
+      <ul class="nav-links">
+        <li><a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a></li>
+        <li><a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a></li>
+        <li><a href="/tarifs" class="active"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a></li>
+        <li><a href="/contact"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></a></li>
+      </ul>
+      <div class="nav-right">
+        <div class="lang-switcher">
+          <button class="lang-btn active" data-lang="fr">FR</button>
+          <button class="lang-btn" data-lang="ar">AR</button>
+          <button class="lang-btn" data-lang="en">EN</button>
+        </div>
+        <a href="/contact" class="btn btn-cyan"><span class="lang-fr">Demander une démo</span><span class="lang-ar">طلب عرض</span><span class="lang-en">Request Demo</span></a>
+        <button class="nav-hamburger" id="hamburger" aria-label="Menu" aria-expanded="false"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </div>
+  <div class="nav-mobile" id="nav-mobile">
+    <a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a>
+    <a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a>
+    <a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a>
+    <a href="/contact"><span class="lang-fr">Contact & Démo</span><span class="lang-ar">تواصل وعرض</span><span class="lang-en">Contact & Demo</span></a>
+    <a href="/contact" class="btn btn-cyan"><span class="lang-fr">Demander une démo</span><span class="lang-ar">طلب عرض</span><span class="lang-en">Request Demo</span></a>
+    <div class="lang-switcher"><button class="lang-btn active" data-lang="fr">FR</button><button class="lang-btn" data-lang="ar">AR</button><button class="lang-btn" data-lang="en">EN</button></div>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<section id="page-hero">
+  <div class="blob blob-cyan" style="width:480px;height:480px;top:-100px;right:-80px;" aria-hidden="true"></div>
+  <div class="blob blob-blue" style="width:300px;height:300px;bottom:0;left:8%;" aria-hidden="true"></div>
+  <div class="container" style="position:relative;z-index:2;">
+    <div class="ph-breadcrumb reveal">
+      <a href="/"><span class="lang-fr">Accueil</span><span class="lang-ar">الرئيسية</span><span class="lang-en">Home</span></a>
+      <span>›</span>
+      <span><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></span>
+    </div>
+    <p class="ph-tag reveal d1"><span class="lang-fr">3 packs · 1 solution</span><span class="lang-ar">٣ باقات · حل واحد</span><span class="lang-en">3 packs · 1 solution</span></p>
+    <h1 class="ph-title reveal d2">
+      <span class="lang-fr">Un tarif pour chaque<br><em>taille de cabinet</em></span>
+      <span class="lang-ar">سعر لكل<br><em>حجم مكتب</em></span>
+      <span class="lang-en">A price for every<br><em>firm size</em></span>
+    </h1>
+    <p class="ph-desc reveal d3">
+      <span class="lang-fr">Des frais de setup uniques + un abonnement trimestriel prévisible. Pas de frais cachés, pas d'engagement sur 12 mois. Commencez avec ce dont vous avez besoin aujourd'hui.</span>
+      <span class="lang-ar">رسوم إعداد لمرة واحدة + اشتراك فصلي يمكن التنبؤ به. لا رسوم خفية، لا التزام لمدة 12 شهراً. ابدأ بما تحتاجه اليوم.</span>
+      <span class="lang-en">One-time setup fees + a predictable quarterly subscription. No hidden fees, no 12-month commitment. Start with what you need today.</span>
+    </p>
+  </div>
+</section>
+
+<!-- PRICING CARDS -->
+<section id="pricing">
+  <div class="container">
+    <div class="pricing-grid reveal">
+
+      <!-- Pack 1 — Essentiel -->
+      <div class="pack-card">
+        <div class="pack-num"><span class="lang-fr">Pack 01</span><span class="lang-ar">الباقة ٠١</span><span class="lang-en">Pack 01</span></div>
+        <div class="pack-name"><span class="lang-fr">Essentiel</span><span class="lang-ar">الأساسية</span><span class="lang-en">Essential</span></div>
+        <p class="pack-tagline"><span class="lang-fr">Idéal pour les petits cabinets qui veulent commencer l'automatisation.</span><span class="lang-ar">مثالي للمكاتب الصغيرة التي تريد البدء في الأتمتة.</span><span class="lang-en">Ideal for small firms starting their automation journey.</span></p>
+        <div class="pack-price-block">
+          <div class="pack-setup"><span class="lang-fr">Frais de setup :</span><span class="lang-ar">رسوم الإعداد:</span><span class="lang-en">Setup fee:</span> <strong><span class="lang-fr">à partir de</span><span class="lang-ar">ابتداءً من</span><span class="lang-en">from</span> 10 000 DH</strong></div>
+          <div class="pack-price">
+            <span class="pack-price-val">2 000</span>
+            <div>
+              <div class="pack-price-currency">DH</div>
+              <div class="pack-price-period"><span class="lang-fr">/trimestre</span><span class="lang-ar">/ربع سنة</span><span class="lang-en">/quarter</span></div>
+            </div>
+          </div>
+        </div>
+        <a href="/contact" class="btn btn-ghost pack-cta"><span class="lang-fr">Commencer</span><span class="lang-ar">ابدأ الآن</span><span class="lang-en">Get started</span></a>
+        <div class="pack-features-title"><span class="lang-fr">Ce qui est inclus</span><span class="lang-ar">ما هو مدرج</span><span class="lang-en">What's included</span></div>
+        <div class="pack-features">
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M1</strong> — Saisie automatique des documents</span><span class="lang-ar"><strong>M1</strong> — الإدخال التلقائي للوثائق</span><span class="lang-en"><strong>M1</strong> — Automatic document entry</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M2</strong> — Réconciliation bancaire basique</span><span class="lang-ar"><strong>M2</strong> — مطابقة بنكية أساسية</span><span class="lang-en"><strong>M2</strong> — Basic bank reconciliation</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M3</strong> — Écritures PCM (règles seules)</span><span class="lang-ar"><strong>M3</strong> — قيود PCM (قواعد فقط)</span><span class="lang-en"><strong>M3</strong> — PCM entries (rules only)</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M4</strong> — Déclaration TVA standard</span><span class="lang-ar"><strong>M4</strong> — تصريح TVA قياسي</span><span class="lang-en"><strong>M4</strong> — Standard VAT declaration</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M5</strong> — Rapports standards</span><span class="lang-ar"><strong>M5</strong> — تقارير قياسية</span><span class="lang-en"><strong>M5</strong> — Standard reports</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M6</strong> — Jusqu'à <strong>5 sociétés</strong></span><span class="lang-ar"><strong>M6</strong> — حتى <strong>٥ شركات</strong></span><span class="lang-en"><strong>M6</strong> — Up to <strong>5 entities</strong></span></span></div>
+          <div class="pf"><span class="pf-no">✕</span><span class="pf-text disabled"><span class="lang-fr">Détection d'anomalies</span><span class="lang-ar">اكتشاف الشذوذات</span><span class="lang-en">Anomaly detection</span></span></div>
+          <div class="pf"><span class="pf-no">✕</span><span class="pf-text disabled"><span class="lang-fr">Support prioritaire</span><span class="lang-ar">دعم ذو أولوية</span><span class="lang-en">Priority support</span></span></div>
+        </div>
+      </div>
+
+      <!-- Pack 2 — Performance (featured) -->
+      <div class="pack-card featured">
+        <div class="pack-badge"><span class="lang-fr">⭐ Recommandé</span><span class="lang-ar">⭐ موصى به</span><span class="lang-en">⭐ Recommended</span></div>
+        <div class="pack-num"><span class="lang-fr">Pack 02</span><span class="lang-ar">الباقة ٠٢</span><span class="lang-en">Pack 02</span></div>
+        <div class="pack-name"><span class="lang-fr">Performance</span><span class="lang-ar">الأداء</span><span class="lang-en">Performance</span></div>
+        <p class="pack-tagline"><span class="lang-fr">La solution complète pour les cabinets en croissance qui gèrent 5 à 20 sociétés.</span><span class="lang-ar">الحل الكامل للمكاتب النامية التي تدير من 5 إلى 20 شركة.</span><span class="lang-en">The complete solution for growing firms managing 5 to 20 entities.</span></p>
+        <div class="pack-price-block" style="border-color:rgba(0,212,255,.2);">
+          <div class="pack-setup"><span class="lang-fr">Frais de setup :</span><span class="lang-ar">رسوم الإعداد:</span><span class="lang-en">Setup fee:</span> <strong><span class="lang-fr">à partir de</span><span class="lang-ar">ابتداءً من</span><span class="lang-en">from</span> 15 000 DH</strong></div>
+          <div class="pack-price">
+            <span class="pack-price-val featured">3 500</span>
+            <div>
+              <div class="pack-price-currency">DH</div>
+              <div class="pack-price-period"><span class="lang-fr">/trimestre</span><span class="lang-ar">/ربع سنة</span><span class="lang-en">/quarter</span></div>
+            </div>
+          </div>
+        </div>
+        <a href="/contact" class="btn btn-cyan pack-cta"><span class="lang-fr">Choisir Performance</span><span class="lang-ar">اختر الأداء</span><span class="lang-en">Choose Performance</span></a>
+        <div class="pack-features-title"><span class="lang-fr">Ce qui est inclus</span><span class="lang-ar">ما هو مدرج</span><span class="lang-en">What's included</span></div>
+        <div class="pack-features">
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M1</strong> — Saisie automatique des documents</span><span class="lang-ar"><strong>M1</strong> — الإدخال التلقائي للوثائق</span><span class="lang-en"><strong>M1</strong> — Automatic document entry</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M2</strong> — Réconciliation avancée + matching flou IA</span><span class="lang-ar"><strong>M2</strong> — مطابقة متقدمة + مطابقة ضبابية</span><span class="lang-en"><strong>M2</strong> — Advanced reconciliation + AI fuzzy matching</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M3</strong> — PCM + fallback IA pour cas complexes</span><span class="lang-ar"><strong>M3</strong> — PCM + ذكاء اصطناعي للحالات المعقدة</span><span class="lang-en"><strong>M3</strong> — PCM + AI fallback for complex cases</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M4</strong> — TVA + IS + IR + liasses</span><span class="lang-ar"><strong>M4</strong> — TVA + IS + IR + ملفات</span><span class="lang-en"><strong>M4</strong> — VAT + Corp. tax + Income tax + returns</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M5</strong> — Analytics avancés + KPIs complets</span><span class="lang-ar"><strong>M5</strong> — تحليلات متقدمة + مؤشرات أداء كاملة</span><span class="lang-en"><strong>M5</strong> — Advanced analytics + full KPIs</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M6</strong> — Jusqu'à <strong>20 sociétés</strong></span><span class="lang-ar"><strong>M6</strong> — حتى <strong>٢٠ شركة</strong></span><span class="lang-en"><strong>M6</strong> — Up to <strong>20 entities</strong></span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>Détection d'anomalies</strong> pré-export incluse</span><span class="lang-ar"><strong>اكتشاف الشذوذات</strong> قبل التصدير مدرج</span><span class="lang-en"><strong>Anomaly detection</strong> pre-export included</span></span></div>
+          <div class="pf"><span class="pf-no">✕</span><span class="pf-text disabled"><span class="lang-fr">Support prioritaire</span><span class="lang-ar">دعم ذو أولوية</span><span class="lang-en">Priority support</span></span></div>
+        </div>
+      </div>
+
+      <!-- Pack 3 — Premium -->
+      <div class="pack-card">
+        <div class="pack-num"><span class="lang-fr">Pack 03</span><span class="lang-ar">الباقة ٠٣</span><span class="lang-en">Pack 03</span></div>
+        <div class="pack-name"><span class="lang-fr">Premium</span><span class="lang-ar">المتميزة</span><span class="lang-en">Premium</span></div>
+        <p class="pack-tagline"><span class="lang-fr">Solution sur-mesure pour les grands cabinets avec des besoins spécifiques et un volume élevé.</span><span class="lang-ar">حل مخصص للمكاتب الكبيرة ذات الاحتياجات الخاصة والحجم الكبير.</span><span class="lang-en">Custom solution for large firms with specific needs and high volume.</span></p>
+        <div class="pack-price-block">
+          <div class="pack-setup"><span class="lang-fr">Frais de setup :</span><span class="lang-ar">رسوم الإعداد:</span><span class="lang-en">Setup fee:</span> <strong><span class="lang-fr">Sur devis</span><span class="lang-ar">حسب الطلب</span><span class="lang-en">On request</span></strong></div>
+          <div class="pack-price">
+            <span class="pack-price-val">5 000</span>
+            <div>
+              <div class="pack-price-currency">DH</div>
+              <div class="pack-price-period"><span class="lang-fr">/trimestre</span><span class="lang-ar">/ربع سنة</span><span class="lang-en">/quarter</span></div>
+            </div>
+          </div>
+        </div>
+        <a href="/contact" class="btn btn-ghost pack-cta"><span class="lang-fr">Nous contacter</span><span class="lang-ar">اتصل بنا</span><span class="lang-en">Contact us</span></a>
+        <div class="pack-features-title"><span class="lang-fr">Ce qui est inclus</span><span class="lang-ar">ما هو مدرج</span><span class="lang-en">What's included</span></div>
+        <div class="pack-features">
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>Tout de Performance</strong> +</span><span class="lang-ar"><strong>كل شيء في الأداء</strong> +</span><span class="lang-en"><strong>Everything in Performance</strong> +</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M2</strong> — Auto-lettrage IA intégral</span><span class="lang-ar"><strong>M2</strong> — ترحيل تلقائي كامل بالذكاء الاصطناعي</span><span class="lang-en"><strong>M2</strong> — Full AI auto-lettrage</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M3</strong> — Règles comptables personnalisées</span><span class="lang-ar"><strong>M3</strong> — قواعد محاسبية مخصصة</span><span class="lang-en"><strong>M3</strong> — Custom accounting rules</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M4</strong> — Toutes déclarations DGI</span><span class="lang-ar"><strong>M4</strong> — جميع تصريحات DGI</span><span class="lang-en"><strong>M4</strong> — All DGI declarations</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M5</strong> — Suite KPI complète personnalisable</span><span class="lang-ar"><strong>M5</strong> — مجموعة مؤشرات أداء كاملة قابلة للتخصيص</span><span class="lang-en"><strong>M5</strong> — Full customizable KPI suite</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>M6</strong> — Sociétés <strong>illimitées</strong></span><span class="lang-ar"><strong>M6</strong> — شركات <strong>غير محدودة</strong></span><span class="lang-en"><strong>M6</strong> — <strong>Unlimited</strong> entities</span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>Support prioritaire</strong> dédié</span><span class="lang-ar"><strong>دعم ذو أولوية</strong> مخصص</span><span class="lang-en"><strong>Dedicated priority support</strong></span></span></div>
+          <div class="pf"><span class="pf-ok">✓</span><span class="pf-text"><span class="lang-fr"><strong>Intégrations personnalisées</strong> (API sur mesure)</span><span class="lang-ar"><strong>تكاملات مخصصة</strong> (API حسب الطلب)</span><span class="lang-en"><strong>Custom integrations</strong> (bespoke API)</span></span></div>
+        </div>
+      </div>
+
+    </div><!-- /pricing-grid -->
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section id="compare">
+  <div class="container">
+    <div class="sec-hdr reveal">
+      <span class="sec-tag"><span class="lang-fr">Comparatif détaillé</span><span class="lang-ar">مقارنة تفصيلية</span><span class="lang-en">Detailed comparison</span></span>
+      <h2 class="sec-title"><span class="lang-fr">Tout comparer en un coup d'œil</span><span class="lang-ar">مقارنة كل شيء دفعة واحدة</span><span class="lang-en">Compare everything at a glance</span></h2>
+    </div>
+    <div class="table-wrap reveal d1">
+      <table class="compare-table" role="table">
+        <thead>
+          <tr>
+            <th><span class="lang-fr">Fonctionnalité</span><span class="lang-ar">الميزة</span><span class="lang-en">Feature</span></th>
+            <th><span class="lang-fr">Essentiel</span><span class="lang-ar">الأساسية</span><span class="lang-en">Essential</span></th>
+            <th class="featured"><span class="lang-fr">Performance ⭐</span><span class="lang-ar">الأداء ⭐</span><span class="lang-en">Performance ⭐</span></th>
+            <th><span class="lang-fr">Premium</span><span class="lang-ar">المتميزة</span><span class="lang-en">Premium</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="lang-fr">M1 — Saisie documentaire (OCR IA)</span><span class="lang-ar">M1 — إدخال الوثائق (OCR AI)</span><span class="lang-en">M1 — Document entry (OCR AI)</span></td>
+            <td class="ct-yes">✓</td>
+            <td class="featured ct-yes">✓</td>
+            <td class="ct-yes">✓</td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">M2 — Réconciliation bancaire</span><span class="lang-ar">M2 — المطابقة البنكية</span><span class="lang-en">M2 — Bank reconciliation</span></td>
+            <td class="ct-partial"><span class="lang-fr">Basique</span><span class="lang-ar">أساسي</span><span class="lang-en">Basic</span></td>
+            <td class="featured ct-partial"><span class="lang-fr">Avancée + flou IA</span><span class="lang-ar">متقدمة + AI</span><span class="lang-en">Advanced + AI fuzzy</span></td>
+            <td class="ct-yes"><span class="lang-fr">Complète + auto-lettrage</span><span class="lang-ar">كاملة + ترحيل تلقائي</span><span class="lang-en">Full + auto-lettrage</span></td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">M3 — Écritures comptables PCM</span><span class="lang-ar">M3 — قيود محاسبية PCM</span><span class="lang-en">M3 — PCM journal entries</span></td>
+            <td class="ct-partial"><span class="lang-fr">Règles PCM</span><span class="lang-ar">قواعد PCM</span><span class="lang-en">PCM rules</span></td>
+            <td class="featured ct-partial"><span class="lang-fr">PCM + fallback IA</span><span class="lang-ar">PCM + AI</span><span class="lang-en">PCM + AI fallback</span></td>
+            <td class="ct-yes"><span class="lang-fr">PCM + IA + règles custom</span><span class="lang-ar">PCM + AI + قواعد مخصصة</span><span class="lang-en">PCM + AI + custom rules</span></td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">M4 — Déclarations fiscales DGI</span><span class="lang-ar">M4 — التصريحات الجبائية DGI</span><span class="lang-en">M4 — DGI tax declarations</span></td>
+            <td class="ct-partial"><span class="lang-fr">TVA standard</span><span class="lang-ar">TVA قياسية</span><span class="lang-en">Standard VAT</span></td>
+            <td class="featured ct-partial">TVA + IS + IR</td>
+            <td class="ct-yes"><span class="lang-fr">Toutes déclarations</span><span class="lang-ar">جميع التصريحات</span><span class="lang-en">All declarations</span></td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">M5 — Tableau de bord financier</span><span class="lang-ar">M5 — لوحة المعلومات المالية</span><span class="lang-en">M5 — Financial dashboard</span></td>
+            <td class="ct-partial"><span class="lang-fr">Rapports standards</span><span class="lang-ar">تقارير قياسية</span><span class="lang-en">Standard reports</span></td>
+            <td class="featured ct-partial"><span class="lang-fr">Analytics avancés</span><span class="lang-ar">تحليلات متقدمة</span><span class="lang-en">Advanced analytics</span></td>
+            <td class="ct-yes"><span class="lang-fr">Suite KPI complète</span><span class="lang-ar">مجموعة KPI كاملة</span><span class="lang-en">Full KPI suite</span></td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">M6 — Nombre de sociétés</span><span class="lang-ar">M6 — عدد الشركات</span><span class="lang-en">M6 — Number of entities</span></td>
+            <td class="ct-partial"><span class="lang-fr">Jusqu'à 5</span><span class="lang-ar">حتى 5</span><span class="lang-en">Up to 5</span></td>
+            <td class="featured ct-partial"><span class="lang-fr">Jusqu'à 20</span><span class="lang-ar">حتى 20</span><span class="lang-en">Up to 20</span></td>
+            <td class="ct-yes"><span class="lang-fr">Illimité</span><span class="lang-ar">غير محدود</span><span class="lang-en">Unlimited</span></td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">Détection d'anomalies pré-export</span><span class="lang-ar">اكتشاف الشذوذات قبل التصدير</span><span class="lang-en">Pre-export anomaly detection</span></td>
+            <td class="ct-no">✕</td>
+            <td class="featured ct-yes">✓</td>
+            <td class="ct-yes">✓</td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">Alertes Slack / email</span><span class="lang-ar">تنبيهات Slack / بريد إلكتروني</span><span class="lang-en">Slack / email alerts</span></td>
+            <td class="ct-yes">✓</td>
+            <td class="featured ct-yes">✓</td>
+            <td class="ct-yes">✓</td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">Google Sheets dashboard</span><span class="lang-ar">لوحة Google Sheets</span><span class="lang-en">Google Sheets dashboard</span></td>
+            <td class="ct-yes">✓</td>
+            <td class="featured ct-yes">✓</td>
+            <td class="ct-yes">✓</td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">Support prioritaire</span><span class="lang-ar">دعم ذو أولوية</span><span class="lang-en">Priority support</span></td>
+            <td class="ct-no">✕</td>
+            <td class="featured ct-no">✕</td>
+            <td class="ct-yes">✓</td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">Intégrations personnalisées</span><span class="lang-ar">تكاملات مخصصة</span><span class="lang-en">Custom integrations</span></td>
+            <td class="ct-no">✕</td>
+            <td class="featured ct-no">✕</td>
+            <td class="ct-yes">✓</td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">Frais de setup</span><span class="lang-ar">رسوم الإعداد</span><span class="lang-en">Setup fee</span></td>
+            <td><span class="lang-fr">à partir de 10 000 DH</span><span class="lang-ar">من 10,000 درهم</span><span class="lang-en">from MAD 10,000</span></td>
+            <td class="featured"><span class="lang-fr">à partir de 15 000 DH</span><span class="lang-ar">من 15,000 درهم</span><span class="lang-en">from MAD 15,000</span></td>
+            <td><span class="lang-fr">Sur devis</span><span class="lang-ar">حسب الطلب</span><span class="lang-en">On request</span></td>
+          </tr>
+          <tr>
+            <td><span class="lang-fr">Abonnement trimestriel</span><span class="lang-ar">الاشتراك الفصلي</span><span class="lang-en">Quarterly subscription</span></td>
+            <td><strong>2 000 DH</strong></td>
+            <td class="featured"><strong style="color:var(--cyan)">3 500 DH</strong></td>
+            <td><strong>5 000 DH</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- GUARANTEES -->
+<section id="guarantee">
+  <div class="container">
+    <div class="sec-hdr reveal">
+      <span class="sec-tag"><span class="lang-fr">Nos engagements</span><span class="lang-ar">التزاماتنا</span><span class="lang-en">Our commitments</span></span>
+      <h2 class="sec-title"><span class="lang-fr">Vous êtes protégé</span><span class="lang-ar">أنت محمي</span><span class="lang-en">You're protected</span></h2>
+    </div>
+    <div class="guarantee-inner">
+      <div class="guarantee-card reveal">
+        <div class="guarantee-icon">🔒</div>
+        <div class="guarantee-title"><span class="lang-fr">Données isolées & sécurisées</span><span class="lang-ar">بيانات معزولة وآمنة</span><span class="lang-en">Isolated & secure data</span></div>
+        <p class="guarantee-desc"><span class="lang-fr">Chaque cabinet dispose de son propre environnement isolé. Vos données et celles de vos clients ne sont jamais mélangées.</span><span class="lang-ar">كل مكتب لديه بيئة معزولة خاصة به. بياناتك وبيانات عملائك لا تُخلط أبداً.</span><span class="lang-en">Every firm has its own isolated environment. Your data and your clients' data are never mixed.</span></p>
+      </div>
+      <div class="guarantee-card reveal d1">
+        <div class="guarantee-icon">📋</div>
+        <div class="guarantee-title"><span class="lang-fr">100% conforme DGI & PCM</span><span class="lang-ar">متوافق 100% مع DGI وPCM</span><span class="lang-en">100% DGI & PCM compliant</span></div>
+        <p class="guarantee-desc"><span class="lang-fr">Toutes les sorties AVA respectent le Plan Comptable Marocain et les normes d'export FEC exigées par la DGI.</span><span class="lang-ar">جميع مخرجات AVA تحترم المخطط المحاسبي المغربي ومعايير تصدير FEC المطلوبة من DGI.</span><span class="lang-en">All AVA outputs comply with the Moroccan Chart of Accounts and FEC export standards required by the DGI.</span></p>
+      </div>
+      <div class="guarantee-card reveal d2">
+        <div class="guarantee-icon">🚀</div>
+        <div class="guarantee-title"><span class="lang-fr">Démarrage en 2 semaines</span><span class="lang-ar">انطلاق في أسبوعين</span><span class="lang-en">Up and running in 2 weeks</span></div>
+        <p class="guarantee-desc"><span class="lang-fr">Notre équipe gère l'intégration complète. Vous êtes opérationnel en 2 semaines, sans perturbation de votre activité.</span><span class="lang-ar">يتولى فريقنا التكامل الكامل. ستكون جاهزاً للعمل خلال أسبوعين دون تعطيل نشاطك.</span><span class="lang-en">Our team handles the complete integration. You're operational in 2 weeks, without disrupting your activity.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="container">
+    <div class="sec-hdr reveal">
+      <span class="sec-tag"><span class="lang-fr">Questions fréquentes</span><span class="lang-ar">الأسئلة الشائعة</span><span class="lang-en">Frequently asked questions</span></span>
+      <h2 class="sec-title"><span class="lang-fr">Tout ce que vous devez savoir</span><span class="lang-ar">كل ما تحتاج معرفته</span><span class="lang-en">Everything you need to know</span></h2>
+    </div>
+    <div class="faq-grid">
+      <div class="faq-item reveal">
+        <div class="faq-q"><span class="lang-fr">AVA fonctionne-t-il avec n'importe quel logiciel comptable ?</span><span class="lang-ar">هل تعمل AVA مع أي برنامج محاسبي؟</span><span class="lang-en">Does AVA work with any accounting software?</span></div>
+        <p class="faq-a"><span class="lang-fr">Oui. AVA s'intègre via API avec <strong>Odoo, Sage, Microsoft Dynamics</strong> et tout système exposant une API ou exportant en CSV/Excel. Le setup inclut une phase d'intégration dédiée à votre système.</span><span class="lang-ar">نعم. تتكامل AVA عبر API مع <strong>Odoo وSage وMicrosoft Dynamics</strong> وأي نظام يعرض API أو يصدر CSV/Excel.</span><span class="lang-en">Yes. AVA integrates via API with <strong>Odoo, Sage, Microsoft Dynamics</strong> and any system exposing an API or exporting CSV/Excel. Setup includes a dedicated integration phase for your system.</span></p>
+      </div>
+      <div class="faq-item reveal d1">
+        <div class="faq-q"><span class="lang-fr">Comment se passe le setup initial ?</span><span class="lang-ar">كيف يتم الإعداد الأولي؟</span><span class="lang-en">How does the initial setup work?</span></div>
+        <p class="faq-a"><span class="lang-fr">Notre équipe réalise l'intégration complète : connexion à votre système, configuration des règles PCM, paramétrage des alertes et formation de votre équipe. <strong>Durée : 2 semaines</strong>, sans interruption de votre activité.</span><span class="lang-ar">يقوم فريقنا بالتكامل الكامل: الاتصال بنظامك وتكوين قواعد PCM وإعداد التنبيهات وتدريب فريقك. <strong>المدة: أسبوعان</strong>.</span><span class="lang-en">Our team handles the full integration: connecting to your system, configuring PCM rules, setting up alerts and training your team. <strong>Duration: 2 weeks</strong>, without interruption to your activity.</span></p>
+      </div>
+      <div class="faq-item reveal d2">
+        <div class="faq-q"><span class="lang-fr">Mes données sont-elles sécurisées ?</span><span class="lang-ar">هل بياناتي آمنة؟</span><span class="lang-en">Is my data secure?</span></div>
+        <p class="faq-a"><span class="lang-fr">Chaque cabinet a son propre environnement isolé avec des credentials séparés. Les données sont chiffrées en transit et au repos. Aucune donnée client n'est partagée entre cabinets.</span><span class="lang-ar">كل مكتب لديه بيئة معزولة خاصة ببيانات اعتماد منفصلة. البيانات مشفرة أثناء النقل وفي حالة السكون.</span><span class="lang-en">Each firm has its own isolated environment with separate credentials. Data is encrypted in transit and at rest. No client data is shared between firms.</span></p>
+      </div>
+      <div class="faq-item reveal d3">
+        <div class="faq-q"><span class="lang-fr">Puis-je changer de pack en cours d'abonnement ?</span><span class="lang-ar">هل يمكنني تغيير الباقة خلال الاشتراك؟</span><span class="lang-en">Can I change pack during my subscription?</span></div>
+        <p class="faq-a"><span class="lang-fr">Oui, vous pouvez upgrader à tout moment. La différence de frais est proratisée sur le trimestre en cours. Il n'y a pas d'engagement minimum de durée.</span><span class="lang-ar">نعم، يمكنك الترقية في أي وقت. يتم احتساب فرق الرسوم بالتناسب على الربع الحالي. لا يوجد حد أدنى للالتزام.</span><span class="lang-en">Yes, you can upgrade at any time. The fee difference is prorated for the current quarter. There is no minimum commitment period.</span></p>
+      </div>
+      <div class="faq-item reveal d1">
+        <div class="faq-q"><span class="lang-fr">Les frais de setup sont-ils récurrents ?</span><span class="lang-ar">هل رسوم الإعداد متكررة؟</span><span class="lang-en">Are setup fees recurring?</span></div>
+        <p class="faq-a"><span class="lang-fr">Non. Les frais de setup sont <strong>payés une seule fois</strong> lors du démarrage du projet. Seul l'abonnement trimestriel est récurrent.</span><span class="lang-ar">لا. رسوم الإعداد <strong>تُدفع مرة واحدة فقط</strong> عند بدء المشروع. فقط الاشتراك الفصلي هو المتكرر.</span><span class="lang-en">No. Setup fees are <strong>paid only once</strong> at project start. Only the quarterly subscription is recurring.</span></p>
+      </div>
+      <div class="faq-item reveal d2">
+        <div class="faq-q"><span class="lang-fr">Que se passe-t-il si un document n'est pas reconnu ?</span><span class="lang-ar">ماذا يحدث إذا لم يتم التعرف على مستند؟</span><span class="lang-en">What happens if a document isn't recognized?</span></div>
+        <p class="faq-a"><span class="lang-fr">Si la confiance d'extraction est inférieure à 85%, le document est envoyé dans une <strong>file de revue humaine</strong> via Slack et Google Sheets — avec les données extraites pré-remplies pour correction rapide.</span><span class="lang-ar">إذا كانت ثقة الاستخراج أقل من 85%، يُرسل المستند إلى <strong>قائمة مراجعة بشرية</strong> عبر Slack وGoogle Sheets مع البيانات المستخرجة مسبقاً للتصحيح السريع.</span><span class="lang-en">If extraction confidence is below 85%, the document is sent to a <strong>human review queue</strong> via Slack and Google Sheets — with pre-filled extracted data for quick correction.</span></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="tarifs-cta">
+  <div class="blob blob-cyan" style="width:420px;height:420px;top:50%;left:50%;transform:translate(-50%,-50%);" aria-hidden="true"></div>
+  <div class="container" style="position:relative;z-index:2;">
+    <p class="ph-tag reveal"><span class="lang-fr">Prêt à démarrer ?</span><span class="lang-ar">هل أنت مستعد للبدء؟</span><span class="lang-en">Ready to start?</span></p>
+    <h2 class="scta-title reveal d1">
+      <span class="lang-fr">Discutons de votre projet<br><em>sans engagement</em></span>
+      <span class="lang-ar">دعنا نناقش مشروعك<br><em>بدون التزام</em></span>
+      <span class="lang-en">Let's discuss your project<br><em>with no commitment</em></span>
+    </h2>
+    <p class="scta-desc reveal d2">
+      <span class="lang-fr">30 minutes de démo personnalisée sur votre logiciel existant. Nous analysons votre volume et vous recommandons le pack adapté.</span>
+      <span class="lang-ar">30 دقيقة من العرض التجريبي المخصص على برنامجك الحالي. نحلل حجمك ونوصي بالباقة المناسبة.</span>
+      <span class="lang-en">30 minutes of personalized demo on your existing software. We analyze your volume and recommend the right pack.</span>
+    </p>
+    <div class="scta-actions reveal d3">
+      <a href="/contact" class="btn btn-cyan btn-lg"><span class="lang-fr">Demander une démo gratuite</span><span class="lang-ar">طلب عرض تجريبي مجاني</span><span class="lang-en">Request a free demo</span></a>
+      <a href="/services" class="btn btn-ghost btn-lg"><span class="lang-fr">Découvrir les modules</span><span class="lang-ar">اكتشاف الوحدات</span><span class="lang-en">Explore the modules</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo">AV<span>A</span></div>
+        <p class="footer-tagline lang-fr">Automatisation comptable intelligente pour les cabinets marocains.</p>
+        <p class="footer-tagline lang-ar">أتمتة محاسبية ذكية للمكاتب المغربية.</p>
+        <p class="footer-tagline lang-en">Intelligent accounting automation for Moroccan firms.</p>
+        <div class="footer-badge"><span>●</span> <span class="lang-fr">Conforme</span><span class="lang-ar">متوافق</span><span class="lang-en">Compliant</span> DGI · PCM · TVA</div>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Produit</span><span class="lang-ar">المنتج</span><span class="lang-en">Product</span></div>
+        <nav class="footer-links">
+          <a href="/services"><span class="lang-fr">Services</span><span class="lang-ar">الخدمات</span><span class="lang-en">Services</span></a>
+          <a href="/tarifs"><span class="lang-fr">Tarifs</span><span class="lang-ar">الأسعار</span><span class="lang-en">Pricing</span></a>
+          <a href="/#how"><span class="lang-fr">Fonctionnement</span><span class="lang-ar">كيف يعمل</span><span class="lang-en">How it works</span></a>
+        </nav>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Packs</span><span class="lang-ar">الباقات</span><span class="lang-en">Packs</span></div>
+        <nav class="footer-links">
+          <a href="#pricing"><span class="lang-fr">Essentiel — 2 000 DH/trim.</span><span class="lang-ar">الأساسية — 2,000 درهم</span><span class="lang-en">Essential — 2,000 MAD/q.</span></a>
+          <a href="#pricing"><span class="lang-fr">Performance — 3 500 DH/trim.</span><span class="lang-ar">الأداء — 3,500 درهم</span><span class="lang-en">Performance — 3,500 MAD/q.</span></a>
+          <a href="#pricing"><span class="lang-fr">Premium — Sur devis</span><span class="lang-ar">المتميزة — حسب الطلب</span><span class="lang-en">Premium — On request</span></a>
+        </nav>
+      </div>
+      <div>
+        <div class="footer-col-title"><span class="lang-fr">Contact</span><span class="lang-ar">تواصل</span><span class="lang-en">Contact</span></div>
+        <nav class="footer-links">
+          <a href="/contact"><span class="lang-fr">Demander une démo</span><span class="lang-ar">طلب عرض</span><span class="lang-en">Request a demo</span></a>
+          <a href="/contact"><span class="lang-fr">Nous contacter</span><span class="lang-ar">اتصل بنا</span><span class="lang-en">Contact us</span></a>
+        </nav>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 AVA. <span class="lang-fr">Tous droits réservés.</span><span class="lang-ar">جميع الحقوق محفوظة.</span><span class="lang-en">All rights reserved.</span></span>
+      <div class="footer-tags">
+        <span class="f-tag">DGI</span><span class="f-tag">PCM</span><span class="f-tag">TVA</span><span class="f-tag">FEC</span><span class="f-tag">n8n</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/shared.js"></script>
+</body>
+</html>
