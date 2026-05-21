@@ -1,7 +1,6 @@
 {
   "name": "AVA — Dashboard Webhook Pipeline",
   "nodes": [
-
     {
       "parameters": {
         "httpMethod": "POST",
@@ -13,10 +12,12 @@
       "name": "Webhook AVA Dashboard",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [180, 300],
+      "position": [
+        180,
+        300
+      ],
       "webhookId": "ava-invoice"
     },
-
     {
       "parameters": {
         "jsCode": "const body = $input.first().json.body || $input.first().json;\nif (body.ping === true) {\n  return [{ json: { _route: 'ping' } }];\n}\nconst source = (body.source || 'manual').toLowerCase();\nreturn [{ json: { ...body, _route: source } }];"
@@ -25,16 +26,27 @@
       "name": "Normaliser payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [400, 300]
+      "position": [
+        400,
+        300
+      ]
     },
-
     {
       "parameters": {
         "rules": {
           "values": [
             {
               "conditions": {
-                "conditions": [{ "leftValue": "={{ $json._route }}", "rightValue": "ping", "operator": { "type": "string", "operation": "equals" } }],
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "ping",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
                 "combinator": "and"
               },
               "renameOutput": true,
@@ -42,7 +54,16 @@
             },
             {
               "conditions": {
-                "conditions": [{ "leftValue": "={{ $json._route }}", "rightValue": "pdf", "operator": { "type": "string", "operation": "equals" } }],
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
                 "combinator": "and"
               },
               "renameOutput": true,
@@ -50,7 +71,16 @@
             },
             {
               "conditions": {
-                "conditions": [{ "leftValue": "={{ $json._route }}", "rightValue": "manual", "operator": { "type": "string", "operation": "equals" } }],
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json._route }}",
+                    "rightValue": "manual",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
                 "combinator": "and"
               },
               "renameOutput": true,
@@ -64,9 +94,11 @@
       "name": "Router PDF / Manuel / Ping",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
-      "position": [620, 300]
+      "position": [
+        620,
+        300
+      ]
     },
-
     {
       "parameters": {
         "respondWith": "json",
@@ -77,9 +109,11 @@
       "name": "Réponse Ping",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [860, 100]
+      "position": [
+        860,
+        100
+      ]
     },
-
     {
       "parameters": {
         "method": "POST",
@@ -89,7 +123,10 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            { "name": "Content-Type", "value": "application/json" }
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
           ]
         },
         "sendBody": true,
@@ -102,7 +139,10 @@
       "name": "GPT-4o Vision — Lire PDF",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [860, 300],
+      "position": [
+        860,
+        300
+      ],
       "credentials": {
         "httpHeaderAuth": {
           "id": "OPENAI_CREDENTIAL_ID",
@@ -111,7 +151,6 @@
       },
       "notes": "GPT-4o lit le PDF en base64 directement — pas besoin de Mistral OCR"
     },
-
     {
       "parameters": {
         "jsCode": "const raw = $input.first().json.choices?.[0]?.message?.content || '';\nlet data;\ntry {\n  data = JSON.parse(raw.replace(/```json|```/g, '').trim());\n} catch(e) {\n  throw new Error('GPT-4o JSON invalide: ' + raw.slice(0, 200));\n}\nconst confidence = data.confidence || 0;\nreturn [{ json: {\n  ...data,\n  confidence,\n  _source: 'pdf',\n  _needs_review: confidence < 0.85,\n  societe: $('Webhook AVA Dashboard').first().json.body?.societe || '',\n  submitted_at: $('Webhook AVA Dashboard').first().json.body?.submitted_at || new Date().toISOString(),\n} }];"
@@ -120,9 +159,11 @@
       "name": "Parser réponse GPT-4o",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1080, 300]
+      "position": [
+        1080,
+        300
+      ]
     },
-
     {
       "parameters": {
         "jsCode": "const b = $input.first().json;\nconst lines = b.lines || [];\nlet dominant_tva = 0.20;\nif (lines.length > 0) dominant_tva = (lines[0].tva_rate || 20) / 100;\nreturn [{ json: {\n  vendor:         b.tiers || '',\n  invoice_number: b.invoice_number || '',\n  date:           b.date || new Date().toISOString().split('T')[0],\n  amount_ht:      b.montant_ht || 0,\n  vat_rate:       dominant_tva,\n  amount_tva:     b.montant_tva || 0,\n  amount_ttc:     b.montant_ttc || 0,\n  currency:       'MAD',\n  category:       b.type === 'vente' ? 'ventes_produits' : 'achats_marchandises',\n  type:           b.type || 'achat',\n  ice:            b.ice || null,\n  societe:        b.societe || '',\n  cabinet:        b.cabinet || '',\n  lines:          lines,\n  confidence:     1.0,\n  _source:        'manual',\n  _needs_review:  false,\n  submitted_at:   b.submitted_at || new Date().toISOString(),\n} }];"
@@ -131,9 +172,11 @@
       "name": "Normaliser saisie manuelle",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [860, 500]
+      "position": [
+        860,
+        500
+      ]
     },
-
     {
       "parameters": {
         "conditions": {
@@ -141,7 +184,10 @@
             {
               "leftValue": "={{ $json._needs_review }}",
               "rightValue": true,
-              "operator": { "type": "boolean", "operation": "false" }
+              "operator": {
+                "type": "boolean",
+                "operation": "false"
+              }
             }
           ],
           "combinator": "and"
@@ -152,9 +198,11 @@
       "name": "Confiance ≥ 85% ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1300, 400]
+      "position": [
+        1300,
+        400
+      ]
     },
-
     {
       "parameters": {
         "jsCode": "const PCM = {\n  'achats_marchandises': { debit: '6111', credit: '4411', tva: '3455', journal: 'ACH' },\n  'ventes_produits':     { debit: '3421', credit: '7111', tva: '4455', journal: 'VTE' },\n  'frais_transport':     { debit: '6142', credit: '4411', tva: '3455', journal: 'ACH' },\n  'salaires':            { debit: '6171', credit: '4441', tva: null,   journal: 'OD'  },\n  'services':            { debit: '6131', credit: '4411', tva: '3455', journal: 'ACH' },\n  'frais_deplacement':   { debit: '6185', credit: '5141', tva: '3455', journal: 'OD'  },\n  'autres':              { debit: '6199', credit: '4411', tva: '3455', journal: 'ACH' },\n};\nconst item = $input.first().json;\nconst rule = PCM[item.category] || PCM['autres'];\nconst vat_amount = Math.round(item.amount_ht * item.vat_rate * 100) / 100;\nconst lines = [\n  { compte: rule.debit, debit: item.amount_ht, credit: 0, libelle: item.vendor },\n];\nif (rule.tva) lines.push({ compte: rule.tva, debit: vat_amount, credit: 0, libelle: 'TVA déductible' });\nlines.push({ compte: rule.credit, debit: 0, credit: item.amount_ttc, libelle: item.vendor });\nconst totalDebit  = lines.reduce((s,l) => s + l.debit, 0);\nconst totalCredit = lines.reduce((s,l) => s + l.credit, 0);\nif (Math.abs(totalDebit - totalCredit) > 0.01) throw new Error(`Non équilibrée: D=${totalDebit} C=${totalCredit}`);\nreturn [{ json: { ...item, pcm_lines: lines, journal_code: rule.journal } }];"
@@ -163,16 +211,18 @@
       "name": "Moteur PCM",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1520, 300]
+      "position": [
+        1520,
+        300
+      ]
     },
-
     {
       "parameters": {
         "operation": "append",
         "documentId": {
           "__rl": true,
           "mode": "id",
-          "value": "={{ $vars.SHEETS_ID }}"
+          "value": "1ZuT74KpnIaskzJcZGtBum6ezSTHXZKha-hq_xt68GE8"
         },
         "sheetName": {
           "__rl": true,
@@ -182,21 +232,21 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "N° Facture":    "={{ $json.invoice_number }}",
-            "Date":          "={{ $json.date }}",
-            "Tiers":         "={{ $json.vendor }}",
-            "Société":       "={{ $json.societe }}",
-            "Type":          "={{ $json.type }}",
-            "Montant HT":    "={{ $json.amount_ht }}",
-            "TVA":           "={{ $json.amount_tva }}",
-            "Montant TTC":   "={{ $json.amount_ttc }}",
-            "Taux TVA":      "={{ ($json.vat_rate * 100) + '%' }}",
+            "N° Facture": "={{ $json.invoice_number }}",
+            "Date": "={{ $json.date }}",
+            "Tiers": "={{ $json.vendor }}",
+            "Société": "={{ $json.societe }}",
+            "Type": "={{ $json.type }}",
+            "Montant HT": "={{ $json.amount_ht }}",
+            "TVA": "={{ $json.amount_tva }}",
+            "Montant TTC": "={{ $json.amount_ttc }}",
+            "Taux TVA": "={{ ($json.vat_rate * 100) + '%' }}",
             "Catégorie PCM": "={{ $json.category }}",
-            "Journal PCM":   "={{ $json.journal_code }}",
-            "Source":        "={{ $json._source }}",
-            "Confiance IA":  "={{ $json.confidence }}",
-            "Soumis le":     "={{ $json.submitted_at }}",
-            "Statut":        "Traité"
+            "Journal PCM": "={{ $json.journal_code }}",
+            "Source": "={{ $json._source }}",
+            "Confiance IA": "={{ $json.confidence }}",
+            "Soumis le": "={{ $json.submitted_at }}",
+            "Statut": "Traité"
           }
         },
         "options": {}
@@ -205,7 +255,10 @@
       "name": "Google Sheets — Enregistrer",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [1740, 300],
+      "position": [
+        1740,
+        300
+      ],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "SHEETS_CREDENTIAL_ID",
@@ -213,7 +266,6 @@
         }
       }
     },
-
     {
       "parameters": {
         "respondWith": "json",
@@ -224,9 +276,11 @@
       "name": "Réponse — Succès",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1960, 300]
+      "position": [
+        1960,
+        300
+      ]
     },
-
     {
       "parameters": {
         "jsCode": "const item = $input.first().json;\nreturn [{ json: {\n  alert: 'LOW_CONFIDENCE',\n  invoice_number: item.invoice_number,\n  vendor: item.vendor,\n  confidence: item.confidence,\n  source: item._source,\n  message: `⚠️ ${item.invoice_number} (${item.vendor}) — confiance ${Math.round(item.confidence*100)}% — révision requise`,\n} }];"
@@ -235,9 +289,11 @@
       "name": "Préparer alerte révision",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1520, 520]
+      "position": [
+        1520,
+        520
+      ]
     },
-
     {
       "parameters": {
         "respondWith": "json",
@@ -249,34 +305,153 @@
       "name": "Réponse — Révision requise",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1740, 520]
+      "position": [
+        1740,
+        520
+      ]
     }
   ],
-
   "connections": {
-    "Webhook AVA Dashboard":        { "main": [[{ "node": "Normaliser payload",            "type": "main", "index": 0 }]] },
-    "Normaliser payload":            { "main": [[{ "node": "Router PDF / Manuel / Ping",    "type": "main", "index": 0 }]] },
-    "Router PDF / Manuel / Ping":    { "main": [
-      [{ "node": "Réponse Ping",                "type": "main", "index": 0 }],
-      [{ "node": "GPT-4o Vision — Lire PDF",    "type": "main", "index": 0 }],
-      [{ "node": "Normaliser saisie manuelle",  "type": "main", "index": 0 }]
-    ]},
-    "GPT-4o Vision — Lire PDF":     { "main": [[{ "node": "Parser réponse GPT-4o",         "type": "main", "index": 0 }]] },
-    "Parser réponse GPT-4o":         { "main": [[{ "node": "Confiance ≥ 85% ?",             "type": "main", "index": 0 }]] },
-    "Normaliser saisie manuelle":    { "main": [[{ "node": "Confiance ≥ 85% ?",             "type": "main", "index": 0 }]] },
-    "Confiance ≥ 85% ?":             { "main": [
-      [{ "node": "Moteur PCM",                  "type": "main", "index": 0 }],
-      [{ "node": "Préparer alerte révision",    "type": "main", "index": 0 }]
-    ]},
-    "Moteur PCM":                    { "main": [[{ "node": "Google Sheets — Enregistrer",   "type": "main", "index": 0 }]] },
-    "Google Sheets — Enregistrer":   { "main": [[{ "node": "Réponse — Succès",              "type": "main", "index": 0 }]] },
-    "Préparer alerte révision":      { "main": [[{ "node": "Réponse — Révision requise",    "type": "main", "index": 0 }]] }
+    "Webhook AVA Dashboard": {
+      "main": [
+        [
+          {
+            "node": "Normaliser payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliser payload": {
+      "main": [
+        [
+          {
+            "node": "Router PDF / Manuel / Ping",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router PDF / Manuel / Ping": {
+      "main": [
+        [
+          {
+            "node": "Réponse Ping",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GPT-4o Vision — Lire PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normaliser saisie manuelle",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT-4o Vision — Lire PDF": {
+      "main": [
+        [
+          {
+            "node": "Parser réponse GPT-4o",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parser réponse GPT-4o": {
+      "main": [
+        [
+          {
+            "node": "Confiance ≥ 85% ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normaliser saisie manuelle": {
+      "main": [
+        [
+          {
+            "node": "Confiance ≥ 85% ?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Confiance ≥ 85% ?": {
+      "main": [
+        [
+          {
+            "node": "Moteur PCM",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Préparer alerte révision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Moteur PCM": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets — Enregistrer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets — Enregistrer": {
+      "main": [
+        [
+          {
+            "node": "Réponse — Succès",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer alerte révision": {
+      "main": [
+        [
+          {
+            "node": "Réponse — Révision requise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-
   "settings": {
     "executionOrder": "v1",
     "saveManualExecutions": true
   },
-
-  "tags": ["AVA", "Factures", "Dashboard", "PCM"]
+  "tags": [
+    "AVA",
+    "Factures",
+    "Dashboard",
+    "PCM"
+  ]
 }
