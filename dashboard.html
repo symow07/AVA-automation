@@ -1516,8 +1516,8 @@ textarea { resize: vertical; min-height: 80px; }
           <div class="form-group full">
             <label>URL du webhook n8n</label>
             <div style="display:flex;gap:10px">
-              <input type="url" id="n8n-webhook-url" placeholder="https://symowde.app.n8n.cloud/webhook/xxxxxxxx"
-                style="flex:1" oninput="saveWebhookUrl()" value="">
+              <input type="url" id="n8n-webhook-url" placeholder="https://symowde.app.n8n.cloud/webhook/ava-invoice"
+                style="flex:1" oninput="saveWebhookUrl()" value="https://symowde.app.n8n.cloud/webhook/ava-invoice">
               <button class="btn btn-cyan btn-sm" onclick="testWebhook()">⚡ Tester</button>
             </div>
             <span id="webhook-status-badge" style="display:none;margin-top:8px;font-size:0.8rem"></span>
@@ -2233,8 +2233,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.target === e.currentTarget) closeModal();
   });
 
-  // Restore saved webhook settings from localStorage
-  const savedUrl    = localStorage.getItem('ava_n8n_webhook') || '';
+  // Restore saved webhook settings from localStorage (fallback to hardcoded production URL)
+  const DEFAULT_WEBHOOK = 'https://symowde.app.n8n.cloud/webhook/ava-invoice';
+  const savedUrl    = localStorage.getItem('ava_n8n_webhook') || DEFAULT_WEBHOOK;
   const savedSecret = localStorage.getItem('ava_n8n_secret')  || '';
   const urlInput    = document.getElementById('n8n-webhook-url');
   const secInput    = document.getElementById('n8n-secret');
