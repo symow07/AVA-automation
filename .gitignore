@@ -1,0 +1,20 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Test & screenshot artifacts
+test_*.png
+0*.png
+invoice-template-*.png
+
+# n8n workflow export (kept locally, not needed for deployment)
+workflow.json
+
+# Old root-level dashboard (moved to app/dashboard/index.html)
+/dashboard.html
+
+# Editor
+.vscode/
+*.swp
+*.swo
