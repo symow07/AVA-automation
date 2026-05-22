@@ -12,10 +12,7 @@
       "name": "Webhook AVA Dashboard",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [
-        180,
-        300
-      ],
+      "position": [180, 300],
       "webhookId": "ava-invoice"
     },
     {
@@ -26,10 +23,7 @@
       "name": "Normaliser payload",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        400,
-        300
-      ]
+      "position": [400, 300]
     },
     {
       "parameters": {
@@ -37,16 +31,7 @@
           "values": [
             {
               "conditions": {
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json._route }}",
-                    "rightValue": "ping",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
+                "conditions": [{ "leftValue": "={{ $json._route }}", "rightValue": "ping", "operator": { "type": "string", "operation": "equals" } }],
                 "combinator": "and"
               },
               "renameOutput": true,
@@ -54,16 +39,7 @@
             },
             {
               "conditions": {
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json._route }}",
-                    "rightValue": "pdf",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
+                "conditions": [{ "leftValue": "={{ $json._route }}", "rightValue": "pdf", "operator": { "type": "string", "operation": "equals" } }],
                 "combinator": "and"
               },
               "renameOutput": true,
@@ -71,16 +47,7 @@
             },
             {
               "conditions": {
-                "conditions": [
-                  {
-                    "leftValue": "={{ $json._route }}",
-                    "rightValue": "manual",
-                    "operator": {
-                      "type": "string",
-                      "operation": "equals"
-                    }
-                  }
-                ],
+                "conditions": [{ "leftValue": "={{ $json._route }}", "rightValue": "manual", "operator": { "type": "string", "operation": "equals" } }],
                 "combinator": "and"
               },
               "renameOutput": true,
@@ -94,10 +61,7 @@
       "name": "Router PDF / Manuel / Ping",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3,
-      "position": [
-        620,
-        300
-      ]
+      "position": [620, 300]
     },
     {
       "parameters": {
@@ -109,10 +73,7 @@
       "name": "Réponse Ping",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        860,
-        100
-      ]
+      "position": [860, 100]
     },
     {
       "parameters": {
@@ -122,12 +83,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
+          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
         },
         "sendBody": true,
         "contentType": "raw",
@@ -139,17 +95,13 @@
       "name": "GPT-4o Vision — Lire PDF",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [
-        860,
-        300
-      ],
+      "position": [860, 300],
       "credentials": {
         "httpHeaderAuth": {
           "id": "OPENAI_CREDENTIAL_ID",
           "name": "OpenAI API Key"
         }
-      },
-      "notes": "GPT-4o lit le PDF en base64 directement — pas besoin de Mistral OCR"
+      }
     },
     {
       "parameters": {
@@ -159,10 +111,7 @@
       "name": "Parser réponse GPT-4o",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1080,
-        300
-      ]
+      "position": [1080, 300]
     },
     {
       "parameters": {
@@ -172,10 +121,7 @@
       "name": "Normaliser saisie manuelle",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        860,
-        500
-      ]
+      "position": [860, 500]
     },
     {
       "parameters": {
@@ -184,10 +130,7 @@
             {
               "leftValue": "={{ $json._needs_review }}",
               "rightValue": true,
-              "operator": {
-                "type": "boolean",
-                "operation": "false"
-              }
+              "operator": { "type": "boolean", "operation": "false" }
             }
           ],
           "combinator": "and"
@@ -198,23 +141,61 @@
       "name": "Confiance ≥ 85% ?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [
-        1300,
-        400
-      ]
+      "position": [1300, 400]
     },
     {
       "parameters": {
-        "jsCode": "const PCM = {\n  'achats_marchandises': { debit: '6111', credit: '4411', tva: '3455', journal: 'ACH' },\n  'ventes_produits':     { debit: '3421', credit: '7111', tva: '4455', journal: 'VTE' },\n  'frais_transport':     { debit: '6142', credit: '4411', tva: '3455', journal: 'ACH' },\n  'salaires':            { debit: '6171', credit: '4441', tva: null,   journal: 'OD'  },\n  'services':            { debit: '6131', credit: '4411', tva: '3455', journal: 'ACH' },\n  'frais_deplacement':   { debit: '6185', credit: '5141', tva: '3455', journal: 'OD'  },\n  'autres':              { debit: '6199', credit: '4411', tva: '3455', journal: 'ACH' },\n};\nconst item = $input.first().json;\nconst rule = PCM[item.category] || PCM['autres'];\nconst vat_amount = Math.round(item.amount_ht * item.vat_rate * 100) / 100;\nconst lines = [\n  { compte: rule.debit, debit: item.amount_ht, credit: 0, libelle: item.vendor },\n];\nif (rule.tva) lines.push({ compte: rule.tva, debit: vat_amount, credit: 0, libelle: 'TVA déductible' });\nlines.push({ compte: rule.credit, debit: 0, credit: item.amount_ttc, libelle: item.vendor });\nconst totalDebit  = lines.reduce((s,l) => s + l.debit, 0);\nconst totalCredit = lines.reduce((s,l) => s + l.credit, 0);\nif (Math.abs(totalDebit - totalCredit) > 0.01) throw new Error(`Non équilibrée: D=${totalDebit} C=${totalCredit}`);\nreturn [{ json: { ...item, pcm_lines: lines, journal_code: rule.journal } }];"
+        "jsCode": "const PCM = {\n  'achats_marchandises': { debit: '6111', credit: '4411', tva: '3455', journal: 'ACH' },\n  'ventes_produits':     { debit: '3421', credit: '7111', tva: '4455', journal: 'VTE' },\n  'frais_transport':     { debit: '6142', credit: '4411', tva: '3455', journal: 'ACH' },\n  'salaires':            { debit: '6171', credit: '4441', tva: null,   journal: 'OD'  },\n  'services':            { debit: '6131', credit: '4411', tva: '3455', journal: 'ACH' },\n  'frais_deplacement':   { debit: '6185', credit: '5141', tva: '3455', journal: 'OD'  },\n  'autres':              { debit: '6199', credit: '4411', tva: '3455', journal: 'ACH' },\n};\nconst item = $input.first().json;\nconst rule = PCM[item.category] || PCM['autres'];\nconst vat_amount = Math.round(item.amount_ht * item.vat_rate * 100) / 100;\nconst lines = [\n  { compte: rule.debit, debit: item.amount_ht, credit: 0, libelle: item.vendor },\n];\nif (rule.tva) lines.push({ compte: rule.tva, debit: vat_amount, credit: 0, libelle: 'TVA déductible' });\nlines.push({ compte: rule.credit, debit: 0, credit: item.amount_ttc, libelle: item.vendor });\nconst totalDebit  = lines.reduce((s,l) => s + l.debit, 0);\nconst totalCredit = lines.reduce((s,l) => s + l.credit, 0);\nif (Math.abs(totalDebit - totalCredit) > 0.01) throw new Error(`Non équilibrée: D=${totalDebit} C=${totalCredit}`);\nreturn [{ json: { ...item, pcm_lines: lines, journal_code: rule.journal, debit_account: rule.debit, credit_account: rule.credit } }];"
       },
       "id": "node_pcm",
       "name": "Moteur PCM",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1520,
-        300
-      ]
+      "position": [1520, 300]
+    },
+    {
+      "parameters": {
+        "resource": "vendorBill",
+        "operation": "create",
+        "additionalFields": {
+          "invoice_date": "={{ $json.date }}",
+          "ref": "={{ $json.invoice_number }}",
+          "narration": "={{ 'AVA Auto-import — ' + $json._source + ' — Confiance: ' + Math.round($json.confidence * 100) + '%' }}"
+        },
+        "invoiceLines": {
+          "lineItems": [
+            {
+              "name": "={{ $json.vendor + ' — ' + $json.invoice_number }}",
+              "quantity": 1,
+              "priceUnit": "={{ $json.amount_ht }}",
+              "accountId": "={{ $json.debit_account }}"
+            }
+          ]
+        }
+      },
+      "id": "node_odoo",
+      "name": "Odoo — Créer facture fournisseur",
+      "type": "n8n-nodes-base.odoo",
+      "typeVersion": 1,
+      "position": [1740, 200],
+      "credentials": {
+        "odooApi": {
+          "id": "ODOO_CREDENTIAL_ID",
+          "name": "Odoo — AVA"
+        }
+      },
+      "notes": "Configure credential: Odoo URL + DB + username + API key"
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $input.first().json;\n// Build CSV row\nconst headers = ['N° Facture','Date','Tiers','Société','Type','Montant HT','TVA','Montant TTC','Taux TVA','Catégorie PCM','Journal PCM','Compte Débit','Compte Crédit','Source','Confiance IA','Soumis le','Statut'];\nconst escape = v => '\"' + String(v ?? '').replace(/\"/g, '\"\"') + '\"';\nconst row = [\n  d.invoice_number,\n  d.date,\n  d.vendor,\n  d.societe,\n  d.type,\n  d.amount_ht,\n  d.amount_tva,\n  d.amount_ttc,\n  (d.vat_rate * 100) + '%',\n  d.category,\n  d.journal_code,\n  d.debit_account,\n  d.credit_account,\n  d._source,\n  d.confidence,\n  d.submitted_at,\n  'Traité'\n].map(escape).join(',');\nconst csv = headers.map(escape).join(',') + '\\n' + row;\nreturn [{ json: { ...d, csv_row: csv, csv_filename: 'AVA_' + (d.invoice_number || 'facture').replace(/[^a-zA-Z0-9]/g,'_') + '_' + new Date().toISOString().slice(0,10) + '.csv' } }];"
+      },
+      "id": "node_csv",
+      "name": "Générer CSV Odoo Import",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1740, 380],
+      "notes": "Produces a CSV row ready for Odoo vendor bill import"
     },
     {
       "parameters": {
@@ -232,21 +213,21 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "N° Facture": "={{ $json.invoice_number }}",
-            "Date": "={{ $json.date }}",
-            "Tiers": "={{ $json.vendor }}",
-            "Société": "={{ $json.societe }}",
-            "Type": "={{ $json.type }}",
-            "Montant HT": "={{ $json.amount_ht }}",
-            "TVA": "={{ $json.amount_tva }}",
-            "Montant TTC": "={{ $json.amount_ttc }}",
-            "Taux TVA": "={{ ($json.vat_rate * 100) + '%' }}",
+            "N° Facture":    "={{ $json.invoice_number }}",
+            "Date":          "={{ $json.date }}",
+            "Tiers":         "={{ $json.vendor }}",
+            "Société":       "={{ $json.societe }}",
+            "Type":          "={{ $json.type }}",
+            "Montant HT":    "={{ $json.amount_ht }}",
+            "TVA":           "={{ $json.amount_tva }}",
+            "Montant TTC":   "={{ $json.amount_ttc }}",
+            "Taux TVA":      "={{ ($json.vat_rate * 100) + '%' }}",
             "Catégorie PCM": "={{ $json.category }}",
-            "Journal PCM": "={{ $json.journal_code }}",
-            "Source": "={{ $json._source }}",
-            "Confiance IA": "={{ $json.confidence }}",
-            "Soumis le": "={{ $json.submitted_at }}",
-            "Statut": "Traité"
+            "Journal PCM":   "={{ $json.journal_code }}",
+            "Source":        "={{ $json._source }}",
+            "Confiance IA":  "={{ $json.confidence }}",
+            "Soumis le":     "={{ $json.submitted_at }}",
+            "Statut":        "Traité"
           }
         },
         "options": {}
@@ -255,10 +236,7 @@
       "name": "Google Sheets — Enregistrer",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
-      "position": [
-        1740,
-        300
-      ],
+      "position": [1960, 300],
       "credentials": {
         "googleSheetsOAuth2Api": {
           "id": "SHEETS_CREDENTIAL_ID",
@@ -269,17 +247,14 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ ok: true, invoice_number: $json.invoice_number, vendor: $json.vendor, amount_ttc: $json.amount_ttc, source: $json._source, executionId: $execution.id }) }}",
+        "responseBody": "={{ JSON.stringify({ ok: true, invoice_number: $json.invoice_number, vendor: $json.vendor, amount_ttc: $json.amount_ttc, source: $json._source, csv_filename: $json.csv_filename, csv_row: $json.csv_row, executionId: $execution.id }) }}",
         "options": {}
       },
       "id": "node_respond_ok",
       "name": "Réponse — Succès",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        1960,
-        300
-      ]
+      "position": [2180, 300]
     },
     {
       "parameters": {
@@ -289,10 +264,7 @@
       "name": "Préparer alerte révision",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [
-        1520,
-        520
-      ]
+      "position": [1520, 520]
     },
     {
       "parameters": {
@@ -305,153 +277,62 @@
       "name": "Réponse — Révision requise",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        1740,
-        520
-      ]
+      "position": [1740, 520]
     }
   ],
   "connections": {
     "Webhook AVA Dashboard": {
-      "main": [
-        [
-          {
-            "node": "Normaliser payload",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Normaliser payload", "type": "main", "index": 0 }]]
     },
     "Normaliser payload": {
-      "main": [
-        [
-          {
-            "node": "Router PDF / Manuel / Ping",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Router PDF / Manuel / Ping", "type": "main", "index": 0 }]]
     },
     "Router PDF / Manuel / Ping": {
       "main": [
-        [
-          {
-            "node": "Réponse Ping",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "GPT-4o Vision — Lire PDF",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Normaliser saisie manuelle",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Réponse Ping", "type": "main", "index": 0 }],
+        [{ "node": "GPT-4o Vision — Lire PDF", "type": "main", "index": 0 }],
+        [{ "node": "Normaliser saisie manuelle", "type": "main", "index": 0 }]
       ]
     },
     "GPT-4o Vision — Lire PDF": {
-      "main": [
-        [
-          {
-            "node": "Parser réponse GPT-4o",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Parser réponse GPT-4o", "type": "main", "index": 0 }]]
     },
     "Parser réponse GPT-4o": {
-      "main": [
-        [
-          {
-            "node": "Confiance ≥ 85% ?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Confiance ≥ 85% ?", "type": "main", "index": 0 }]]
     },
     "Normaliser saisie manuelle": {
-      "main": [
-        [
-          {
-            "node": "Confiance ≥ 85% ?",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Confiance ≥ 85% ?", "type": "main", "index": 0 }]]
     },
     "Confiance ≥ 85% ?": {
       "main": [
-        [
-          {
-            "node": "Moteur PCM",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Préparer alerte révision",
-            "type": "main",
-            "index": 0
-          }
-        ]
+        [{ "node": "Moteur PCM", "type": "main", "index": 0 }],
+        [{ "node": "Préparer alerte révision", "type": "main", "index": 0 }]
       ]
     },
     "Moteur PCM": {
       "main": [
         [
-          {
-            "node": "Google Sheets — Enregistrer",
-            "type": "main",
-            "index": 0
-          }
+          { "node": "Odoo — Créer facture fournisseur", "type": "main", "index": 0 },
+          { "node": "Générer CSV Odoo Import", "type": "main", "index": 0 }
         ]
       ]
+    },
+    "Odoo — Créer facture fournisseur": {
+      "main": [[{ "node": "Google Sheets — Enregistrer", "type": "main", "index": 0 }]]
+    },
+    "Générer CSV Odoo Import": {
+      "main": [[{ "node": "Google Sheets — Enregistrer", "type": "main", "index": 0 }]]
     },
     "Google Sheets — Enregistrer": {
-      "main": [
-        [
-          {
-            "node": "Réponse — Succès",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Réponse — Succès", "type": "main", "index": 0 }]]
     },
     "Préparer alerte révision": {
-      "main": [
-        [
-          {
-            "node": "Réponse — Révision requise",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
+      "main": [[{ "node": "Réponse — Révision requise", "type": "main", "index": 0 }]]
     }
   },
   "settings": {
     "executionOrder": "v1",
     "saveManualExecutions": true
   },
-  "tags": [
-    "AVA",
-    "Factures",
-    "Dashboard",
-    "PCM"
-  ]
+  "tags": ["AVA", "Factures", "Dashboard", "PCM", "Odoo", "CSV"]
 }

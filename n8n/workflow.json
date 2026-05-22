@@ -1,0 +1,542 @@
+{
+  "name": "AVA - Automatisation Factures Comptables",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🟦 AVA — Pipeline d'automatisation comptable\n\n**Flux complet :**\nEmail → OCR → Analyse IA → Odoo + Google Sheets → Email de confirmation\n\nConçu pour les cabinets comptables marocains.\nDevise par défaut : MAD — TVA : 20%",
+        "height": 220,
+        "width": 420,
+        "color": 4
+      },
+      "id": "note-header",
+      "name": "📌 Vue d'ensemble",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-100, -260]
+    },
+    {
+      "parameters": {
+        "content": "### 1️⃣ Réception\nDéclencheur Gmail surveillant la boîte de réception toutes les minutes. Filtre uniquement les emails avec pièce jointe PDF.",
+        "height": 180,
+        "width": 280,
+        "color": 5
+      },
+      "id": "note-1",
+      "name": "Note réception",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [-100, 80]
+    },
+    {
+      "parameters": {
+        "content": "### 2️⃣ Extraction OCR\nExtraction du texte du PDF. Méthode primaire : nœud natif **Extract from File** (PDF numériques). Fallback automatique vers **Google Cloud Vision** si le PDF est scanné (texte vide).",
+        "height": 200,
+        "width": 320,
+        "color": 5
+      },
+      "id": "note-2",
+      "name": "Note OCR",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [560, 80]
+    },
+    {
+      "parameters": {
+        "content": "### 3️⃣ Analyse IA (GPT-4o)\nParse le texte OCR brut en JSON structuré. Gère le français, l'arabe, et le format marocain (\"8 400,00 MAD\").",
+        "height": 180,
+        "width": 320,
+        "color": 5
+      },
+      "id": "note-3",
+      "name": "Note IA",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1240, 80]
+    },
+    {
+      "parameters": {
+        "content": "### 4️⃣ Écriture comptable Odoo 16\nAuthentification JSON-RPC, puis création d'une `account.move` avec 3 lignes :\n- **Débit** 3421 (clients) : TTC\n- **Crédit** 7111 (ventes) : HT\n- **Crédit** 4455 (TVA collectée) : TVA",
+        "height": 220,
+        "width": 340,
+        "color": 5
+      },
+      "id": "note-4",
+      "name": "Note Odoo",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1920, 80]
+    },
+    {
+      "parameters": {
+        "content": "### 5️⃣ Journalisation & Notification\nLigne ajoutée au Google Sheet + email HTML de confirmation envoyé à l'expéditeur original (charte AVA navy/cyan).",
+        "height": 180,
+        "width": 320,
+        "color": 5
+      },
+      "id": "note-5",
+      "name": "Note finalisation",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [2620, 80]
+    },
+    {
+      "parameters": {
+        "content": "### ⚠️ Branche d'erreur\nSi OCR / IA / Odoo échoue → email de secours envoyé au cabinet avec le texte brut OCR pour traitement manuel.",
+        "height": 180,
+        "width": 320,
+        "color": 3
+      },
+      "id": "note-err",
+      "name": "Note erreurs",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [1240, 900]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            { "mode": "everyMinute" }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "has:attachment filename:pdf is:unread",
+          "readStatus": "unread"
+        },
+        "options": {
+          "downloadAttachments": true,
+          "dataPropertyAttachmentsPrefixName": "attachment_"
+        }
+      },
+      "id": "trigger-gmail",
+      "name": "Réception email",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.2,
+      "position": [100, 380],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmail-ava",
+          "name": "Gmail AVA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupération des métadonnées essentielles et de la première pièce jointe PDF\nconst items = $input.all();\nconst out = [];\n\nfor (const it of items) {\n  const json = it.json || {};\n  const binary = it.binary || {};\n\n  // Identifier le binaire PDF\n  let pdfKey = null;\n  for (const key of Object.keys(binary)) {\n    const b = binary[key];\n    const mt = (b.mimeType || '').toLowerCase();\n    const fn = (b.fileName || '').toLowerCase();\n    if (mt.includes('pdf') || fn.endsWith('.pdf')) {\n      pdfKey = key;\n      break;\n    }\n  }\n\n  if (!pdfKey) continue;\n\n  const fromHeader = json.from?.value?.[0] || {};\n  const senderEmail = fromHeader.address || json.From || '';\n  const senderName = fromHeader.name || senderEmail.split('@')[0] || 'Client';\n  const subject = json.subject || json.Subject || 'Sans objet';\n  const messageId = json.id || json.messageId || '';\n\n  out.push({\n    json: {\n      sender_email: senderEmail,\n      sender_name: senderName,\n      subject,\n      message_id: messageId,\n      received_at: new Date().toISOString(),\n      pdf_binary_key: pdfKey\n    },\n    binary: { data: binary[pdfKey] }\n  });\n}\n\nreturn out;"
+      },
+      "id": "prep-email",
+      "name": "Préparer données email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [340, 380]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data",
+        "options": {}
+      },
+      "id": "pdf-extract",
+      "name": "Extraction PDF (natif)",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [600, 380],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "cond-text-empty",
+              "leftValue": "={{ ($json.text || '').trim().length }}",
+              "rightValue": 30,
+              "operator": { "type": "number", "operation": "lt" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-ocr-needed",
+      "name": "Texte vide ? (PDF scanné)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [840, 380]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://vision.googleapis.com/v1/images:annotate?key={{ $credentials.googleVisionApi.apiKey }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"requests\": [{\n    \"image\": { \"content\": \"{{ $binary.data.data }}\" },\n    \"features\": [{ \"type\": \"DOCUMENT_TEXT_DETECTION\" }],\n    \"imageContext\": { \"languageHints\": [\"fr\", \"ar\"] }\n  }]\n}",
+        "options": {}
+      },
+      "id": "vision-ocr",
+      "name": "OCR Google Vision (fallback)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1080, 540],
+      "continueOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "google-vision-key",
+          "name": "Google Vision API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalise le texte OCR — qu'il vienne du PDF natif ou de Vision\nconst items = $input.all();\nconst out = [];\nfor (const it of items) {\n  const j = it.json || {};\n  let text = '';\n  if (typeof j.text === 'string' && j.text.trim().length > 0) {\n    text = j.text;\n  } else if (j.responses && j.responses[0]?.fullTextAnnotation?.text) {\n    text = j.responses[0].fullTextAnnotation.text;\n  }\n  out.push({ json: { ...j, ocr_text: text } });\n}\nreturn out;"
+      },
+      "id": "normalize-ocr",
+      "name": "Normaliser texte OCR",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1080, 380]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "merge-ocr",
+      "name": "Fusionner branches OCR",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1320, 460]
+    },
+    {
+      "parameters": {
+        "resource": "chat",
+        "operation": "create",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list"
+        },
+        "messages": {
+          "values": [
+            {
+              "role": "system",
+              "content": "Tu es un assistant comptable spécialisé dans les factures marocaines. Tu reçois du texte OCR brut (potentiellement en français ou arabe, avec des nombres au format marocain comme \"8 400,00 MAD\" — espace comme séparateur de milliers, virgule décimale). Tu DOIS répondre UNIQUEMENT avec un objet JSON valide, sans markdown, sans commentaire, sans texte avant ou après. Schéma exact :\n{\n  \"vendor_name\": string,\n  \"vendor_ice\": string,\n  \"client_name\": string,\n  \"client_ice\": string,\n  \"invoice_number\": string,\n  \"invoice_date\": \"YYYY-MM-DD\",\n  \"due_date\": \"YYYY-MM-DD\",\n  \"line_items\": [{ \"description\": string, \"qty\": number, \"unit_price\": number, \"total_ht\": number }],\n  \"total_ht\": number,\n  \"tva_rate\": number,\n  \"tva_amount\": number,\n  \"total_ttc\": number,\n  \"currency\": \"MAD\"\n}\nRègles :\n- Convertis tous les nombres en float numérique (ex : \"8 400,00\" → 8400.00).\n- Si la TVA n'est pas indiquée, utilise 20 et calcule tva_amount = total_ht * 0.20.\n- Si une date est absente, mets null.\n- Si l'ICE n'est pas trouvé, mets \"\" (chaîne vide).\n- currency par défaut : \"MAD\"."
+            },
+            {
+              "role": "user",
+              "content": "=Texte OCR brut de la facture :\n\n{{ $json.ocr_text }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "id": "ai-parse",
+      "name": "Analyse IA (GPT-4o)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [1560, 380],
+      "continueOnFail": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-ava",
+          "name": "OpenAI AVA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse + valide la sortie GPT, calcule les valeurs manquantes\nconst items = $input.all();\nconst out = [];\n\nfor (const it of items) {\n  const j = it.json || {};\n  let parsed = j.message?.content || j.content || j;\n  if (typeof parsed === 'string') {\n    const clean = parsed.replace(/```json|```/g, '').trim();\n    try { parsed = JSON.parse(clean); } catch (e) { parsed = {}; }\n  }\n\n  const num = (v) => {\n    if (typeof v === 'number') return v;\n    if (!v) return 0;\n    const s = String(v).replace(/\\s/g, '').replace(',', '.').replace(/[^0-9.\\-]/g, '');\n    const n = parseFloat(s);\n    return isNaN(n) ? 0 : n;\n  };\n\n  const total_ht = num(parsed.total_ht);\n  const tva_rate = num(parsed.tva_rate) || 20;\n  const tva_amount = num(parsed.tva_amount) || +(total_ht * (tva_rate / 100)).toFixed(2);\n  const total_ttc = num(parsed.total_ttc) || +(total_ht + tva_amount).toFixed(2);\n\n  out.push({\n    json: {\n      ...it.json,\n      invoice: {\n        vendor_name: parsed.vendor_name || '',\n        vendor_ice: parsed.vendor_ice || '',\n        client_name: parsed.client_name || '',\n        client_ice: parsed.client_ice || '',\n        invoice_number: parsed.invoice_number || `INV-${Date.now()}`,\n        invoice_date: parsed.invoice_date || new Date().toISOString().slice(0, 10),\n        due_date: parsed.due_date || null,\n        line_items: Array.isArray(parsed.line_items) ? parsed.line_items : [],\n        total_ht: +total_ht.toFixed(2),\n        tva_rate,\n        tva_amount: +tva_amount.toFixed(2),\n        total_ttc: +total_ttc.toFixed(2),\n        currency: parsed.currency || 'MAD'\n      },\n      parse_ok: total_ht > 0\n    }\n  });\n}\nreturn out;"
+      },
+      "id": "validate-ai",
+      "name": "Valider données IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1800, 380]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "cond-parse-ok",
+              "leftValue": "={{ $json.parse_ok }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "if-parse-ok",
+      "name": "Analyse réussie ?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2040, 380]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $credentials.odooApi.url }}/web/session/authenticate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"jsonrpc\": \"2.0\",\n  \"params\": {\n    \"db\": \"{{ $credentials.odooApi.db }}\",\n    \"login\": \"{{ $credentials.odooApi.username }}\",\n    \"password\": \"{{ $credentials.odooApi.password }}\"\n  }\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "odoo-auth",
+      "name": "Authentification Odoo",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2280, 320],
+      "continueOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "odoo-ava",
+          "name": "Odoo AVA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extrait le cookie de session et prépare le payload account.move\nconst items = $input.all();\nconst out = [];\n\nfor (const it of items) {\n  const headers = it.json.headers || {};\n  const setCookie = headers['set-cookie'] || headers['Set-Cookie'] || [];\n  const cookieArr = Array.isArray(setCookie) ? setCookie : [setCookie];\n  const sessionCookie = cookieArr\n    .map(c => String(c).split(';')[0])\n    .filter(c => c.startsWith('session_id='))\n    .join('; ');\n\n  // Récupère les données facture depuis les nœuds précédents\n  const inv = $('Valider données IA').first().json.invoice;\n  const meta = $('Préparer données email').first().json;\n\n  // Construire les lignes d'écriture (account.move.line)\n  const ref = `${inv.vendor_name} — ${inv.invoice_number}`;\n  const lines = [\n    // Débit client TTC (3421)\n    [0, 0, {\n      name: ref,\n      account_id: 3421,\n      debit: inv.total_ttc,\n      credit: 0\n    }],\n    // Crédit produit HT (7111)\n    [0, 0, {\n      name: ref,\n      account_id: 7111,\n      debit: 0,\n      credit: inv.total_ht\n    }],\n    // Crédit TVA collectée (4455)\n    [0, 0, {\n      name: ref,\n      account_id: 4455,\n      debit: 0,\n      credit: inv.tva_amount\n    }]\n  ];\n\n  out.push({\n    json: {\n      session_cookie: sessionCookie,\n      auth_ok: !!sessionCookie,\n      move_payload: {\n        ref: inv.invoice_number,\n        date: inv.invoice_date,\n        move_type: 'out_invoice',\n        narration: `Facture ${inv.vendor_name} — ICE ${inv.vendor_ice}`,\n        line_ids: lines\n      },\n      invoice: inv,\n      meta\n    }\n  });\n}\nreturn out;"
+      },
+      "id": "odoo-prep",
+      "name": "Préparer écriture Odoo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2520, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $credentials.odooApi.url }}/web/dataset/call_kw",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "Cookie", "value": "={{ $json.session_cookie }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"jsonrpc\": \"2.0\",\n  \"method\": \"call\",\n  \"params\": {\n    \"model\": \"account.move\",\n    \"method\": \"create\",\n    \"args\": [{{ JSON.stringify($json.move_payload) }}],\n    \"kwargs\": {}\n  }\n}",
+        "options": {}
+      },
+      "id": "odoo-create",
+      "name": "Écriture Odoo (account.move)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2760, 320],
+      "continueOnFail": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupère l'ID de l'écriture créée et enrichit les données\nconst items = $input.all();\nconst out = [];\nfor (const it of items) {\n  const j = it.json || {};\n  const result = j.result;\n  const odoo_entry_id = (typeof result === 'number') ? result : (Array.isArray(result) ? result[0] : null);\n  const error = j.error || null;\n\n  const prev = $('Préparer écriture Odoo').first().json;\n\n  out.push({\n    json: {\n      odoo_entry_id,\n      odoo_ok: !!odoo_entry_id && !error,\n      odoo_error: error,\n      invoice: prev.invoice,\n      meta: prev.meta\n    }\n  });\n}\nreturn out;"
+      },
+      "id": "odoo-result",
+      "name": "Résultat Odoo",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [3000, 320]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $credentials.googleSheetsOAuth2Api.sheetId }}"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Factures"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ new Date().toISOString() }}",
+            "invoice_number": "={{ $json.invoice.invoice_number }}",
+            "vendor": "={{ $json.invoice.vendor_name }}",
+            "client": "={{ $json.invoice.client_name }}",
+            "total_ht": "={{ $json.invoice.total_ht }}",
+            "tva": "={{ $json.invoice.tva_amount }}",
+            "total_ttc": "={{ $json.invoice.total_ttc }}",
+            "status": "={{ $json.odoo_ok ? 'OK' : 'ERREUR' }}",
+            "odoo_entry_id": "={{ $json.odoo_entry_id || '' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            { "id": "timestamp", "displayName": "timestamp", "type": "string" },
+            { "id": "invoice_number", "displayName": "invoice_number", "type": "string" },
+            { "id": "vendor", "displayName": "vendor", "type": "string" },
+            { "id": "client", "displayName": "client", "type": "string" },
+            { "id": "total_ht", "displayName": "total_ht", "type": "number" },
+            { "id": "tva", "displayName": "tva", "type": "number" },
+            { "id": "total_ttc", "displayName": "total_ttc", "type": "number" },
+            { "id": "status", "displayName": "status", "type": "string" },
+            { "id": "odoo_entry_id", "displayName": "odoo_entry_id", "type": "string" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "sheets-log",
+      "name": "Journal Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [3240, 320],
+      "continueOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "sheets-ava",
+          "name": "Google Sheets AVA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.meta.sender_email }}",
+        "subject": "=✅ Facture {{ $json.invoice.invoice_number }} traitée — AVA",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html lang=\"fr\">\n<head><meta charset=\"UTF-8\"></head>\n<body style=\"margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6fa;\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#f4f6fa;padding:40px 0;\">\n    <tr><td align=\"center\">\n      <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(11,22,40,0.08);\">\n        <tr><td style=\"background:#0B1628;padding:32px 40px;\">\n          <h1 style=\"color:#fff;margin:0;font-size:24px;letter-spacing:-0.5px;\">AVA<span style=\"color:#00D4FF;\">.</span></h1>\n          <p style=\"color:#00D4FF;margin:4px 0 0;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;\">Comptabilité automatisée</p>\n        </td></tr>\n        <tr><td style=\"padding:40px;\">\n          <h2 style=\"color:#0B1628;margin:0 0 8px;font-size:22px;\">✅ Facture traitée avec succès</h2>\n          <p style=\"color:#5a6b85;margin:0 0 28px;font-size:15px;line-height:1.6;\">Bonjour {{ $json.meta.sender_name }},<br>Votre facture a été extraite, analysée et enregistrée automatiquement dans votre comptabilité Odoo.</p>\n          <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#f8fafc;border-radius:8px;padding:20px;margin-bottom:24px;\">\n            <tr><td style=\"padding:8px 0;color:#5a6b85;font-size:13px;\">N° de facture</td><td align=\"right\" style=\"padding:8px 0;color:#0B1628;font-weight:600;\">{{ $json.invoice.invoice_number }}</td></tr>\n            <tr><td style=\"padding:8px 0;color:#5a6b85;font-size:13px;\">Fournisseur</td><td align=\"right\" style=\"padding:8px 0;color:#0B1628;font-weight:600;\">{{ $json.invoice.vendor_name }}</td></tr>\n            <tr><td style=\"padding:8px 0;color:#5a6b85;font-size:13px;\">Date</td><td align=\"right\" style=\"padding:8px 0;color:#0B1628;font-weight:600;\">{{ $json.invoice.invoice_date }}</td></tr>\n            <tr><td style=\"padding:8px 0;color:#5a6b85;font-size:13px;\">Total HT</td><td align=\"right\" style=\"padding:8px 0;color:#0B1628;font-weight:600;\">{{ $json.invoice.total_ht }} MAD</td></tr>\n            <tr><td style=\"padding:8px 0;color:#5a6b85;font-size:13px;\">TVA ({{ $json.invoice.tva_rate }}%)</td><td align=\"right\" style=\"padding:8px 0;color:#0B1628;font-weight:600;\">{{ $json.invoice.tva_amount }} MAD</td></tr>\n            <tr><td style=\"padding:12px 0 8px;color:#0B1628;font-size:15px;font-weight:700;border-top:1px solid #e3e8f0;\">Total TTC</td><td align=\"right\" style=\"padding:12px 0 8px;color:#00D4FF;font-weight:700;font-size:17px;border-top:1px solid #e3e8f0;\">{{ $json.invoice.total_ttc }} MAD</td></tr>\n          </table>\n          <div style=\"background:linear-gradient(135deg,#0B1628 0%,#1a2942 100%);border-radius:8px;padding:20px;text-align:center;\">\n            <p style=\"color:#00D4FF;margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;\">Référence Odoo</p>\n            <p style=\"color:#fff;margin:0;font-size:20px;font-weight:700;\">#{{ $json.odoo_entry_id }}</p>\n          </div>\n          <p style=\"color:#5a6b85;margin:28px 0 0;font-size:13px;line-height:1.6;\">Cette facture est désormais visible dans votre Odoo et dans votre tableau de suivi.<br>Pour toute question, répondez simplement à cet email.</p>\n        </td></tr>\n        <tr><td style=\"background:#f8fafc;padding:20px 40px;text-align:center;\">\n          <p style=\"color:#8b9bb4;margin:0;font-size:12px;\">© AVA — Automatisation comptable pour cabinets marocains</p>\n        </td></tr>\n      </table>\n    </td></tr>\n  </table>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "email-success",
+      "name": "Email confirmation",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [3480, 320],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmail-ava",
+          "name": "Gmail AVA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Branche d'erreur : prépare l'email de secours avec le texte OCR brut\nconst items = $input.all();\nconst out = [];\nfor (const it of items) {\n  const meta = $('Préparer données email').first().json;\n  const ocrText = ($('Normaliser texte OCR').first().json.ocr_text) || '(aucun texte extrait)';\n  const invoice = it.json.invoice || {};\n  out.push({\n    json: {\n      meta,\n      ocr_text: ocrText,\n      invoice,\n      error_stage: it.json.odoo_error ? 'Odoo' : (it.json.parse_ok === false ? 'Analyse IA' : 'OCR')\n    }\n  });\n}\nreturn out;"
+      },
+      "id": "err-prep",
+      "name": "Préparer email d'erreur",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1560, 760]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.meta.sender_email }}",
+        "subject": "=⚠️ Facture reçue — traitement manuel requis (AVA)",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html lang=\"fr\"><head><meta charset=\"UTF-8\"></head>\n<body style=\"margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f6fa;\">\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#f4f6fa;padding:40px 0;\"><tr><td align=\"center\">\n    <table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(11,22,40,0.08);\">\n      <tr><td style=\"background:#0B1628;padding:32px 40px;\">\n        <h1 style=\"color:#fff;margin:0;font-size:24px;\">AVA<span style=\"color:#00D4FF;\">.</span></h1>\n        <p style=\"color:#00D4FF;margin:4px 0 0;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;\">Comptabilité automatisée</p>\n      </td></tr>\n      <tr><td style=\"padding:40px;\">\n        <h2 style=\"color:#0B1628;margin:0 0 8px;font-size:22px;\">⚠️ Traitement automatique impossible</h2>\n        <p style=\"color:#5a6b85;margin:0 0 20px;font-size:15px;line-height:1.6;\">Bonjour {{ $json.meta.sender_name }},<br>Nous avons bien reçu votre facture, mais l'extraction automatique a échoué à l'étape : <strong style=\"color:#0B1628;\">{{ $json.error_stage }}</strong>.</p>\n        <p style=\"color:#5a6b85;margin:0 0 12px;font-size:14px;\">Voici le texte brut extrait pour traitement manuel :</p>\n        <pre style=\"background:#f8fafc;border-radius:8px;padding:16px;font-size:12px;color:#0B1628;white-space:pre-wrap;word-wrap:break-word;max-height:400px;overflow:auto;border-left:3px solid #00D4FF;\">{{ $json.ocr_text }}</pre>\n        <p style=\"color:#5a6b85;margin:24px 0 0;font-size:13px;\">L'équipe AVA a été notifiée et traitera cette facture manuellement sous 24h ouvrées.</p>\n      </td></tr>\n      <tr><td style=\"background:#f8fafc;padding:20px 40px;text-align:center;\">\n        <p style=\"color:#8b9bb4;margin:0;font-size:12px;\">© AVA — Automatisation comptable pour cabinets marocains</p>\n      </td></tr>\n    </table>\n  </td></tr></table>\n</body></html>",
+        "options": {}
+      },
+      "id": "email-fallback",
+      "name": "Email de secours",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1800, 760],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmail-ava",
+          "name": "Gmail AVA"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Réception email": {
+      "main": [[{ "node": "Préparer données email", "type": "main", "index": 0 }]]
+    },
+    "Préparer données email": {
+      "main": [[{ "node": "Extraction PDF (natif)", "type": "main", "index": 0 }]]
+    },
+    "Extraction PDF (natif)": {
+      "main": [[{ "node": "Texte vide ? (PDF scanné)", "type": "main", "index": 0 }]]
+    },
+    "Texte vide ? (PDF scanné)": {
+      "main": [
+        [{ "node": "OCR Google Vision (fallback)", "type": "main", "index": 0 }],
+        [{ "node": "Normaliser texte OCR", "type": "main", "index": 0 }]
+      ]
+    },
+    "OCR Google Vision (fallback)": {
+      "main": [[{ "node": "Normaliser texte OCR", "type": "main", "index": 0 }]]
+    },
+    "Normaliser texte OCR": {
+      "main": [[{ "node": "Analyse IA (GPT-4o)", "type": "main", "index": 0 }]]
+    },
+    "Analyse IA (GPT-4o)": {
+      "main": [[{ "node": "Valider données IA", "type": "main", "index": 0 }]]
+    },
+    "Valider données IA": {
+      "main": [[{ "node": "Analyse réussie ?", "type": "main", "index": 0 }]]
+    },
+    "Analyse réussie ?": {
+      "main": [
+        [{ "node": "Authentification Odoo", "type": "main", "index": 0 }],
+        [{ "node": "Préparer email d'erreur", "type": "main", "index": 0 }]
+      ]
+    },
+    "Authentification Odoo": {
+      "main": [[{ "node": "Préparer écriture Odoo", "type": "main", "index": 0 }]]
+    },
+    "Préparer écriture Odoo": {
+      "main": [[{ "node": "Écriture Odoo (account.move)", "type": "main", "index": 0 }]]
+    },
+    "Écriture Odoo (account.move)": {
+      "main": [[{ "node": "Résultat Odoo", "type": "main", "index": 0 }]]
+    },
+    "Résultat Odoo": {
+      "main": [[{ "node": "Journal Google Sheets", "type": "main", "index": 0 }]]
+    },
+    "Journal Google Sheets": {
+      "main": [[{ "node": "Email confirmation", "type": "main", "index": 0 }]]
+    },
+    "Préparer email d'erreur": {
+      "main": [[{ "node": "Email de secours", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "meta": {
+    "templateId": "ava-comptabilite-v1",
+    "description": "AVA — Automatisation factures : Gmail → OCR → GPT-4o → Odoo 16 → Google Sheets → Email confirmation"
+  },
+  "pinData": {},
+  "versionId": "1.0.0",
+  "tags": [
+    { "name": "AVA" },
+    { "name": "Comptabilité" },
+    { "name": "Maroc" }
+  ]
+}
