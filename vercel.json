@@ -29,7 +29,7 @@
     { "source": "/services",  "destination": "/services.html"           },
     { "source": "/tarifs",    "destination": "/tarifs.html"             },
     { "source": "/contact",   "destination": "/contact.html"            },
-    { "source": "/dashboard", "destination": "/app/dashboard/index.html" }
+    { "source": "/dashboard", "destination": "/app/dashboard" }
   ],
   "redirects": [
     { "source": "/pricing", "destination": "/tarifs", "permanent": true },
