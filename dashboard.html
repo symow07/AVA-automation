@@ -836,15 +836,15 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="card">
         <div class="card-title"><span class="card-title-cyan">📎</span> Fichier PDF</div>
         <!-- hidden file input, outside the zone so it doesn't intercept zone clicks -->
-        <input type="file" accept=".pdf" id="pdf-input" onchange="handleFileSelect(event)" style="display:none">
+        <input type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,.tiff,.tif,.heic" id="pdf-input" onchange="handleFileSelect(event)" style="display:none">
         <div class="upload-zone" id="upload-zone"
              onclick="document.getElementById('pdf-input').click()"
              ondragover="handleDragOver(event)"
              ondragleave="handleDragLeave(event)"
              ondrop="handleDrop(event)">
-          <div class="upload-icon">📄</div>
+          <div class="upload-icon">🧾</div>
           <div class="upload-title">Glisser-déposer votre facture ici</div>
-          <div class="upload-sub">Formats acceptés : PDF — taille max. 20 MB</div>
+          <div class="upload-sub">Formats acceptés : PDF, JPG, PNG, HEIC, TIFF — taille max. 20 MB</div>
           <button class="btn btn-ghost" type="button" onclick="event.stopPropagation();document.getElementById('pdf-input').click()">
             Parcourir les fichiers
           </button>
@@ -1070,7 +1070,7 @@ textarea { resize: vertical; min-height: 80px; }
         </div>
 
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
-          <button class="btn btn-ghost btn-sm" onclick="simulateProcessing()">▶ Simuler la suite</button>
+          <button class="btn btn-ghost btn-sm" onclick="resetSimulation()">↺ Rejouer</button>
           <button class="btn btn-danger btn-sm">⏹ Annuler</button>
           <span style="color:var(--fg3);font-size:0.76rem;margin-left:8px">← Cliquez pour la démo</span>
         </div>
@@ -1089,38 +1089,9 @@ textarea { resize: vertical; min-height: 80px; }
               <th></th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td><strong style="color:var(--white)">FAC-2026-0048</strong></td>
-              <td style="color:var(--fg2)">Atlas Consulting</td>
-              <td style="color:var(--fg3)">14:27</td>
-              <td style="color:var(--fg3)">4.4s</td>
-              <td><span class="badge badge-green">✓ Traité</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openDetails('FAC-2026-0048')">Voir</button></td>
-            </tr>
-            <tr>
-              <td><strong style="color:var(--white)">FAC-2026-0047</strong></td>
-              <td style="color:var(--fg2)">Maroc Digital</td>
-              <td style="color:var(--fg3)">14:32</td>
-              <td style="color:var(--fg3)">—</td>
-              <td><span class="badge badge-cyan">⚡ En cours</span></td>
-              <td><button class="btn btn-ghost btn-sm">Voir</button></td>
-            </tr>
-            <tr>
-              <td><strong style="color:var(--white)">FAC-2026-0045</strong></td>
-              <td style="color:var(--fg2)">Inconnu</td>
-              <td style="color:var(--fg3)">13:47</td>
-              <td style="color:var(--fg3)">—</td>
-              <td><span class="badge badge-red">✕ Erreur OCR</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="openDetails('FAC-2026-0045')">Voir</button></td>
-            </tr>
-            <tr>
-              <td><strong style="color:var(--white)">FAC-2026-0044</strong></td>
-              <td style="color:var(--fg2)">TechMaroc SARL</td>
-              <td style="color:var(--fg3)">12:15</td>
-              <td style="color:var(--fg3)">3.1s</td>
-              <td><span class="badge badge-green">✓ Traité</span></td>
-              <td><button class="btn btn-ghost btn-sm">Voir</button></td>
+          <tbody id="status-tbody">
+            <tr id="status-empty-row">
+              <td colspan="6" style="text-align:center;color:var(--fg3);padding:28px 0;">Aucun traitement pour l'instant — soumettez une facture pour voir les résultats ici.</td>
             </tr>
           </tbody>
         </table>
@@ -1677,20 +1648,24 @@ textarea { resize: vertical; min-height: 80px; }
 // ══════════════════════════════════════════
 const invoicesData = [
   { num:'FAC-2026-0048', date:'2026-05-21', tiers:'Atlas Consulting SARL',      societe:'Atlas Consulting', type:'achat', ht:15000, tva:3000, ttc:18000, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0047', date:'2026-05-21', tiers:'Maroc Digital Services',     societe:'Maroc Digital',   type:'vente', ht:31500, tva:6300, ttc:37800, status:'En cours', sc:'badge-cyan'  },
+  { num:'FAC-2026-0047', date:'2026-05-21', tiers:'Maroc Digital Services',     societe:'Maroc Digital',   type:'vente', ht:31500, tva:6300, ttc:37800, status:'Traité',   sc:'badge-green' },
   { num:'FAC-2026-0046', date:'2026-05-20', tiers:'TechMaroc SARL',             societe:'TechMaroc SARL',  type:'achat', ht:8000,  tva:1600, ttc:9600,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0045', date:'2026-05-20', tiers:'Inconnu',                    societe:'—',               type:'achat', ht:0,     tva:0,    ttc:0,     status:'Erreur',   sc:'badge-red'   },
-  { num:'FAC-2026-0044', date:'2026-05-19', tiers:'Société Générale Maroc',     societe:'TechMaroc SARL',  type:'achat', ht:22400, tva:4480, ttc:26880, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0043', date:'2026-05-19', tiers:'Inwi Business',              societe:'Atlas Consulting',type:'achat', ht:3500,  tva:700,  ttc:4200,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0042', date:'2026-05-18', tiers:'Cabinet Audit Plus',         societe:'Maroc Digital',   type:'achat', ht:18000, tva:3600, ttc:21600, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0041', date:'2026-05-17', tiers:'Imprimerie Casablanca',      societe:'Atlas Consulting',type:'achat', ht:1200,  tva:240,  ttc:1440,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0040', date:'2026-05-16', tiers:'Maroc Telecom',              societe:'TechMaroc SARL',  type:'achat', ht:2800,  tva:560,  ttc:3360,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0039', date:'2026-05-15', tiers:'Afrique Logistics',          societe:'Maroc Digital',   type:'vente', ht:45000, tva:9000, ttc:54000, status:'Traité',   sc:'badge-green' },
+  { num:'FAC-2026-0045', date:'2026-05-20', tiers:'Société Générale Maroc',     societe:'TechMaroc SARL',  type:'achat', ht:22400, tva:4480, ttc:26880, status:'Traité',   sc:'badge-green' },
+  { num:'FAC-2026-0044', date:'2026-05-19', tiers:'Inwi Business',              societe:'Atlas Consulting',type:'achat', ht:3500,  tva:700,  ttc:4200,  status:'Traité',   sc:'badge-green' },
+  { num:'FAC-2026-0043', date:'2026-05-19', tiers:'Cabinet Audit Plus',         societe:'Maroc Digital',   type:'achat', ht:18000, tva:3600, ttc:21600, status:'Traité',   sc:'badge-green' },
+  { num:'FAC-2026-0042', date:'2026-05-18', tiers:'Imprimerie Casablanca',      societe:'Atlas Consulting',type:'achat', ht:1200,  tva:240,  ttc:1440,  status:'Traité',   sc:'badge-green' },
+  { num:'FAC-2026-0041', date:'2026-05-17', tiers:'Maroc Telecom',              societe:'TechMaroc SARL',  type:'achat', ht:2800,  tva:560,  ttc:3360,  status:'Traité',   sc:'badge-green' },
+  { num:'FAC-2026-0040', date:'2026-05-16', tiers:'Afrique Logistics',          societe:'Maroc Digital',   type:'vente', ht:45000, tva:9000, ttc:54000, status:'Traité',   sc:'badge-green' },
+  { num:'FAC-2026-0039', date:'2026-05-15', tiers:'Banque Populaire Maroc',     societe:'Atlas Consulting',type:'achat', ht:5500,  tva:1100, ttc:6600,  status:'Traité',   sc:'badge-green' },
 ];
+
+// Live-submitted invoices (from this session's uploads/manual entries)
+// Separate from static demo data so openDetails always works correctly
+const liveInvoices = {};
 
 const sectionTitles = {
   dashboard: 'Tableau de bord',
-  upload: 'Soumettre un PDF',
+  upload: 'Soumettre une facture',
   manual: 'Saisie manuelle',
   status: 'Traitements en cours',
   invoices: 'Toutes les factures',
@@ -1727,7 +1702,8 @@ function handleDragLeave()  { document.getElementById('upload-zone').classList.r
 function handleDrop(e) {
   e.preventDefault(); handleDragLeave();
   const f = e.dataTransfer.files[0];
-  if (f && f.type === 'application/pdf') showFile(f);
+  const allowed = ['application/pdf','image/jpeg','image/jpg','image/png','image/webp','image/tiff','image/heic','image/heif'];
+  if (f && (allowed.includes(f.type) || f.name.match(/\.(pdf|jpg|jpeg|png|webp|tiff?|heic|heif)$/i))) showFile(f);
   else showToast('error', 'Format invalide', 'Veuillez sélectionner un fichier PDF.');
 }
 function handleFileSelect(e) { if (e.target.files[0]) showFile(e.target.files[0]); }
@@ -1765,7 +1741,7 @@ async function processUpload() {
   reader.onload = async function(ev) {
     const base64 = ev.target.result.split(',')[1];
     const payload = {
-      source: 'pdf',
+      source: file.type === 'application/pdf' ? 'pdf' : 'image',
       filename: file.name,
       filesize: file.size,
       mimetype: file.type,
@@ -1786,28 +1762,35 @@ async function processUpload() {
       });
 
       if (resp.ok) {
-        let jobId = null;
-        try {
-          const data = await resp.json();
-          jobId = data.executionId || data.jobId || data.id || null;
-        } catch(_) {}
-        showToast('success', '✓ PDF envoyé à n8n', file.name + (jobId ? ` — Job #${jobId}` : ' — traitement en cours.'));
-        resetSimulation();
+        let jobId = null, respData = {};
+        try { respData = await resp.json(); jobId = respData.executionId || respData.jobId || respData.id || null; } catch(_) {}
+        const rowNum = respData.invoice_number || file.name.replace(/\.[^.]+$/,'');
+        showToast('info', '⚡ Traitement en cours…', file.name + (jobId ? ` — Job #${jobId}` : ' — OCR & IA en cours.'));
+        addStatusRow({ num: rowNum, societe: respData.vendor || respData.societe || '—', status: 'En cours', duration: '—', jobId, filename: file.name });
+        resetSimulation(rowNum);
         showSection('status');
         clearFile();
-        document.getElementById('processing-badge').textContent = '3';
+        document.getElementById('processing-badge').textContent = '1';
       } else {
         const txt = await resp.text().catch(() => resp.statusText);
-        showToast('error', `Erreur n8n (${resp.status})`, txt.slice(0, 120));
+        const errMsg = txt.slice(0, 120);
+        showToast('error', `Erreur n8n (${resp.status})`, errMsg);
+        const errNum = file.name.replace(/\.[^.]+$/,'');
+        addStatusRow({ num: errNum, societe: '—', status: 'Erreur', duration: '—', filename: file.name });
+        if (liveInvoices[errNum]) liveInvoices[errNum].errorMsg = errMsg;
       }
     } catch(err) {
       showToast('error', 'Erreur réseau', err.message || 'Impossible de joindre le webhook n8n.');
+      const errNum = file.name.replace(/\.[^.]+$/,'');
+      addStatusRow({ num: errNum, societe: '—', status: 'Erreur', duration: '—', filename: file.name });
+      if (liveInvoices[errNum]) liveInvoices[errNum].errorMsg = err.message;
     }
   };
   reader.readAsDataURL(file);
 }
 
-function resetSimulation() {
+function resetSimulation(invoiceNum) {
+  _currentSimNum = invoiceNum || null;
   simStep = 3;
   simDone = false;
   // Reset tracker UI
@@ -1827,13 +1810,76 @@ function resetSimulation() {
   }
   // Reset log
   document.getElementById('log-box').innerHTML = `
-    <div class="log-success">✓ [--:--] PDF reçu — ${document.getElementById('preview-name')?.textContent || 'facture.pdf'}</div>
+    <div class="log-success">✓ [--:--] Fichier reçu — ${document.getElementById('preview-name')?.textContent || 'facture'}</div>
     <div class="log-success">✓ [--:--] OCR Google Vision — traitement terminé</div>
     <div class="log-active">⚡ [--:--] GPT-4o — extraction des données en cours…</div>
     <div class="log-dim">&nbsp;&nbsp; Analyse : fournisseur, montants, lignes, codes TVA PCM…</div>`;
   // Reset badge
   document.getElementById('active-status-badge').className = 'badge badge-cyan';
   document.getElementById('active-status-badge').textContent = 'IA en cours…';
+
+  // Auto-advance the simulation
+  startAutoSim(_currentSimNum);
+}
+
+// ══════════════════════════════════════════
+// STATUS TABLE — live updates
+// ══════════════════════════════════════════
+function addStatusRow({ num, societe, status, duration, jobId, filename }) {
+  const tbody = document.getElementById('status-tbody');
+  // Remove empty placeholder row
+  const empty = document.getElementById('status-empty-row');
+  if (empty) empty.remove();
+
+  const now = new Date();
+  const time = now.toTimeString().slice(0,5);
+  const rowKey = num || jobId || Date.now();
+
+  // Store in liveInvoices so openDetails can find it
+  liveInvoices[rowKey] = {
+    num: rowKey,
+    societe: societe || '—',
+    status,
+    duration: duration || '—',
+    jobId,
+    filename: filename || num || '—',
+    time,
+  };
+
+  const badgeClass = status === 'Traité' ? 'badge-green'
+                   : status === 'Erreur' ? 'badge-red'
+                   : 'badge-cyan';
+  const badgeLabel = status === 'Traité' ? '✓ Traité'
+                   : status === 'Erreur' ? '✕ Erreur'
+                   : '⚡ En cours';
+
+  const tr = document.createElement('tr');
+  tr.id = 'status-row-' + rowKey;
+  tr.innerHTML = `
+    <td><strong style="color:var(--white)">${num || '—'}</strong></td>
+    <td style="color:var(--fg2)">${societe || '—'}</td>
+    <td style="color:var(--fg3)">${time}</td>
+    <td style="color:var(--fg3)">${duration || '—'}</td>
+    <td><span class="badge ${badgeClass}">${badgeLabel}</span></td>
+    <td><button class="btn btn-ghost btn-sm" onclick="openDetails('${rowKey}')">Voir</button></td>`;
+
+  // Prepend so newest is on top
+  tbody.insertBefore(tr, tbody.firstChild);
+}
+
+function updateStatusRow(num, status, duration) {
+  const tr = document.getElementById('status-row-' + num);
+  if (tr) {
+    const badgeClass = status === 'Traité' ? 'badge-green' : status === 'Erreur' ? 'badge-red' : 'badge-cyan';
+    const badgeLabel = status === 'Traité' ? '✓ Traité' : status === 'Erreur' ? '✕ Erreur' : '⚡ En cours';
+    tr.cells[3].textContent = duration || '—';
+    tr.cells[4].innerHTML = `<span class="badge ${badgeClass}">${badgeLabel}</span>`;
+  }
+  // Also update liveInvoices record
+  if (liveInvoices[num]) {
+    liveInvoices[num].status = status;
+    liveInvoices[num].duration = duration || '—';
+  }
 }
 
 // ══════════════════════════════════════════
@@ -1962,8 +2008,10 @@ async function submitManualForm() {
     });
 
     if (resp.ok) {
-      let jobId = null;
-      try { const d = await resp.json(); jobId = d.executionId || d.jobId || d.id || null; } catch(_) {}
+      let jobId = null, respData = {};
+      const t0 = Date.now();
+      try { respData = await resp.json(); jobId = respData.executionId || respData.jobId || respData.id || null; } catch(_) {}
+      const duration = ((Date.now() - t0) / 1000).toFixed(1) + 's';
       invoicesData.unshift({
         num, date, tiers, societe, type, ht, tva, ttc,
         status: 'En traitement',
@@ -1971,8 +2019,10 @@ async function submitManualForm() {
         jobId,
       });
       filteredData = [...invoicesData];
-      showToast('success','✓ Envoyé à n8n', num + (jobId ? ` — Job #${jobId}` : ' — Odoo & Sheets en cours.'));
-      showSection('invoices');
+      addStatusRow({ num, societe, status: 'En cours', duration: '—', jobId });
+      showToast('info','⚡ Traitement en cours…', num + (jobId ? ` — Job #${jobId}` : ' — Odoo & Sheets en cours.'));
+      resetSimulation(num);
+      showSection('status');
     } else {
       const txt = await resp.text().catch(() => resp.statusText);
       showToast('error', `Erreur n8n (${resp.status})`, txt.slice(0,120));
@@ -1999,13 +2049,16 @@ const simLogs = [
   '<div class="log-success">✓ [14:32:15] Ligne ajoutée dans Google Sheets — onglet Factures</div>',
   '<div class="log-success">✓ [14:32:16] Email de confirmation envoyé à cabinet@exemple.ma</div>',
 ];
+let simInterval = null;
+let _currentSimNum = null;
+
 function simulateProcessing() {
-  if (simDone) return; // already finished, do nothing
+  if (simDone) return;
 
   const steps = document.querySelectorAll('#tracker-1 .step-wrap');
   const now = new Date().toLocaleTimeString('fr', {hour:'2-digit', minute:'2-digit'});
 
-  // Mark the current active step (simStep-1) as done
+  // Mark the current active step as done
   const activeIdx = simStep - 1;
   if (activeIdx < steps.length) {
     steps[activeIdx].classList.remove('active');
@@ -2014,12 +2067,12 @@ function simulateProcessing() {
     steps[activeIdx].querySelector('.step-time').textContent = now;
   }
 
-  // Advance: make next step active (if exists)
+  // Advance: make next step active
   if (simStep < steps.length) {
     steps[simStep].classList.add('active');
   }
 
-  // Append the matching log line (log index = simStep-3, i.e. first log at simStep=3)
+  // Append the matching log line
   const logIdx = simStep - 3;
   if (logIdx >= 0 && logIdx < simLogs.length) {
     const box = document.getElementById('log-box');
@@ -2029,9 +2082,8 @@ function simulateProcessing() {
 
   simStep++;
 
-  // Check if all steps are now done
+  // Check if all steps done
   if (simStep > steps.length) {
-    // Mark the last step done (loop above left it as active)
     steps[steps.length - 1].classList.remove('active');
     steps[steps.length - 1].classList.add('done');
     steps[steps.length - 1].querySelector('.step-circle').textContent = '✓';
@@ -2040,9 +2092,27 @@ function simulateProcessing() {
     document.getElementById('active-status-badge').className = 'badge badge-green';
     document.getElementById('active-status-badge').textContent = '✓ Traité avec succès';
     document.getElementById('processing-badge').textContent = '1';
-    showToast('success', '✓ Traitement terminé', 'FAC-2026-0047 — 37 800 MAD TTC enregistré dans Odoo.');
     simDone = true;
   }
+}
+
+function startAutoSim(invoiceNum) {
+  if (simInterval) clearInterval(simInterval);
+  simDone = false;
+  const t0 = Date.now();
+  simInterval = setInterval(() => {
+    if (simDone) {
+      clearInterval(simInterval); simInterval = null;
+      // Update the status row to Traité now that simulation is complete
+      if (invoiceNum) {
+        const elapsed = ((Date.now() - t0) / 1000).toFixed(1) + 's';
+        updateStatusRow(invoiceNum, 'Traité', elapsed);
+      }
+      showToast('success', '✓ Traitement terminé', (invoiceNum || 'Facture') + ' — enregistrée dans Odoo & Sheets.');
+      return;
+    }
+    simulateProcessing();
+  }, 1500);
 }
 
 // ══════════════════════════════════════════
@@ -2105,39 +2175,91 @@ function sortTable(k) {
 // MODAL
 // ══════════════════════════════════════════
 function openDetails(num) {
-  const inv = invoicesData.find(i => i.num === num);
   document.getElementById('modal-num').textContent = num;
+
+  // First check live (session-submitted) invoices
+  const live = liveInvoices[num];
+  // Then check static demo data
+  const inv = invoicesData.find(i => i.num === num);
+
   let body = '';
-  if (!inv || inv.status === 'Erreur') {
-    body = `<div style="text-align:center;padding:32px 16px">
-      <div style="font-size:2.5rem;margin-bottom:12px">❌</div>
-      <div style="font-family:var(--font-h);font-size:1rem;color:var(--white);margin-bottom:8px">Erreur OCR — PDF illisible</div>
-      <div style="color:var(--fg3);font-size:0.85rem;margin-bottom:20px">Le PDF n'a pas pu être traité. Veuillez utiliser la saisie manuelle ou soumettre un scan de meilleure qualité.</div>
-      <div style="display:flex;gap:10px;justify-content:center">
-        <button class="btn btn-ghost btn-sm" onclick="showSection('manual');closeModal()">✏️ Saisie manuelle</button>
-        <button class="btn btn-cyan btn-sm" onclick="showSection('upload');closeModal()">📤 Re-soumettre</button>
-      </div></div>`;
+
+  if (live) {
+    // Live invoice — show status based on current state
+    if (live.status === 'Erreur') {
+      body = _errorModalBody(live.errorMsg);
+    } else if (live.status === 'En cours') {
+      body = `<div style="text-align:center;padding:32px 16px">
+        <div style="font-size:2.5rem;margin-bottom:12px">⚡</div>
+        <div style="font-family:var(--font-h);font-size:1rem;color:var(--cyan);margin-bottom:8px">Traitement en cours…</div>
+        <div style="color:var(--fg2);font-size:0.85rem;margin-bottom:4px">Fichier : <strong style="color:var(--white)">${live.filename || num}</strong></div>
+        <div style="color:var(--fg3);font-size:0.8rem;margin-bottom:20px">GPT-4o analyse votre facture — Odoo et Google Sheets seront mis à jour automatiquement.</div>
+        <div style="background:var(--cyan-dim);border:1px solid var(--cyan-border);border-radius:var(--r);padding:12px;font-size:0.8rem;color:var(--cyan)">
+          ⏳ En attente de confirmation n8n…
+        </div>
+      </div>`;
+    } else {
+      // Traité
+      body = `<div style="text-align:center;padding:24px 16px">
+        <div style="font-size:2.5rem;margin-bottom:12px">✅</div>
+        <div style="font-family:var(--font-h);font-size:1rem;color:var(--green);margin-bottom:8px">Traitement terminé</div>
+        <div style="color:var(--fg2);font-size:0.85rem;margin-bottom:16px">Fichier : <strong style="color:var(--white)">${live.filename || num}</strong></div>
+      </div>
+      <div style="margin-top:4px">
+        <div class="amount-row"><span>Durée traitement</span><strong>${live.duration || '—'}</strong></div>
+        <div class="amount-row"><span>Société</span><strong>${live.societe || '—'}</strong></div>
+      </div>
+      <div style="margin-top:16px;background:var(--green-dim);border:1px solid rgba(34,211,160,0.2);border-radius:var(--r);padding:12px;font-size:0.8rem;color:var(--green)">
+        ✓ Enregistré dans Odoo &nbsp;·&nbsp; ✓ Google Sheets mis à jour &nbsp;·&nbsp; ✓ Simulation complète
+      </div>`;
+    }
+  } else if (inv) {
+    // Static demo invoice
+    if (inv.status === 'Erreur') {
+      body = _errorModalBody(inv.errorMsg);
+    } else {
+      const statusColor = inv.status === 'Traité' ? 'var(--green)' : inv.status === 'En cours' ? 'var(--cyan)' : 'var(--fg2)';
+      body = `<div class="detail-grid">
+        <div class="detail-item"><label>Numéro</label><span>${inv.num}</span></div>
+        <div class="detail-item"><label>Date</label><span>${inv.date}</span></div>
+        <div class="detail-item"><label>Tiers</label><span>${inv.tiers}</span></div>
+        <div class="detail-item"><label>Société</label><span>${inv.societe}</span></div>
+        <div class="detail-item"><label>Type</label><span>${typeLabels[inv.type]||inv.type}</span></div>
+        <div class="detail-item"><label>Statut</label><span class="badge ${inv.sc}">${inv.status}</span></div>
+        <div class="detail-divider"></div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="amount-row"><span>Montant HT</span><strong>${inv.ht.toLocaleString('fr-MA')} MAD</strong></div>
+        <div class="amount-row"><span>TVA</span><strong>${inv.tva.toLocaleString('fr-MA')} MAD</strong></div>
+        <div class="amount-row grand"><span>Total TTC</span><strong>${inv.ttc.toLocaleString('fr-MA')} MAD</strong></div>
+      </div>
+      <div style="margin-top:16px;background:var(--green-dim);border:1px solid rgba(34,211,160,0.2);border-radius:var(--r);padding:12px;font-size:0.8rem;color:var(--green)">
+        ✓ Enregistré dans Odoo &nbsp;·&nbsp; ✓ Google Sheets mis à jour &nbsp;·&nbsp; ✓ Email de confirmation envoyé
+      </div>`;
+    }
   } else {
-    body = `<div class="detail-grid">
-      <div class="detail-item"><label>Numéro</label><span>${inv.num}</span></div>
-      <div class="detail-item"><label>Date</label><span>${inv.date}</span></div>
-      <div class="detail-item"><label>Tiers</label><span>${inv.tiers}</span></div>
-      <div class="detail-item"><label>Société</label><span>${inv.societe}</span></div>
-      <div class="detail-item"><label>Type</label><span>${typeLabels[inv.type]||inv.type}</span></div>
-      <div class="detail-item"><label>Statut</label><span class="badge ${inv.sc}">${inv.status}</span></div>
-      <div class="detail-divider"></div>
-    </div>
-    <div style="margin-top:16px">
-      <div class="amount-row"><span>Montant HT</span><strong>${inv.ht.toLocaleString('fr-MA')} MAD</strong></div>
-      <div class="amount-row"><span>TVA 20%</span><strong>${inv.tva.toLocaleString('fr-MA')} MAD</strong></div>
-      <div class="amount-row grand"><span>Total TTC</span><strong>${inv.ttc.toLocaleString('fr-MA')} MAD</strong></div>
-    </div>
-    <div style="margin-top:16px;background:var(--green-dim);border:1px solid rgba(34,211,160,0.2);border-radius:var(--r);padding:12px;font-size:0.8rem;color:var(--green)">
-      ✓ Enregistré dans Odoo &nbsp;·&nbsp; ✓ Google Sheets mis à jour &nbsp;·&nbsp; ✓ Email de confirmation envoyé
+    // Not found anywhere — show a generic info panel (not an error)
+    body = `<div style="text-align:center;padding:32px 16px">
+      <div style="font-size:2rem;margin-bottom:12px">🧾</div>
+      <div style="font-family:var(--font-h);font-size:1rem;color:var(--white);margin-bottom:8px">${num}</div>
+      <div style="color:var(--fg3);font-size:0.85rem">Détails non disponibles pour cette facture.</div>
     </div>`;
   }
+
   document.getElementById('modal-body').innerHTML = body;
   document.getElementById('detail-modal').classList.add('open');
+}
+
+function _errorModalBody(errorMsg) {
+  return `<div style="text-align:center;padding:32px 16px">
+    <div style="font-size:2.5rem;margin-bottom:12px">⚠️</div>
+    <div style="font-family:var(--font-h);font-size:1rem;color:var(--white);margin-bottom:8px">Erreur de traitement</div>
+    <div style="color:var(--fg3);font-size:0.85rem;margin-bottom:4px">${errorMsg || 'Le traitement IA a échoué (quota API ou fichier illisible).'}</div>
+    <div style="color:var(--fg3);font-size:0.8rem;margin-bottom:20px">Le workflow réessaie automatiquement jusqu\'à 3 fois. Si l\'erreur persiste, utilisez la saisie manuelle.</div>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn btn-ghost btn-sm" onclick="showSection('manual');closeModal()">✏️ Saisie manuelle</button>
+      <button class="btn btn-cyan btn-sm" onclick="showSection('upload');closeModal()">📤 Re-soumettre</button>
+    </div></div>`;
 }
 function closeModal() { document.getElementById('detail-modal').classList.remove('open'); }
 
