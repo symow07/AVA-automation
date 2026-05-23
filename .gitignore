@@ -18,3 +18,4 @@ workflow.json
 .vscode/
 *.swp
 *.swo
+.gstack/

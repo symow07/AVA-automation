@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
 <style>
 /* ══ TOKENS ══════════════════════════════════ */
 :root {
@@ -659,9 +660,33 @@ textarea { resize: vertical; min-height: 80px; }
 .feed-text { flex: 1; color: var(--fg); }
 .feed-time { color: var(--fg3); font-size: 0.73rem; white-space: nowrap; }
 
+/* ══ MOBILE NAV (FIX 9) ══════════════════════ */
+.hamburger {
+  display: none;
+  position: fixed; top: 14px; left: 14px; z-index: 300;
+  width: 38px; height: 38px; border-radius: var(--r);
+  background: var(--surface2); border: 1px solid var(--border2);
+  color: var(--cyan); font-size: 1.2rem; line-height: 1;
+  align-items: center; justify-content: center; cursor: pointer;
+}
+.sidebar-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55); backdrop-filter: blur(2px);
+  z-index: 190;
+}
+.sidebar-overlay.open { display: block; }
+
 /* ══ RESPONSIVE ══════════════════════════════ */
 @media (max-width: 900px) {
-  .sidebar { display: none; }
+  .hamburger { display: flex; }
+  .topbar-brand { padding-left: 60px; }
+  .sidebar {
+    display: flex;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    z-index: 200;
+  }
+  .sidebar.open { transform: translateX(0); }
   .main { margin-left: 0; padding: 20px; }
   .stats-row { grid-template-columns: 1fr 1fr; }
   .form-grid { grid-template-columns: 1fr; }
@@ -674,6 +699,10 @@ textarea { resize: vertical; min-height: 80px; }
 </style>
 </head>
 <body>
+
+<!-- ══ MOBILE NAV (FIX 9) ══ -->
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
 
 <!-- ══ TOPBAR ══════════════════════════════════ -->
 <header class="topbar">
@@ -700,7 +729,7 @@ textarea { resize: vertical; min-height: 80px; }
 
 <div class="layout">
   <!-- ══ SIDEBAR ══ -->
-  <nav class="sidebar">
+  <nav class="sidebar" id="sidebar">
     <div class="sidebar-label">Principal</div>
     <button class="nav-item active" onclick="showSection('dashboard')">
       <span class="nav-icon">⬛</span> Tableau de bord
@@ -741,24 +770,24 @@ textarea { resize: vertical; min-height: 80px; }
 
       <div class="stats-row">
         <div class="stat-card">
-          <div class="stat-value">48</div>
-          <div class="stat-label">Factures ce mois</div>
-          <div class="stat-change stat-up">▲ +12 vs avril</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-label">Factures enregistrées</div>
+          <div class="stat-change stat-up">▲ Total cumulé</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">2</div>
+          <div class="stat-value" id="stat-encours">0</div>
           <div class="stat-label">En cours de traitement</div>
           <div class="stat-change stat-warn">● En attente IA</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">284k</div>
+          <div class="stat-value" id="stat-montant">0</div>
           <div class="stat-label">Total HT traité (MAD)</div>
-          <div class="stat-change stat-up">▲ 3 sociétés actives</div>
+          <div class="stat-change stat-up">▲ Toutes sociétés</div>
         </div>
         <div class="stat-card">
-          <div class="stat-value">98%</div>
+          <div class="stat-value" id="stat-confiance">0%</div>
           <div class="stat-label">Taux de succès OCR</div>
-          <div class="stat-change stat-up">▲ Excellent</div>
+          <div class="stat-change stat-up">▲ Confiance ≥ 85%</div>
         </div>
       </div>
 
@@ -819,7 +848,7 @@ textarea { resize: vertical; min-height: 80px; }
           </div>
           <div style="margin-top:20px;display:flex;gap:10px;">
             <button class="btn btn-cyan btn-sm" onclick="showSection('upload')">📤 Ajouter facture</button>
-            <button class="btn btn-ghost btn-sm">📄 Export DGI</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateDGI()">📄 Export DGI</button>
           </div>
         </div>
       </div>
@@ -1004,7 +1033,7 @@ textarea { resize: vertical; min-height: 80px; }
         </div>
         <div class="form-actions">
           <button class="btn btn-ghost" onclick="resetManualForm()">🔄 Réinitialiser</button>
-          <button class="btn btn-surface" onclick="showToast('info','💾 Brouillon sauvegardé','Vous pouvez reprendre cette saisie plus tard.')">💾 Brouillon</button>
+          <button class="btn btn-surface" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">💾 Brouillon</button>
           <button class="btn btn-cyan" onclick="submitManualForm()">✅ Enregistrer dans Odoo</button>
         </div>
       </div>
@@ -1071,7 +1100,7 @@ textarea { resize: vertical; min-height: 80px; }
 
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
           <button class="btn btn-ghost btn-sm" onclick="resetSimulation()">↺ Rejouer</button>
-          <button class="btn btn-danger btn-sm">⏹ Annuler</button>
+          <button class="btn btn-danger btn-sm" onclick="cancelProcessing()">⏹ Annuler</button>
           <span style="color:var(--fg3);font-size:0.76rem;margin-left:8px">← Cliquez pour la démo</span>
         </div>
       </div>
@@ -1125,8 +1154,8 @@ textarea { resize: vertical; min-height: 80px; }
               <option value="En cours">En cours</option>
               <option value="Erreur">Erreur</option>
             </select>
-            <button class="btn btn-cyan btn-sm">📥 Export Excel</button>
-            <button class="btn btn-ghost btn-sm">📄 Export DGI</button>
+            <button class="btn btn-cyan btn-sm" onclick="exportExcel()">📥 Export Excel</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateDGI()">📄 Export DGI</button>
           </div>
         </div>
 
@@ -1149,14 +1178,8 @@ textarea { resize: vertical; min-height: 80px; }
         </table>
 
         <div class="pagination">
-          <span id="pagination-info" style="color:var(--fg3)">Affichage 1–10 sur 48 factures</span>
-          <div class="page-btns">
-            <button class="page-btn">‹</button>
-            <button class="page-btn active">1</button>
-            <button class="page-btn">2</button>
-            <button class="page-btn">3</button>
-            <button class="page-btn">›</button>
-          </div>
+          <span id="pagination-info" style="color:var(--fg3)">Affichage 0 sur 0 factures</span>
+          <div class="page-btns" id="page-btns"></div>
         </div>
       </div>
     </section>
@@ -1233,7 +1256,7 @@ textarea { resize: vertical; min-height: 80px; }
                 <td style="color:var(--fg)">Mai 2026</td>
                 <td class="amount">9 360 MAD</td>
                 <td><span class="badge badge-orange">⏳ En cours</span></td>
-                <td><button class="btn btn-cyan btn-sm" onclick="showToast('info','Déclaration TVA','Génération du formulaire DGI en cours…')">Générer</button></td>
+                <td><button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">Générer</button></td>
               </tr>
             </tbody>
           </table>
@@ -1252,7 +1275,7 @@ textarea { resize: vertical; min-height: 80px; }
           </tbody>
         </table>
         <div style="margin-top:16px;display:flex;gap:10px;">
-          <button class="btn btn-cyan btn-sm" onclick="showToast('success','📄 Export TVA','Fichier Excel généré avec succès.')">📥 Export Excel</button>
+          <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥 Export Excel</button>
           <button class="btn btn-ghost btn-sm" onclick="showSection('dgi')">📁 Générer fichier DGI</button>
         </div>
       </div>
@@ -1304,8 +1327,8 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg2)">FAC-2026-0043 — Inwi Business</td>
               <td><span class="badge badge-green">97%</span></td>
               <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Rapproché','Ligne FAC-2026-0043 confirmée.')">✓</button>
-                <button class="btn btn-ghost btn-sm" onclick="showToast('info','Ligne rejetée','Veuillez sélectionner manuellement.')">✕</button>
+                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
+                <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✕</button>
               </td>
             </tr>
             <tr>
@@ -1315,7 +1338,7 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg2)">FAC-2026-0044 — Société Générale</td>
               <td><span class="badge badge-green">94%</span></td>
               <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Rapproché','Ligne FAC-2026-0044 confirmée.')">✓</button>
+                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
                 <button class="btn btn-ghost btn-sm">✕</button>
               </td>
             </tr>
@@ -1326,7 +1349,7 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg2)">FAC-2026-0039 — Afrique Logistics</td>
               <td><span class="badge badge-orange">72%</span></td>
               <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Rapproché','Ligne FAC-2026-0039 confirmée.')">✓</button>
+                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
                 <button class="btn btn-ghost btn-sm">✕</button>
               </td>
             </tr>
@@ -1337,7 +1360,7 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg3);font-style:italic">Aucune correspondance</td>
               <td><span class="badge badge-red">—</span></td>
               <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-ghost btn-sm" onclick="showToast('info','Saisie manuelle','Ouvrez la saisie manuelle pour créer l\'écriture.')">Saisir</button>
+                <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">Saisir</button>
               </td>
             </tr>
             <tr>
@@ -1347,15 +1370,15 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg2)">FAC-2026-0048 — Atlas Consulting</td>
               <td><span class="badge badge-green">99%</span></td>
               <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Rapproché','Ligne FAC-2026-0048 confirmée.')">✓</button>
+                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
                 <button class="btn btn-ghost btn-sm">✕</button>
               </td>
             </tr>
           </tbody>
         </table>
         <div style="margin-top:16px;display:flex;gap:10px;">
-          <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Tout rapproché','5 lignes validées et enregistrées dans Odoo.')">✓ Valider toutes les suggestions</button>
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Import relevé','Glissez votre fichier CSV/OFX ici pour importer un relevé.')">📤 Importer relevé bancaire</button>
+          <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓ Valider toutes les suggestions</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📤 Importer relevé bancaire</button>
         </div>
       </div>
     </section>
@@ -1404,7 +1427,7 @@ textarea { resize: vertical; min-height: 80px; }
           </div>
           <div style="margin-top:16px;display:flex;gap:10px;">
             <button class="btn btn-cyan" onclick="generateDGI()">⚡ Générer le fichier FEC</button>
-            <button class="btn btn-ghost btn-sm">Aperçu</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">Aperçu</button>
           </div>
         </div>
 
@@ -1444,7 +1467,7 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg3)">01/05/2026</td>
               <td style="color:var(--fg3);text-align:center">124</td>
               <td><span class="badge badge-green">✓ Déposé DGI</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Téléchargement','Fichier FEC en cours de téléchargement…')">📥</button></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥</button></td>
             </tr>
             <tr>
               <td style="color:var(--fg);font-weight:600">FEC_MarocDigital_2026-04.txt</td>
@@ -1453,7 +1476,7 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg3)">01/05/2026</td>
               <td style="color:var(--fg3);text-align:center">88</td>
               <td><span class="badge badge-green">✓ Déposé DGI</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Téléchargement','Fichier FEC en cours de téléchargement…')">📥</button></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥</button></td>
             </tr>
             <tr>
               <td style="color:var(--fg);font-weight:600">FEC_TechMaroc_2026-04.txt</td>
@@ -1462,7 +1485,7 @@ textarea { resize: vertical; min-height: 80px; }
               <td style="color:var(--fg3)">01/05/2026</td>
               <td style="color:var(--fg3);text-align:center">61</td>
               <td><span class="badge badge-green">✓ Déposé DGI</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Téléchargement','Fichier FEC en cours de téléchargement…')">📥</button></td>
+              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥</button></td>
             </tr>
           </tbody>
         </table>
@@ -1522,7 +1545,7 @@ textarea { resize: vertical; min-height: 80px; }
           <div class="form-grid">
             <div class="form-group full">
               <label>URL de l'instance Odoo</label>
-              <input type="text" value="https://cabinet-samir.odoo.com">
+              <input type="text" id="odoo-url" value="https://cabinet-samir.odoo.com" oninput="saveSettings()">
             </div>
             <div class="form-group">
               <label>Base de données</label>
@@ -1538,7 +1561,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
           <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
-            <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Connexion testée','Odoo répond correctement — 3 sociétés détectées.')">⚡ Tester la connexion</button>
+            <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚡ Tester la connexion</button>
             <span class="badge badge-green" style="margin-left:4px">● Connecté</span>
           </div>
         </div>
@@ -1548,7 +1571,7 @@ textarea { resize: vertical; min-height: 80px; }
           <div class="form-grid">
             <div class="form-group full">
               <label>ID du classeur Google Sheets</label>
-              <input type="text" id="sheets-id" value="1ZuT74KpnIaskzJcZGtBum6ezSTHXZKha-hq_xt68GE8">
+              <input type="text" id="sheets-id" value="1ZuT74KpnIaskzJcZGtBum6ezSTHXZKha-hq_xt68GE8" oninput="saveSettings()">
             </div>
             <div class="form-group full">
               <label>Onglet cible (factures)</label>
@@ -1560,8 +1583,8 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
           <div style="margin-top:16px;display:flex;gap:10px">
-            <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Sheets OK','Classeur accessible — 48 lignes détectées.')">⚡ Tester</button>
-            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Reconnexion','Redirection vers Google OAuth…')">🔄 Reconnecter</button>
+            <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚡ Tester</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">🔄 Reconnecter</button>
           </div>
         </div>
 
@@ -1582,7 +1605,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
           <div style="margin-top:16px">
-            <button class="btn btn-cyan btn-sm" onclick="showToast('success','✓ Paramètres IA sauvegardés','Configuration mise à jour.')">💾 Sauvegarder</button>
+            <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">💾 Sauvegarder</button>
           </div>
         </div>
 
@@ -1595,7 +1618,7 @@ textarea { resize: vertical; min-height: 80px; }
                 <div class="job-name">Atlas Consulting SARL</div>
                 <div class="job-meta">ICE: 001234567000089 · TVA: 20%</div>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Atlas Consulting','Paramètres de la société ouverts.')">⚙️</button>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚙️</button>
             </div>
             <div class="job-card">
               <span class="job-dot dot-ok"></span>
@@ -1603,7 +1626,7 @@ textarea { resize: vertical; min-height: 80px; }
                 <div class="job-name">Maroc Digital Services SARL</div>
                 <div class="job-meta">ICE: 002345678000012 · TVA: 20%</div>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Maroc Digital','Paramètres de la société ouverts.')">⚙️</button>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚙️</button>
             </div>
             <div class="job-card">
               <span class="job-dot dot-ok"></span>
@@ -1611,12 +1634,20 @@ textarea { resize: vertical; min-height: 80px; }
                 <div class="job-name">TechMaroc SARL</div>
                 <div class="job-meta">ICE: 003456789000034 · TVA: 20%</div>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="showToast('info','TechMaroc','Paramètres de la société ouverts.')">⚙️</button>
+              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚙️</button>
             </div>
           </div>
           <div style="margin-top:14px">
-            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Nouvelle société','Formulaire d\'ajout ouvert.')">+ Ajouter une société</button>
+            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Ajout de société à venir.')">+ Ajouter une société</button>
           </div>
+        </div>
+
+        <div class="card" style="border-color:rgba(239,68,68,0.25)">
+          <div class="card-title"><span style="color:var(--red)">🗑️</span> Données de test</div>
+          <p style="color:var(--fg2);font-size:0.875rem;margin-bottom:14px">
+            Supprime toutes les factures que vous avez soumises dans cette session (stockées localement). Les factures de démonstration restent affichées.
+          </p>
+          <button class="btn btn-danger btn-sm" onclick="clearTestData()">🗑️ Vider les données de test</button>
         </div>
       </div>
     </section>
@@ -1634,7 +1665,7 @@ textarea { resize: vertical; min-height: 80px; }
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-foot">
       <button class="btn btn-ghost btn-sm" onclick="closeModal()">Fermer</button>
-      <button class="btn btn-cyan btn-sm">🏢 Voir dans Odoo</button>
+      <button class="btn btn-cyan btn-sm" onclick="openInOdoo()">🏢 Voir dans Odoo</button>
     </div>
   </div>
 </div>
@@ -1646,22 +1677,94 @@ textarea { resize: vertical; min-height: 80px; }
 // ══════════════════════════════════════════
 // DATA
 // ══════════════════════════════════════════
-const invoicesData = [
-  { num:'FAC-2026-0048', date:'2026-05-21', tiers:'Atlas Consulting SARL',      societe:'Atlas Consulting', type:'achat', ht:15000, tva:3000, ttc:18000, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0047', date:'2026-05-21', tiers:'Maroc Digital Services',     societe:'Maroc Digital',   type:'vente', ht:31500, tva:6300, ttc:37800, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0046', date:'2026-05-20', tiers:'TechMaroc SARL',             societe:'TechMaroc SARL',  type:'achat', ht:8000,  tva:1600, ttc:9600,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0045', date:'2026-05-20', tiers:'Société Générale Maroc',     societe:'TechMaroc SARL',  type:'achat', ht:22400, tva:4480, ttc:26880, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0044', date:'2026-05-19', tiers:'Inwi Business',              societe:'Atlas Consulting',type:'achat', ht:3500,  tva:700,  ttc:4200,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0043', date:'2026-05-19', tiers:'Cabinet Audit Plus',         societe:'Maroc Digital',   type:'achat', ht:18000, tva:3600, ttc:21600, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0042', date:'2026-05-18', tiers:'Imprimerie Casablanca',      societe:'Atlas Consulting',type:'achat', ht:1200,  tva:240,  ttc:1440,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0041', date:'2026-05-17', tiers:'Maroc Telecom',              societe:'TechMaroc SARL',  type:'achat', ht:2800,  tva:560,  ttc:3360,  status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0040', date:'2026-05-16', tiers:'Afrique Logistics',          societe:'Maroc Digital',   type:'vente', ht:45000, tva:9000, ttc:54000, status:'Traité',   sc:'badge-green' },
-  { num:'FAC-2026-0039', date:'2026-05-15', tiers:'Banque Populaire Maroc',     societe:'Atlas Consulting',type:'achat', ht:5500,  tva:1100, ttc:6600,  status:'Traité',   sc:'badge-green' },
+// Seed demo rows. confiance = OCR/IA confidence used by updateStats(). compte = PCM account for DGI export.
+const DEMO_INVOICES = [
+  { num:'FAC-2026-0048', date:'2026-05-21', tiers:'Atlas Consulting SARL',      societe:'Atlas Consulting', type:'achat', ht:15000, tva:3000, ttc:18000, status:'Traité', sc:'badge-green', confiance:98, compte:'61110', demo:true },
+  { num:'FAC-2026-0047', date:'2026-05-21', tiers:'Maroc Digital Services',     societe:'Maroc Digital',   type:'vente', ht:31500, tva:6300, ttc:37800, status:'Traité', sc:'badge-green', confiance:97, compte:'71110', demo:true },
+  { num:'FAC-2026-0046', date:'2026-05-20', tiers:'TechMaroc SARL',             societe:'TechMaroc SARL',  type:'achat', ht:8000,  tva:1600, ttc:9600,  status:'Traité', sc:'badge-green', confiance:96, compte:'61110', demo:true },
+  { num:'FAC-2026-0045', date:'2026-05-20', tiers:'Société Générale Maroc',     societe:'TechMaroc SARL',  type:'achat', ht:22400, tva:4480, ttc:26880, status:'Traité', sc:'badge-green', confiance:95, compte:'61110', demo:true },
+  { num:'FAC-2026-0044', date:'2026-05-19', tiers:'Inwi Business',              societe:'Atlas Consulting',type:'achat', ht:3500,  tva:700,  ttc:4200,  status:'Traité', sc:'badge-green', confiance:99, compte:'61110', demo:true },
+  { num:'FAC-2026-0043', date:'2026-05-19', tiers:'Cabinet Audit Plus',         societe:'Maroc Digital',   type:'achat', ht:18000, tva:3600, ttc:21600, status:'Traité', sc:'badge-green', confiance:94, compte:'61110', demo:true },
+  { num:'FAC-2026-0042', date:'2026-05-18', tiers:'Imprimerie Casablanca',      societe:'Atlas Consulting',type:'achat', ht:1200,  tva:240,  ttc:1440,  status:'Traité', sc:'badge-green', confiance:92, compte:'61110', demo:true },
+  { num:'FAC-2026-0041', date:'2026-05-17', tiers:'Maroc Telecom',              societe:'TechMaroc SARL',  type:'achat', ht:2800,  tva:560,  ttc:3360,  status:'Traité', sc:'badge-green', confiance:96, compte:'61110', demo:true },
+  { num:'FAC-2026-0040', date:'2026-05-16', tiers:'Afrique Logistics',          societe:'Maroc Digital',   type:'vente', ht:45000, tva:9000, ttc:54000, status:'Traité', sc:'badge-green', confiance:98, compte:'71110', demo:true },
+  { num:'FAC-2026-0039', date:'2026-05-15', tiers:'Banque Populaire Maroc',     societe:'Atlas Consulting',type:'achat', ht:5500,  tva:1100, ttc:6600,  status:'Traité', sc:'badge-green', confiance:93, compte:'61110', demo:true },
 ];
 
-// Live-submitted invoices (from this session's uploads/manual entries)
-// Separate from static demo data so openDetails always works correctly
+// FIX 1 — single source of truth. Starts as demo, merged with persisted user rows on load (FIX 7).
+let invoicesData = [...DEMO_INVOICES];
+let filteredData = [...invoicesData];
+let originalOrder = [...invoicesData];
+
+// Live-submitted invoices (from this session's uploads/manual entries) — drives the modal/status detail.
 const liveInvoices = {};
+
+// ── FIX 7 — persistence (only user rows are stored; demo rows are always re-seeded) ──
+const STORAGE_KEY = 'ava_invoices';
+function persistInvoices() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(invoicesData.filter(r => !r.demo))); } catch(_) {}
+}
+function loadInvoices() {
+  let userRows = [];
+  try { userRows = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(_) { userRows = []; }
+  if (!Array.isArray(userRows)) userRows = [];
+  const seen = new Set(userRows.map(r => r.num));
+  invoicesData = [...userRows, ...DEMO_INVOICES.filter(d => !seen.has(d.num))];
+  resyncViews();
+}
+function resyncViews() {
+  filteredData   = [...invoicesData];
+  originalOrder  = [...invoicesData];
+}
+function clearTestData() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(_) {}
+  invoicesData = [...DEMO_INVOICES];
+  currentPage = 1;
+  resyncViews();
+  renderTable();
+  updateStats();
+  showToast('success', '🗑️ Données effacées', 'Les factures de test ont été supprimées.');
+}
+
+// ── FIX 1 — push a skeleton row / patch it when the job resolves ──
+function pushInvoice(row) {
+  invoicesData.unshift(row);
+  resyncViews();
+  persistInvoices();
+  renderTable();
+  updateStats();
+}
+function patchInvoice(num, patch) {
+  const row = invoicesData.find(r => r.num === num);
+  if (row) Object.assign(row, patch);
+  // keep filtered view in sync without losing the user's current filter/sort intent → just refresh from source
+  filteredData = filteredData.map(r => (r.num === num && row) ? row : r);
+  originalOrder = originalOrder.map(r => (r.num === num && row) ? row : r);
+  persistInvoices();
+  renderTable();
+  updateStats();
+  return row;
+}
+
+// ── FIX 2 — live stat cards + sidebar badge ──
+function updateStats() {
+  const total   = invoicesData.length;
+  const enCours = invoicesData.filter(r => r.status === 'En traitement' || r.status === 'En cours').length;
+  const sumHt   = invoicesData.reduce((s, r) => s + (Number(r.ht) || 0), 0);
+  const conf    = invoicesData.filter(r => typeof r.confiance === 'number');
+  const pct     = conf.length ? Math.round(conf.filter(r => r.confiance >= 85).length / conf.length * 100) : 0;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('stat-total', total);
+  set('stat-encours', enCours);
+  set('stat-montant', fmtMADk(sumHt));
+  set('stat-confiance', pct + '%');
+  const badge = document.getElementById('processing-badge');
+  if (badge) { badge.textContent = enCours; badge.style.display = enCours ? '' : 'none'; }
+}
+function fmtMADk(n) {
+  if (n >= 1000) return (n / 1000).toLocaleString('fr-FR', { maximumFractionDigits: n >= 100000 ? 0 : 1 }) + 'k';
+  return String(Math.round(n));
+}
 
 const sectionTitles = {
   dashboard: 'Tableau de bord',
@@ -1736,6 +1839,17 @@ async function processUpload() {
 
   showToast('info', '⚡ Envoi vers n8n…', 'Lecture du PDF et envoi au workflow…');
 
+  // FIX 1 — create the skeleton row + status row up front, with status 'En traitement'.
+  const rowNum = file.name.replace(/\.[^.]+$/, '');
+  const today  = new Date().toISOString().split('T')[0];
+  pushInvoice({ num: rowNum, date: today, tiers: '—', societe: '—', type: 'achat',
+                ht: 0, tva: 0, ttc: 0, status: 'En traitement', sc: 'badge-cyan', source: 'pdf' });
+  addStatusRow({ num: rowNum, societe: '—', status: 'En cours', duration: '—', filename: file.name });
+  resetSimulation(rowNum);          // FIX 5/8 — cosmetic animation only
+  showSection('status');
+  clearFile();
+  const t0 = Date.now();
+
   // Read as base64
   const reader = new FileReader();
   reader.onload = async function(ev) {
@@ -1755,35 +1869,42 @@ async function processUpload() {
       const secret = localStorage.getItem('ava_n8n_secret');
       if (secret) headers['x-ava-secret'] = secret;
 
-      const resp = await fetch(webhookUrl, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-      });
+      const resp = await fetch(webhookUrl, { method: 'POST', headers, body: JSON.stringify(payload) });
+      const duration = ((Date.now() - t0) / 1000).toFixed(1) + 's';
 
       if (resp.ok) {
-        let jobId = null, respData = {};
+        // FIX 5 — resolution driven by the real HTTP/JSON result, not the animation.
+        let respData = {}, jobId = null;
         try { respData = await resp.json(); jobId = respData.executionId || respData.jobId || respData.id || null; } catch(_) {}
-        const rowNum = respData.invoice_number || file.name.replace(/\.[^.]+$/,'');
-        showToast('info', '⚡ Traitement en cours…', file.name + (jobId ? ` — Job #${jobId}` : ' — OCR & IA en cours.'));
-        addStatusRow({ num: rowNum, societe: respData.vendor || respData.societe || '—', status: 'En cours', duration: '—', jobId, filename: file.name });
-        resetSimulation(rowNum);
-        showSection('status');
-        clearFile();
-        document.getElementById('processing-badge').textContent = '1';
+        const ht  = Number(respData.montant_ht ?? respData.ht) || 0;
+        const tva = Number(respData.montant_tva ?? respData.tva) || 0;
+        const ttc = Number(respData.montant_ttc ?? respData.ttc) || (ht + tva);
+        finishSimulation(true);
+        patchInvoice(rowNum, {
+          tiers: respData.vendor || respData.tiers || respData.societe || '—',
+          societe: respData.societe || '—',
+          ht, tva, ttc,
+          confiance: Number(respData.confiance ?? respData.confidence) || 90,
+          compte: respData.compte || respData.account || '61110',
+          status: 'Traité', sc: 'badge-green', jobId,
+        });
+        updateStatusRow(rowNum, 'Traité', duration);
+        showToast('success', '✓ Traitement terminé', rowNum + ' — enregistrée dans Odoo & Sheets.');
       } else {
         const txt = await resp.text().catch(() => resp.statusText);
-        const errMsg = txt.slice(0, 120);
-        showToast('error', `Erreur n8n (${resp.status})`, errMsg);
-        const errNum = file.name.replace(/\.[^.]+$/,'');
-        addStatusRow({ num: errNum, societe: '—', status: 'Erreur', duration: '—', filename: file.name });
-        if (liveInvoices[errNum]) liveInvoices[errNum].errorMsg = errMsg;
+        const errMsg = (txt || '').slice(0, 200);
+        finishSimulation(false, resp.status, errMsg);
+        patchInvoice(rowNum, { status: 'Erreur', sc: 'badge-red', errorMsg: `HTTP ${resp.status} — ${errMsg}` });
+        updateStatusRow(rowNum, 'Erreur', duration);
+        if (liveInvoices[rowNum]) liveInvoices[rowNum].errorMsg = `HTTP ${resp.status} — ${errMsg}`;
+        showToast('error', `Erreur n8n (${resp.status})`, errMsg || 'Le workflow a renvoyé une erreur.');
       }
     } catch(err) {
+      finishSimulation(false, null, err.message);
+      patchInvoice(rowNum, { status: 'Erreur', sc: 'badge-red', errorMsg: err.message });
+      updateStatusRow(rowNum, 'Erreur', '—');
+      if (liveInvoices[rowNum]) liveInvoices[rowNum].errorMsg = err.message;
       showToast('error', 'Erreur réseau', err.message || 'Impossible de joindre le webhook n8n.');
-      const errNum = file.name.replace(/\.[^.]+$/,'');
-      addStatusRow({ num: errNum, societe: '—', status: 'Erreur', duration: '—', filename: file.name });
-      if (liveInvoices[errNum]) liveInvoices[errNum].errorMsg = err.message;
     }
   };
   reader.readAsDataURL(file);
@@ -1808,18 +1929,20 @@ function resetSimulation(invoiceNum) {
     steps[i].querySelector('.step-circle').textContent = icons[i-2] || '○';
     steps[i].querySelector('.step-time').textContent = '—';
   }
-  // Reset log
+  // Reset log — FIX 8 real timestamps
+  const _t = `[${new Date().toLocaleTimeString('fr-FR')}]`;
   document.getElementById('log-box').innerHTML = `
-    <div class="log-success">✓ [--:--] Fichier reçu — ${document.getElementById('preview-name')?.textContent || 'facture'}</div>
-    <div class="log-success">✓ [--:--] OCR Google Vision — traitement terminé</div>
-    <div class="log-active">⚡ [--:--] GPT-4o — extraction des données en cours…</div>
+    <div class="log-success">✓ ${_t} Fichier reçu — ${document.getElementById('preview-name')?.textContent || 'facture'}</div>
+    <div class="log-success">✓ ${_t} OCR Google Vision — traitement terminé</div>
+    <div class="log-active">⚡ ${_t} GPT-4o — extraction des données en cours…</div>
     <div class="log-dim">&nbsp;&nbsp; Analyse : fournisseur, montants, lignes, codes TVA PCM…</div>`;
   // Reset badge
   document.getElementById('active-status-badge').className = 'badge badge-cyan';
   document.getElementById('active-status-badge').textContent = 'IA en cours…';
 
-  // Auto-advance the simulation
-  startAutoSim(_currentSimNum);
+  // FIX 8 — rebuild logs with current timestamps, then run the cosmetic animation.
+  simLogs = buildSimLogs();
+  startAutoSim();
 }
 
 // ══════════════════════════════════════════
@@ -1967,33 +2090,30 @@ async function submitManualForm() {
   tva = Math.round(tva * 100) / 100;
   const ttc = Math.round((ht + tva) * 100) / 100;
 
+  const confiance = 100; // manual entry = fully trusted
+  const compte = type === 'vente' ? '71110' : '61110';
   const webhookUrl = getWebhookUrl();
 
   if (!webhookUrl) {
     // No webhook — save locally only
     showToast('info','⚠ Webhook non configuré','Facture enregistrée localement uniquement. Configurez le webhook n8n pour l\'envoyer à Odoo.');
-    invoicesData.unshift({ num, date, tiers, societe, type, ht, tva, ttc, status:'Local', sc:'badge-orange' });
-    filteredData = [...invoicesData];
+    pushInvoice({ num, date, tiers, societe, type, ht, tva, ttc, status:'Local', sc:'badge-orange', confiance, compte });
     showSection('invoices');
     return;
   }
 
+  // FIX 1 — push skeleton row immediately as 'En traitement'.
+  pushInvoice({ num, date, tiers, societe, type, ht, tva, ttc, status:'En traitement', sc:'badge-cyan', confiance, compte });
+  addStatusRow({ num, societe, status: 'En cours', duration: '—' });
   showToast('info','⚡ Envoi vers n8n…','Transmission du formulaire au workflow…');
+  resetSimulation(num);          // FIX 5/8 — cosmetic animation only
+  showSection('status');
+  const t0 = Date.now();
 
   const payload = {
-    source: 'manual',
-    invoice_number: num,
-    date,
-    type,
-    tiers,
-    ice,
-    societe,
-    lines,
-    montant_ht: ht,
-    montant_tva: tva,
-    montant_ttc: ttc,
-    submitted_at: new Date().toISOString(),
-    cabinet: 'AVA Dashboard',
+    source: 'manual', invoice_number: num, date, type, tiers, ice, societe, lines,
+    montant_ht: ht, montant_tva: tva, montant_ttc: ttc,
+    submitted_at: new Date().toISOString(), cabinet: 'AVA Dashboard',
   };
 
   try {
@@ -2001,38 +2121,32 @@ async function submitManualForm() {
     const secret = localStorage.getItem('ava_n8n_secret');
     if (secret) headers['x-ava-secret'] = secret;
 
-    const resp = await fetch(webhookUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
+    const resp = await fetch(webhookUrl, { method: 'POST', headers, body: JSON.stringify(payload) });
+    const duration = ((Date.now() - t0) / 1000).toFixed(1) + 's';
 
     if (resp.ok) {
-      let jobId = null, respData = {};
-      const t0 = Date.now();
-      try { respData = await resp.json(); jobId = respData.executionId || respData.jobId || respData.id || null; } catch(_) {}
-      const duration = ((Date.now() - t0) / 1000).toFixed(1) + 's';
-      invoicesData.unshift({
-        num, date, tiers, societe, type, ht, tva, ttc,
-        status: 'En traitement',
-        sc: 'badge-cyan',
-        jobId,
-      });
-      filteredData = [...invoicesData];
-      addStatusRow({ num, societe, status: 'En cours', duration: '—', jobId });
-      showToast('info','⚡ Traitement en cours…', num + (jobId ? ` — Job #${jobId}` : ' — Odoo & Sheets en cours.'));
-      resetSimulation(num);
-      showSection('status');
+      // FIX 5 — success only on a real 200.
+      let jobId = null;
+      try { const d = await resp.json(); jobId = d.executionId || d.jobId || d.id || null; } catch(_) {}
+      finishSimulation(true);
+      patchInvoice(num, { status: 'Traité', sc: 'badge-green', jobId });
+      updateStatusRow(num, 'Traité', duration);
+      showToast('success','✓ Traitement terminé', num + ' — enregistrée dans Odoo & Sheets.');
     } else {
       const txt = await resp.text().catch(() => resp.statusText);
-      showToast('error', `Erreur n8n (${resp.status})`, txt.slice(0,120));
+      const errMsg = (txt || '').slice(0, 200);
+      finishSimulation(false, resp.status, errMsg);
+      patchInvoice(num, { status: 'Erreur', sc: 'badge-red', errorMsg: `HTTP ${resp.status} — ${errMsg}` });
+      updateStatusRow(num, 'Erreur', duration);
+      if (liveInvoices[num]) liveInvoices[num].errorMsg = `HTTP ${resp.status} — ${errMsg}`;
+      showToast('error', `Erreur n8n (${resp.status})`, errMsg || 'Le workflow a renvoyé une erreur.');
     }
   } catch(err) {
-    // Network error → save locally as fallback
-    invoicesData.unshift({ num, date, tiers, societe, type, ht, tva, ttc, status:'Erreur envoi', sc:'badge-red' });
-    filteredData = [...invoicesData];
-    showToast('error','Erreur réseau', err.message + ' — Facture sauvegardée localement.');
-    showSection('invoices');
+    finishSimulation(false, null, err.message);
+    patchInvoice(num, { status: 'Erreur', sc: 'badge-red', errorMsg: err.message });
+    updateStatusRow(num, 'Erreur', '—');
+    if (liveInvoices[num]) liveInvoices[num].errorMsg = err.message;
+    showToast('error','Erreur réseau', err.message || 'Impossible de joindre le webhook n8n.');
   }
 }
 
@@ -2040,25 +2154,30 @@ async function submitManualForm() {
 // STATUS SIMULATION
 // ══════════════════════════════════════════
 // Steps 0-1 start as 'done', step 2 starts as 'active' → simStep tracks next pending step (index 3)
+// FIX 5: this animation is COSMETIC. It advances through steps but never resolves the job —
+// the final Traité/Erreur state is set exclusively by finishSimulation() from the fetch result.
 let simStep = 3;
 let simDone = false;
-const simLogs = [
-  '<div class="log-success">✓ [14:32:11] GPT-4o — données extraites : fournisseur, 4 lignes, TVA 20%</div>',
-  '<div class="log-success">✓ [14:32:12] Validation PCM — compte 61110 (Achats marchandises) suggéré</div>',
-  '<div class="log-success">✓ [14:32:14] Écriture créée dans Odoo — account.move ID: 2047</div>',
-  '<div class="log-success">✓ [14:32:15] Ligne ajoutée dans Google Sheets — onglet Factures</div>',
-  '<div class="log-success">✓ [14:32:16] Email de confirmation envoyé à cabinet@exemple.ma</div>',
-];
+// FIX 8 — log lines built with real timestamps at run time.
+function buildSimLogs() {
+  const t = () => `[${new Date().toLocaleTimeString('fr-FR')}]`;
+  return [
+    `<div class="log-success">✓ ${t()} GPT-4o — données extraites : fournisseur, lignes, TVA</div>`,
+    `<div class="log-success">✓ ${t()} Validation PCM — compte comptable suggéré</div>`,
+    `<div class="log-active">⚡ ${t()} Création de l'écriture dans Odoo…</div>`,
+    `<div class="log-active">⚡ ${t()} Ajout de la ligne dans Google Sheets…</div>`,
+    `<div class="log-active">⚡ ${t()} En attente de confirmation n8n…</div>`,
+  ];
+}
+let simLogs = buildSimLogs();
 let simInterval = null;
 let _currentSimNum = null;
 
 function simulateProcessing() {
   if (simDone) return;
-
   const steps = document.querySelectorAll('#tracker-1 .step-wrap');
-  const now = new Date().toLocaleTimeString('fr', {hour:'2-digit', minute:'2-digit'});
+  const now = new Date().toLocaleTimeString('fr-FR');
 
-  // Mark the current active step as done
   const activeIdx = simStep - 1;
   if (activeIdx < steps.length) {
     steps[activeIdx].classList.remove('active');
@@ -2066,60 +2185,76 @@ function simulateProcessing() {
     steps[activeIdx].querySelector('.step-circle').textContent = '✓';
     steps[activeIdx].querySelector('.step-time').textContent = now;
   }
-
-  // Advance: make next step active
-  if (simStep < steps.length) {
+  // Stop one short of the last step — the final step waits on the real result.
+  if (simStep < steps.length - 1) {
     steps[simStep].classList.add('active');
-  }
-
-  // Append the matching log line
-  const logIdx = simStep - 3;
-  if (logIdx >= 0 && logIdx < simLogs.length) {
-    const box = document.getElementById('log-box');
-    box.innerHTML += simLogs[logIdx];
-    box.scrollTop = box.scrollHeight;
-  }
-
-  simStep++;
-
-  // Check if all steps done
-  if (simStep > steps.length) {
-    steps[steps.length - 1].classList.remove('active');
-    steps[steps.length - 1].classList.add('done');
-    steps[steps.length - 1].querySelector('.step-circle').textContent = '✓';
-    steps[steps.length - 1].querySelector('.step-time').textContent = now;
-
-    document.getElementById('active-status-badge').className = 'badge badge-green';
-    document.getElementById('active-status-badge').textContent = '✓ Traité avec succès';
-    document.getElementById('processing-badge').textContent = '1';
-    simDone = true;
+    const logIdx = simStep - 3;
+    if (logIdx >= 0 && logIdx < simLogs.length) {
+      const box = document.getElementById('log-box');
+      box.innerHTML += simLogs[logIdx];
+      box.scrollTop = box.scrollHeight;
+    }
+    simStep++;
+  } else {
+    // Reached the waiting state — keep the last step pulsing until finishSimulation() is called.
+    if (simInterval) { clearInterval(simInterval); simInterval = null; }
   }
 }
 
-function startAutoSim(invoiceNum) {
+function startAutoSim() {
   if (simInterval) clearInterval(simInterval);
   simDone = false;
-  const t0 = Date.now();
-  simInterval = setInterval(() => {
-    if (simDone) {
-      clearInterval(simInterval); simInterval = null;
-      // Update the status row to Traité now that simulation is complete
-      if (invoiceNum) {
-        const elapsed = ((Date.now() - t0) / 1000).toFixed(1) + 's';
-        updateStatusRow(invoiceNum, 'Traité', elapsed);
-      }
-      showToast('success', '✓ Traitement terminé', (invoiceNum || 'Facture') + ' — enregistrée dans Odoo & Sheets.');
-      return;
+  simInterval = setInterval(simulateProcessing, 1200);
+}
+
+// FIX 5 — called by the fetch handlers to lock the final state from the real result.
+function finishSimulation(success, httpStatus, errMsg) {
+  if (simInterval) { clearInterval(simInterval); simInterval = null; }
+  simDone = true;
+  const steps = document.querySelectorAll('#tracker-1 .step-wrap');
+  const now = new Date().toLocaleTimeString('fr-FR');
+  const last = steps[steps.length - 1];
+  const badge = document.getElementById('active-status-badge');
+  const box = document.getElementById('log-box');
+
+  if (success) {
+    steps.forEach(s => {
+      s.classList.remove('active'); s.classList.add('done');
+      s.querySelector('.step-circle').textContent = '✓';
+      if (s.querySelector('.step-time').textContent === '—') s.querySelector('.step-time').textContent = now;
+    });
+    if (badge) { badge.className = 'badge badge-green'; badge.textContent = '✓ Traité avec succès'; }
+    if (box) { box.innerHTML += `<div class="log-success">✓ [${now}] Confirmation n8n reçue — facture enregistrée.</div>`; box.scrollTop = box.scrollHeight; }
+  } else {
+    if (last) { last.classList.remove('active'); last.querySelector('.step-circle').textContent = '✕'; last.querySelector('.step-time').textContent = now; }
+    if (badge) { badge.className = 'badge badge-red'; badge.textContent = '✕ Échec du traitement'; }
+    if (box) {
+      const detail = httpStatus ? `HTTP ${httpStatus}` : 'Erreur réseau';
+      box.innerHTML += `<div class="log-error">✕ [${now}] ${detail} — ${(errMsg || 'le workflow a échoué').slice(0,160)}</div>`;
+      box.scrollTop = box.scrollHeight;
     }
-    simulateProcessing();
-  }, 1500);
+  }
+}
+
+// FIX 4 — ⏹ Annuler: stop the animation and return to the invoices list.
+function cancelProcessing() {
+  if (simInterval) { clearInterval(simInterval); simInterval = null; }
+  simDone = true;
+  if (_currentSimNum) {
+    patchInvoice(_currentSimNum, { status: 'Erreur', sc: 'badge-red', errorMsg: 'Annulé par l\'utilisateur.' });
+    updateStatusRow(_currentSimNum, 'Erreur', '—');
+    if (liveInvoices[_currentSimNum]) liveInvoices[_currentSimNum].errorMsg = 'Annulé par l\'utilisateur.';
+  }
+  showToast('info', '⏹ Traitement annulé', 'Le traitement a été interrompu.');
+  showSection('invoices');
 }
 
 // ══════════════════════════════════════════
 // INVOICES TABLE
 // ══════════════════════════════════════════
-let filteredData = [...invoicesData];
 const typeLabels = { achat:'🛒 Achat', vente:'💼 Vente', note:'🧾 Frais', avoir:'↩ Avoir' };
+const PAGE_SIZE = 10;          // FIX 3
+let currentPage = 1;
 function statusIcon(s) {
   if (s === 'Traité')        return '✓';
   if (s === 'En traitement') return '⚡';
@@ -2132,8 +2267,30 @@ function statusIcon(s) {
 
 function renderTable() {
   const tbody = document.getElementById('invoices-tbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
-  filteredData.forEach(inv => {
+
+  // FIX 3 — empty state
+  if (filteredData.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="10" style="text-align:center;padding:40px 0;color:var(--fg3)">
+        <div style="font-size:2rem;margin-bottom:10px">🧾</div>
+        <div style="margin-bottom:14px">Aucune facture trouvée</div>
+        <button class="btn btn-cyan btn-sm" onclick="showSection('upload')">📤 Soumettre une facture</button>
+      </td>`;
+    tbody.appendChild(tr);
+    document.getElementById('pagination-info').textContent = 'Affichage 0 sur 0 factures';
+    document.getElementById('page-btns').innerHTML = '';
+    return;
+  }
+
+  const totalPages = Math.ceil(filteredData.length / PAGE_SIZE);
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const slice = filteredData.slice(start, start + PAGE_SIZE);
+
+  slice.forEach(inv => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong style="color:var(--white)">${inv.num}</strong></td>
@@ -2148,9 +2305,30 @@ function renderTable() {
       <td><button class="btn btn-ghost btn-sm" onclick="openDetails('${inv.num}')">Voir</button></td>`;
     tbody.appendChild(tr);
   });
+
   document.getElementById('pagination-info').textContent =
-    `Affichage 1–${Math.min(filteredData.length,10)} sur ${filteredData.length} factures`;
+    `Affichage ${start + 1}–${start + slice.length} sur ${filteredData.length} factures`;
+  renderPageButtons(totalPages);
 }
+
+function renderPageButtons(totalPages) {
+  const wrap = document.getElementById('page-btns');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (totalPages <= 1) return;
+  const mk = (label, page, opts = {}) => {
+    const b = document.createElement('button');
+    b.className = 'page-btn' + (opts.active ? ' active' : '');
+    b.textContent = label;
+    if (opts.disabled) { b.disabled = true; b.style.opacity = '0.4'; b.style.cursor = 'default'; }
+    else b.onclick = () => { currentPage = page; renderTable(); };
+    wrap.appendChild(b);
+  };
+  mk('‹', currentPage - 1, { disabled: currentPage === 1 });
+  for (let p = 1; p <= totalPages; p++) mk(String(p), p, { active: p === currentPage });
+  mk('›', currentPage + 1, { disabled: currentPage === totalPages });
+}
+
 function filterTable() {
   const q  = document.getElementById('search-input').value.toLowerCase();
   const ty = document.getElementById('filter-type').value;
@@ -2160,14 +2338,28 @@ function filterTable() {
     (!ty || i.type === ty) &&
     (!st || i.status === st)
   );
+  originalOrder = [...filteredData];   // sort baseline follows the active filter
+  sortState = { key: null, dir: 0 };
+  currentPage = 1;
   renderTable();
 }
-let sortDir = {};
+
+// FIX 6 — three-state, non-mutating sort: asc → desc → original.
+let sortState = { key: null, dir: 0 };
 function sortTable(k) {
-  sortDir[k] = !sortDir[k];
-  filteredData.sort((a,b) => typeof a[k]==='string'
-    ? (sortDir[k] ? a[k].localeCompare(b[k]) : b[k].localeCompare(a[k]))
-    : (sortDir[k] ? a[k]-b[k] : b[k]-a[k]));
+  if (sortState.key !== k) sortState = { key: k, dir: 1 };
+  else sortState.dir = sortState.dir === 1 ? -1 : (sortState.dir === -1 ? 0 : 1);
+
+  if (sortState.dir === 0) {
+    filteredData = [...originalOrder];
+  } else {
+    const dir = sortState.dir;
+    filteredData = [...filteredData].sort((a, b) =>
+      typeof a[k] === 'string'
+        ? dir * String(a[k]).localeCompare(String(b[k]))
+        : dir * ((a[k] || 0) - (b[k] || 0)));
+  }
+  currentPage = 1;
   renderTable();
 }
 
@@ -2285,18 +2477,8 @@ function getWebhookUrl() {
       || localStorage.getItem('ava_n8n_webhook') || '';
 }
 
-function saveWebhookUrl() {
-  const url    = (document.getElementById('n8n-webhook-url')?.value || '').trim();
-  const secret = (document.getElementById('n8n-secret')?.value    || '').trim();
-  const auth   = document.getElementById('n8n-auth')?.value || 'none';
-  if (url)    localStorage.setItem('ava_n8n_webhook', url);
-  if (secret) localStorage.setItem('ava_n8n_secret',  secret);
-  // Toggle header row visibility
-  const row = document.getElementById('n8n-header-row');
-  if (row) row.style.display = auth === 'header' ? '' : 'none';
-  // Update status badge
-  updateWebhookBadge(url ? 'saved' : 'empty');
-}
+// Kept for the existing inline handlers — delegates to the unified saveSettings (FIX 10).
+function saveWebhookUrl() { saveSettings(); }
 
 function updateWebhookBadge(state) {
   const badge = document.getElementById('webhook-status-badge');
@@ -2345,34 +2527,120 @@ async function testWebhook() {
 }
 
 // ══════════════════════════════════════════
+// EXPORTS (FIX 4)
+// ══════════════════════════════════════════
+function exportExcel() {
+  if (!invoicesData.length) { showToast('info', 'Aucune donnée', 'Aucune facture à exporter.'); return; }
+  if (typeof XLSX === 'undefined') { showToast('error', 'Librairie indisponible', 'SheetJS n\'a pas pu être chargé (connexion ?).'); return; }
+  const rows = invoicesData.map(i => ({
+    'N° Facture': i.num, 'Date': i.date, 'Tiers': i.tiers, 'Société': i.societe,
+    'Type': i.type, 'HT': i.ht, 'TVA': i.tva, 'TTC': i.ttc,
+    'Compte PCM': i.compte || '', 'Statut': i.status,
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Factures');
+  XLSX.writeFile(wb, `AVA_factures_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('success', '📥 Export Excel', `${rows.length} factures exportées.`);
+}
+
+function generateDGI() {
+  if (!invoicesData.length) { showToast('info', 'Aucune donnée', 'Aucune écriture à exporter.'); return; }
+  const esc = v => {
+    const s = String(v ?? '');
+    return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = ['Date','Fournisseur','N° Facture','HT','TVA','TTC','Compte PCM'];
+  const lines = [header.join(';')];
+  invoicesData.forEach(i => {
+    lines.push([i.date, i.tiers, i.num, i.ht, i.tva, i.ttc, i.compte || '61110'].map(esc).join(';'));
+  });
+  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `FEC_AVA_${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  showToast('success', '📄 Export DGI', `Fichier FEC généré (${invoicesData.length} écritures).`);
+}
+
+// FIX 4 — open the configured Odoo instance.
+function openInOdoo() {
+  const url = (document.getElementById('odoo-url')?.value || localStorage.getItem('ava_odoo_url') || '').trim();
+  if (url) window.open(url, '_blank', 'noopener');
+  else showToast('info', 'URL Odoo manquante', 'Configurez l\'URL Odoo dans Paramètres.');
+}
+
+// ══════════════════════════════════════════
+// SIDEBAR (FIX 9)
+// ══════════════════════════════════════════
+function toggleSidebar() {
+  document.getElementById('sidebar')?.classList.toggle('open');
+  document.getElementById('sidebar-overlay')?.classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar')?.classList.remove('open');
+  document.getElementById('sidebar-overlay')?.classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+// SETTINGS PERSISTENCE (FIX 10)
+// ══════════════════════════════════════════
+function saveSettings() {
+  const url    = (document.getElementById('n8n-webhook-url')?.value || '').trim();
+  const secret = (document.getElementById('n8n-secret')?.value    || '').trim();
+  const auth   = document.getElementById('n8n-auth')?.value || 'none';
+  const odoo   = (document.getElementById('odoo-url')?.value || '').trim();
+  const sheets = (document.getElementById('sheets-id')?.value || '').trim();
+  try {
+    if (url)    localStorage.setItem('ava_n8n_webhook', url); else localStorage.removeItem('ava_n8n_webhook');
+    if (secret) localStorage.setItem('ava_n8n_secret', secret);
+    localStorage.setItem('ava_n8n_auth', auth);
+    if (odoo)   localStorage.setItem('ava_odoo_url', odoo);
+    if (sheets) localStorage.setItem('ava_sheets_id', sheets);
+  } catch(_) {}
+  const row = document.getElementById('n8n-header-row');
+  if (row) row.style.display = auth === 'header' ? '' : 'none';
+  updateWebhookBadge(url ? 'saved' : 'empty');
+}
+function loadSettings() {
+  const DEFAULT_WEBHOOK = 'https://symowde.app.n8n.cloud/webhook/ava-invoice';
+  const get = (k, d='') => { try { return localStorage.getItem(k) || d; } catch(_) { return d; } };
+  const urlInput = document.getElementById('n8n-webhook-url');
+  const secInput = document.getElementById('n8n-secret');
+  const authSel  = document.getElementById('n8n-auth');
+  const odooIn   = document.getElementById('odoo-url');
+  const sheetsIn = document.getElementById('sheets-id');
+  if (urlInput)  { urlInput.value = get('ava_n8n_webhook', DEFAULT_WEBHOOK); updateWebhookBadge('saved'); }
+  if (secInput)  secInput.value = get('ava_n8n_secret');
+  if (authSel)   authSel.value = get('ava_n8n_auth', 'none');
+  if (odooIn && get('ava_odoo_url'))   odooIn.value = get('ava_odoo_url');
+  if (sheetsIn && get('ava_sheets_id')) sheetsIn.value = get('ava_sheets_id');
+  const row = document.getElementById('n8n-header-row');
+  if (row && authSel) row.style.display = authSel.value === 'header' ? '' : 'none';
+}
+
+// ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
   addLine();
+
+  // FIX 7 — restore persisted invoices (merged with demo), then render + stats.
+  loadInvoices();
   renderTable();
+  updateStats();
+
   document.getElementById('detail-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeModal();
   });
 
-  // Restore saved webhook settings from localStorage (fallback to hardcoded production URL)
-  const DEFAULT_WEBHOOK = 'https://symowde.app.n8n.cloud/webhook/ava-invoice';
-  const savedUrl    = localStorage.getItem('ava_n8n_webhook') || DEFAULT_WEBHOOK;
-  const savedSecret = localStorage.getItem('ava_n8n_secret')  || '';
-  const urlInput    = document.getElementById('n8n-webhook-url');
-  const secInput    = document.getElementById('n8n-secret');
-  if (urlInput && savedUrl)    { urlInput.value = savedUrl; updateWebhookBadge('saved'); }
-  if (secInput && savedSecret) { secInput.value = savedSecret; }
-
-  // Show/hide header-secret row based on saved auth choice
+  // FIX 10 — restore all saved settings.
+  loadSettings();
   const authSel = document.getElementById('n8n-auth');
-  const headerRow = document.getElementById('n8n-header-row');
-  if (authSel && headerRow) {
-    headerRow.style.display = authSel.value === 'header' ? '' : 'none';
-    authSel.addEventListener('change', () => {
-      headerRow.style.display = authSel.value === 'header' ? '' : 'none';
-    });
-  }
+  if (authSel) authSel.addEventListener('change', saveSettings);
 });
 </script>
 </body>
