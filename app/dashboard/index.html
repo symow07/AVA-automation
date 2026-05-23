@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&family=Source+Sans+3:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
 /* ══ TOKENS ══════════════════════════════════ */
 :root {
@@ -1850,19 +1851,52 @@ async function processUpload() {
   clearFile();
   const t0 = Date.now();
 
-  // Read as base64
-  const reader = new FileReader();
-  reader.onload = async function(ev) {
-    const base64 = ev.target.result.split(',')[1];
-    const payload = {
-      source: file.type === 'application/pdf' ? 'pdf' : 'image',
-      filename: file.name,
-      filesize: file.size,
-      mimetype: file.type,
-      base64: base64,
-      submitted_at: new Date().toISOString(),
-      cabinet: 'AVA Dashboard',
-    };
+  // Read file — convert PDF → JPEG via PDF.js so OpenAI Vision gets real image bytes
+  async function getBase64ForUpload(f) {
+    if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
+      // Use PDF.js to render first page to canvas → JPEG base64
+      try {
+        if (typeof pdfjsLib === 'undefined') throw new Error('PDF.js not loaded');
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const arrayBuffer = await f.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const page = await pdf.getPage(1);
+        const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for clarity
+        const canvas = document.createElement('canvas');
+        canvas.width  = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+        return { base64: dataUrl.split(',')[1], mimetype: 'image/jpeg' };
+      } catch(pdfErr) {
+        console.warn('PDF.js render failed, sending raw bytes:', pdfErr);
+        // Fallback: send raw bytes (will likely fail OpenAI, but at least surfaces the error)
+      }
+    }
+    // For images or PDF fallback: read as data URL
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = e => {
+        const parts = e.target.result.split(',');
+        resolve({ base64: parts[1], mimetype: f.type || 'image/jpeg' });
+      };
+      r.onerror = reject;
+      r.readAsDataURL(f);
+    });
+  }
+
+  const { base64, mimetype: resolvedMime } = await getBase64ForUpload(file);
+  const payload = {
+    source: (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) ? 'pdf' : 'image',
+    filename: file.name,
+    filesize: file.size,
+    mimetype: resolvedMime,
+    base64: base64,
+    submitted_at: new Date().toISOString(),
+    cabinet: 'AVA Dashboard',
+  };
 
     try {
       const headers = { 'Content-Type': 'application/json' };
@@ -1906,8 +1940,6 @@ async function processUpload() {
       if (liveInvoices[rowNum]) liveInvoices[rowNum].errorMsg = err.message;
       showToast('error', 'Erreur réseau', err.message || 'Impossible de joindre le webhook n8n.');
     }
-  };
-  reader.readAsDataURL(file);
 }
 
 function resetSimulation(invoiceNum) {
