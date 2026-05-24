@@ -697,9 +697,129 @@ textarea { resize: vertical; min-height: 80px; }
   .stats-row { grid-template-columns: 1fr; }
   .topbar-brand { width: auto; border: none; }
 }
+
+/* ══ LOGIN OVERLAY ═══════════════════════════ */
+#login-overlay {
+  position: fixed; inset: 0; z-index: 2000;
+  background: var(--bg3);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+#login-overlay.hidden { display: none; }
+.login-box {
+  width: 100%; max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 40px 36px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 40px rgba(0,212,255,0.08);
+}
+.login-brand {
+  font-family: var(--font-h); font-size: 2rem; font-weight: 700;
+  color: var(--white); letter-spacing: -0.5px;
+  margin-bottom: 6px; text-align: center;
+}
+.login-brand span { color: var(--cyan); text-shadow: 0 0 14px var(--cyan-glow); }
+.login-sub { text-align: center; color: var(--fg3); font-size: 0.85rem; margin-bottom: 32px; }
+.login-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+.login-field label {
+  font-size: 0.72rem; font-weight: 700; color: var(--fg3);
+  text-transform: uppercase; letter-spacing: 0.06em;
+}
+.login-btn {
+  width: 100%; padding: 12px;
+  background: var(--cyan); color: var(--bg);
+  border: none; border-radius: var(--r);
+  font-family: var(--font-h); font-size: 0.95rem; font-weight: 700;
+  cursor: pointer; margin-top: 8px;
+  box-shadow: 0 0 20px var(--cyan-glow); transition: all 0.15s;
+}
+.login-btn:hover { background: #22daff; box-shadow: 0 0 32px rgba(0,212,255,0.5); }
+.login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-switch { text-align: center; margin-top: 20px; font-size: 0.82rem; color: var(--fg3); }
+.login-switch a { color: var(--cyan); cursor: pointer; text-decoration: underline; }
+.login-error {
+  background: var(--red-dim); border: 1px solid rgba(239,68,68,0.3);
+  border-radius: var(--r); padding: 10px 14px;
+  color: var(--red); font-size: 0.82rem; margin-bottom: 14px; display: none;
+}
+.login-error.show { display: block; }
+#app-loading {
+  position: fixed; inset: 0; z-index: 1900;
+  background: var(--bg3);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 16px;
+}
+#app-loading.hidden { display: none; }
+.app-loading-logo { font-family: var(--font-h); font-size: 2.2rem; font-weight: 700; color: var(--white); }
+.app-loading-logo span { color: var(--cyan); }
+.loading-dots { display: flex; gap: 6px; }
+.loading-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--cyan); opacity: 0.3; animation: dot-pulse 1.2s infinite;
+}
+.loading-dot:nth-child(2) { animation-delay: 0.2s; }
+.loading-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes dot-pulse { 0%,80%,100%{opacity:0.3} 40%{opacity:1} }
 </style>
 </head>
 <body>
+
+<!-- ══ APP LOADING ══ -->
+<div id="app-loading">
+  <div class="app-loading-logo">AVA<span>.</span></div>
+  <div class="loading-dots">
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+    <div class="loading-dot"></div>
+  </div>
+</div>
+
+<!-- ══ LOGIN OVERLAY ══ -->
+<div id="login-overlay" class="hidden">
+  <div class="login-box">
+    <div class="login-brand">AVA<span>.</span></div>
+    <div class="login-sub" id="login-subtitle">Accès sécurisé à votre tableau de bord</div>
+
+    <!-- Login form -->
+    <div id="login-form-wrap">
+      <div class="login-error" id="login-error"></div>
+      <div class="login-field">
+        <label>Identifiant du cabinet</label>
+        <input type="text" id="login-slug" placeholder="ex: cabinet-maaroufi" autocomplete="username">
+      </div>
+      <div class="login-field">
+        <label>Mot de passe</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="login-btn" id="login-btn" onclick="doLogin()">Se connecter</button>
+      <div class="login-switch">Nouveau cabinet ? <a onclick="showSetupForm()">Créer un compte</a></div>
+    </div>
+
+    <!-- Setup form -->
+    <div id="setup-form-wrap" style="display:none">
+      <div class="login-error" id="setup-error"></div>
+      <div class="login-field">
+        <label>Nom du cabinet</label>
+        <input type="text" id="setup-name" placeholder="Cabinet Maârouf & Associés" oninput="autoSlug()">
+      </div>
+      <div class="login-field">
+        <label>Identifiant (généré automatiquement)</label>
+        <input type="text" id="setup-slug" placeholder="cabinet-maaroufi">
+      </div>
+      <div class="login-field">
+        <label>Mot de passe</label>
+        <input type="password" id="setup-pass" placeholder="Minimum 6 caractères">
+      </div>
+      <div class="login-field">
+        <label>Confirmer le mot de passe</label>
+        <input type="password" id="setup-confirm" placeholder="••••••••">
+      </div>
+      <button class="login-btn" id="setup-btn" onclick="doSetup()">Créer le cabinet</button>
+      <div class="login-switch">Déjà inscrit ? <a onclick="showLoginForm()">Se connecter</a></div>
+    </div>
+  </div>
+</div>
 
 <!-- ══ MOBILE NAV (FIX 9) ══ -->
 <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Menu">☰</button>
@@ -719,10 +839,11 @@ textarea { resize: vertical; min-height: 80px; }
       </div>
       <div class="topbar-user">
         <div style="text-align:right">
-          <div class="topbar-user-name">Cabinet Samir</div>
+          <div class="topbar-user-name" id="topbar-cabinet-name">—</div>
           <div class="topbar-user-role">Comptable principal</div>
         </div>
-        <div class="topbar-avatar">CS</div>
+        <div class="topbar-avatar" id="topbar-avatar">—</div>
+        <button onclick="logout()" title="Déconnexion" style="background:none;border:1px solid var(--border2);border-radius:var(--r);color:var(--fg3);padding:6px 10px;cursor:pointer;font-size:0.8rem;margin-left:4px;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--fg3)'">⏻</button>
       </div>
     </div>
   </div>
@@ -766,7 +887,7 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="page-header">
         <span class="page-tag">Vue d'ensemble</span>
         <h1 class="page-title">Tableau de Bord</h1>
-        <p class="page-sub">Cabinet Samir — Mai 2026</p>
+        <p class="page-sub" id="page-sub-dashboard">—</p>
       </div>
 
       <div class="stats-row">
@@ -1509,6 +1630,10 @@ textarea { resize: vertical; min-height: 80px; }
         </p>
         <div class="form-grid">
           <div class="form-group full">
+            <label>Nom du cabinet / société (envoyé avec chaque facture)</label>
+            <input type="text" id="ava-cabinet-name" placeholder="Ex: Cabinet Maârouf & Associés" oninput="saveSettings()">
+          </div>
+          <div class="form-group full">
             <label>URL du webhook n8n</label>
             <div style="display:flex;gap:10px">
               <input type="url" id="n8n-webhook-url" placeholder="https://symowde.app.n8n.cloud/webhook/ava-invoice"
@@ -1676,76 +1801,281 @@ textarea { resize: vertical; min-height: 80px; }
 
 <script>
 // ══════════════════════════════════════════
-// DATA
+// SUPABASE CONFIG
 // ══════════════════════════════════════════
-// Seed demo rows. confiance = OCR/IA confidence used by updateStats(). compte = PCM account for DGI export.
-const DEMO_INVOICES = [
-  { num:'FAC-2026-0048', date:'2026-05-21', tiers:'Atlas Consulting SARL',      societe:'Atlas Consulting', type:'achat', ht:15000, tva:3000, ttc:18000, status:'Traité', sc:'badge-green', confiance:98, compte:'61110', demo:true },
-  { num:'FAC-2026-0047', date:'2026-05-21', tiers:'Maroc Digital Services',     societe:'Maroc Digital',   type:'vente', ht:31500, tva:6300, ttc:37800, status:'Traité', sc:'badge-green', confiance:97, compte:'71110', demo:true },
-  { num:'FAC-2026-0046', date:'2026-05-20', tiers:'TechMaroc SARL',             societe:'TechMaroc SARL',  type:'achat', ht:8000,  tva:1600, ttc:9600,  status:'Traité', sc:'badge-green', confiance:96, compte:'61110', demo:true },
-  { num:'FAC-2026-0045', date:'2026-05-20', tiers:'Société Générale Maroc',     societe:'TechMaroc SARL',  type:'achat', ht:22400, tva:4480, ttc:26880, status:'Traité', sc:'badge-green', confiance:95, compte:'61110', demo:true },
-  { num:'FAC-2026-0044', date:'2026-05-19', tiers:'Inwi Business',              societe:'Atlas Consulting',type:'achat', ht:3500,  tva:700,  ttc:4200,  status:'Traité', sc:'badge-green', confiance:99, compte:'61110', demo:true },
-  { num:'FAC-2026-0043', date:'2026-05-19', tiers:'Cabinet Audit Plus',         societe:'Maroc Digital',   type:'achat', ht:18000, tva:3600, ttc:21600, status:'Traité', sc:'badge-green', confiance:94, compte:'61110', demo:true },
-  { num:'FAC-2026-0042', date:'2026-05-18', tiers:'Imprimerie Casablanca',      societe:'Atlas Consulting',type:'achat', ht:1200,  tva:240,  ttc:1440,  status:'Traité', sc:'badge-green', confiance:92, compte:'61110', demo:true },
-  { num:'FAC-2026-0041', date:'2026-05-17', tiers:'Maroc Telecom',              societe:'TechMaroc SARL',  type:'achat', ht:2800,  tva:560,  ttc:3360,  status:'Traité', sc:'badge-green', confiance:96, compte:'61110', demo:true },
-  { num:'FAC-2026-0040', date:'2026-05-16', tiers:'Afrique Logistics',          societe:'Maroc Digital',   type:'vente', ht:45000, tva:9000, ttc:54000, status:'Traité', sc:'badge-green', confiance:98, compte:'71110', demo:true },
-  { num:'FAC-2026-0039', date:'2026-05-15', tiers:'Banque Populaire Maroc',     societe:'Atlas Consulting',type:'achat', ht:5500,  tva:1100, ttc:6600,  status:'Traité', sc:'badge-green', confiance:93, compte:'61110', demo:true },
-];
+const SB_URL = 'https://rkahfwukwnrfchagmisz.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWhmd3Vrd25yZmNoYWdtaXN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyOTQ0NTgsImV4cCI6MjA5NDg3MDQ1OH0.b39al02BZqj2tu0p6xmR08mg9tQkADzRbfsYTyzcfyo';
+const SB_H  = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
 
-// FIX 1 — single source of truth. Starts as demo, merged with persisted user rows on load (FIX 7).
-let invoicesData = [...DEMO_INVOICES];
-let filteredData = [...invoicesData];
-let originalOrder = [...invoicesData];
+async function sbSelect(table, qs = '') {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { headers: SB_H });
+  if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+async function sbInsert(table, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method: 'POST', headers: { ...SB_H, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data),
+  });
+  if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+async function sbUpdate(table, qs, data) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
+    method: 'PATCH', headers: { ...SB_H, 'Prefer': 'return=representation' },
+    body: JSON.stringify(data),
+  });
+  if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+async function sbUpsert(table, data, onConflict) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?on_conflict=${onConflict}`, {
+    method: 'POST', headers: { ...SB_H, 'Prefer': 'return=representation,resolution=merge-duplicates' },
+    body: JSON.stringify(data),
+  });
+  if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
+  return r.json();
+}
+async function sbDelete(table, qs) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { method: 'DELETE', headers: SB_H });
+  if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
+  return true;
+}
 
-// Live-submitted invoices (from this session's uploads/manual entries) — drives the modal/status detail.
+// ══════════════════════════════════════════
+// AUTH — SHA-256 + session
+// ══════════════════════════════════════════
+async function sha256(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+let _session = null; // { slug, name, expires }
+
+function getSession() {
+  if (_session) return _session;
+  try {
+    const s = JSON.parse(localStorage.getItem('ava_session') || 'null');
+    if (s && s.expires > Date.now()) { _session = s; return s; }
+  } catch(_) {}
+  return null;
+}
+function setSession(slug, name) {
+  _session = { slug, name, expires: Date.now() + 8 * 3600 * 1000 };
+  try { localStorage.setItem('ava_session', JSON.stringify(_session)); } catch(_) {}
+}
+function clearSession() {
+  _session = null;
+  try { localStorage.removeItem('ava_session'); } catch(_) {}
+}
+
+function logout() {
+  clearSession();
+  invoicesData = []; filteredData = []; originalOrder = [];
+  showLogin();
+}
+
+// ── Login form helpers ──
+function showLogin() {
+  document.getElementById('login-overlay').classList.remove('hidden');
+  showLoginForm();
+}
+function hideLogin() {
+  document.getElementById('login-overlay').classList.add('hidden');
+}
+function showLoginForm() {
+  document.getElementById('login-form-wrap').style.display = '';
+  document.getElementById('setup-form-wrap').style.display = 'none';
+  document.getElementById('login-subtitle').textContent = 'Accès sécurisé à votre tableau de bord';
+  document.getElementById('login-error').classList.remove('show');
+}
+function showSetupForm() {
+  document.getElementById('login-form-wrap').style.display = 'none';
+  document.getElementById('setup-form-wrap').style.display = '';
+  document.getElementById('login-subtitle').textContent = 'Créer votre espace cabinet';
+  document.getElementById('setup-error').classList.remove('show');
+}
+function autoSlug() {
+  const name = document.getElementById('setup-name').value;
+  const slug = name.toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40);
+  document.getElementById('setup-slug').value = slug;
+}
+function loginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg; el.classList.add('show');
+}
+function setupError(msg) {
+  const el = document.getElementById('setup-error');
+  el.textContent = msg; el.classList.add('show');
+}
+
+async function doLogin() {
+  const slug = document.getElementById('login-slug').value.trim().toLowerCase();
+  const pass = document.getElementById('login-password').value;
+  document.getElementById('login-error').classList.remove('show');
+  if (!slug || !pass) { loginError('Veuillez remplir tous les champs.'); return; }
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Connexion…';
+  try {
+    const rows = await sbSelect('cabinet_settings', `cabinet_slug=eq.${encodeURIComponent(slug)}&select=cabinet_slug,cabinet_name,password_hash`);
+    if (!rows || rows.length === 0) { loginError('Cabinet introuvable. Vérifiez l\'identifiant.'); return; }
+    const cabinet = rows[0];
+    const hash = await sha256(slug + ':' + pass);
+    if (hash !== cabinet.password_hash) { loginError('Mot de passe incorrect.'); return; }
+    setSession(cabinet.cabinet_slug, cabinet.cabinet_name);
+    hideLogin();
+    await initDashboard();
+  } catch(e) {
+    loginError('Erreur de connexion : ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Se connecter';
+  }
+}
+
+async function doSetup() {
+  const name    = document.getElementById('setup-name').value.trim();
+  const slug    = document.getElementById('setup-slug').value.trim().toLowerCase();
+  const pass    = document.getElementById('setup-pass').value;
+  const confirm = document.getElementById('setup-confirm').value;
+  document.getElementById('setup-error').classList.remove('show');
+  if (!name || !slug || !pass) { setupError('Tous les champs sont obligatoires.'); return; }
+  if (pass.length < 6) { setupError('Le mot de passe doit contenir au moins 6 caractères.'); return; }
+  if (pass !== confirm) { setupError('Les mots de passe ne correspondent pas.'); return; }
+  if (!/^[a-z0-9-]+$/.test(slug)) { setupError('Identifiant invalide (lettres minuscules, chiffres, tirets uniquement).'); return; }
+  const btn = document.getElementById('setup-btn');
+  btn.disabled = true; btn.textContent = 'Création…';
+  try {
+    // Check slug not taken
+    const existing = await sbSelect('cabinet_settings', `cabinet_slug=eq.${encodeURIComponent(slug)}&select=cabinet_slug`);
+    if (existing && existing.length > 0) { setupError('Cet identifiant est déjà utilisé. Choisissez-en un autre.'); return; }
+    const hash = await sha256(slug + ':' + pass);
+    await sbInsert('cabinet_settings', { cabinet_slug: slug, cabinet_name: name, password_hash: hash });
+    setSession(slug, name);
+    hideLogin();
+    await initDashboard();
+  } catch(e) {
+    setupError('Erreur : ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Créer le cabinet';
+  }
+}
+
+// Allow Enter key in login form
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('setup-form-wrap').style.display !== 'none') doSetup();
+    else doLogin();
+  }
+});
+
+// ══════════════════════════════════════════
+// DATA — Supabase backed, zero rows on start
+// ══════════════════════════════════════════
+let invoicesData = [];
+let filteredData = [];
+let originalOrder = [];
 const liveInvoices = {};
 
-// ── FIX 7 — persistence (only user rows are stored; demo rows are always re-seeded) ──
-const STORAGE_KEY = 'ava_invoices';
-function persistInvoices() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(invoicesData.filter(r => !r.demo))); } catch(_) {}
-}
-function loadInvoices() {
-  let userRows = [];
-  try { userRows = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(_) { userRows = []; }
-  if (!Array.isArray(userRows)) userRows = [];
-  const seen = new Set(userRows.map(r => r.num));
-  invoicesData = [...userRows, ...DEMO_INVOICES.filter(d => !seen.has(d.num))];
-  resyncViews();
-}
 function resyncViews() {
-  filteredData   = [...invoicesData];
-  originalOrder  = [...invoicesData];
-}
-function clearTestData() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch(_) {}
-  invoicesData = [...DEMO_INVOICES];
-  currentPage = 1;
-  resyncViews();
-  renderTable();
-  updateStats();
-  showToast('success', '🗑️ Données effacées', 'Les factures de test ont été supprimées.');
+  filteredData  = [...invoicesData];
+  originalOrder = [...invoicesData];
 }
 
-// ── FIX 1 — push a skeleton row / patch it when the job resolves ──
-function pushInvoice(row) {
+async function loadInvoices() {
+  const s = getSession();
+  if (!s) return;
+  try {
+    const rows = await sbSelect('invoices',
+      `cabinet_slug=eq.${encodeURIComponent(s.slug)}&order=created_at.desc&select=num,date,tiers,societe,type,ht,tva,ttc,status,sc,confiance,compte,source,filename,error_msg,job_id`
+    );
+    invoicesData = (rows || []).map(r => ({
+      ...r,
+      ht: Number(r.ht) || 0,
+      tva: Number(r.tva) || 0,
+      ttc: Number(r.ttc) || 0,
+      confiance: r.confiance != null ? Number(r.confiance) : undefined,
+    }));
+    resyncViews();
+  } catch(e) {
+    showToast('error', 'Erreur chargement', e.message);
+  }
+}
+
+async function pushInvoice(row) {
+  const s = getSession();
+  if (!s) return;
+  // Optimistic local add
   invoicesData.unshift(row);
   resyncViews();
-  persistInvoices();
   renderTable();
   updateStats();
+  // Persist to Supabase
+  try {
+    await sbInsert('invoices', {
+      cabinet_slug: s.slug,
+      num: row.num, date: row.date, tiers: row.tiers, societe: row.societe,
+      type: row.type, ht: row.ht, tva: row.tva, ttc: row.ttc,
+      status: row.status, sc: row.sc,
+      confiance: row.confiance ?? null,
+      compte: row.compte || '61110',
+      source: row.source || 'pdf',
+      filename: row.filename || null,
+    });
+  } catch(e) {
+    showToast('error', 'Erreur sauvegarde', e.message);
+  }
 }
-function patchInvoice(num, patch) {
+
+async function patchInvoice(num, patch) {
+  const s = getSession();
+  // Patch in-memory immediately
   const row = invoicesData.find(r => r.num === num);
   if (row) Object.assign(row, patch);
-  // keep filtered view in sync without losing the user's current filter/sort intent → just refresh from source
-  filteredData = filteredData.map(r => (r.num === num && row) ? row : r);
+  filteredData  = filteredData.map(r => (r.num === num && row) ? row : r);
   originalOrder = originalOrder.map(r => (r.num === num && row) ? row : r);
-  persistInvoices();
   renderTable();
   updateStats();
+  // Persist to Supabase
+  if (s) {
+    try {
+      const dbPatch = {};
+      if (patch.tiers   !== undefined) dbPatch.tiers   = patch.tiers;
+      if (patch.societe !== undefined) dbPatch.societe = patch.societe;
+      if (patch.ht      !== undefined) dbPatch.ht      = patch.ht;
+      if (patch.tva     !== undefined) dbPatch.tva     = patch.tva;
+      if (patch.ttc     !== undefined) dbPatch.ttc     = patch.ttc;
+      if (patch.status  !== undefined) dbPatch.status  = patch.status;
+      if (patch.sc      !== undefined) dbPatch.sc      = patch.sc;
+      if (patch.confiance !== undefined) dbPatch.confiance = patch.confiance;
+      if (patch.compte  !== undefined) dbPatch.compte  = patch.compte;
+      if (patch.error_msg !== undefined) dbPatch.error_msg = patch.error_msg;
+      if (patch.job_id  !== undefined) dbPatch.job_id  = patch.job_id;
+      if (Object.keys(dbPatch).length) {
+        await sbUpdate('invoices', `num=eq.${encodeURIComponent(num)}&cabinet_slug=eq.${encodeURIComponent(s.slug)}`, dbPatch);
+      }
+    } catch(e) {
+      console.warn('patchInvoice DB error:', e.message);
+    }
+  }
   return row;
 }
+
+async function clearTestData() {
+  const s = getSession();
+  if (!s) return;
+  if (!confirm('Supprimer toutes les factures de ce cabinet ? Cette action est irréversible.')) return;
+  try {
+    await sbDelete('invoices', `cabinet_slug=eq.${encodeURIComponent(s.slug)}`);
+    invoicesData = []; currentPage = 1;
+    resyncViews(); renderTable(); updateStats();
+    showToast('success', '🗑️ Données supprimées', 'Toutes les factures ont été supprimées de la base.');
+  } catch(e) {
+    showToast('error', 'Erreur suppression', e.message);
+  }
+}
+
 
 // ── FIX 2 — live stat cards + sidebar badge ──
 function updateStats() {
@@ -1888,14 +2218,16 @@ async function processUpload() {
   }
 
   const { base64, mimetype: resolvedMime } = await getBase64ForUpload(file);
+  const cabinetName = (() => { try { return localStorage.getItem('ava_cabinet_name') || 'AVA Dashboard'; } catch(_) { return 'AVA Dashboard'; } })();
   const payload = {
-    source: (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) ? 'pdf' : 'image',
+    source: 'pdf',
     filename: file.name,
     filesize: file.size,
     mimetype: resolvedMime,
     base64: base64,
     submitted_at: new Date().toISOString(),
-    cabinet: 'AVA Dashboard',
+    cabinet: cabinetName,
+    societe: cabinetName,
   };
 
     try {
@@ -2145,7 +2477,7 @@ async function submitManualForm() {
   const payload = {
     source: 'manual', invoice_number: num, date, type, tiers, ice, societe, lines,
     montant_ht: ht, montant_tva: tva, montant_ttc: ttc,
-    submitted_at: new Date().toISOString(), cabinet: 'AVA Dashboard',
+    submitted_at: new Date().toISOString(), cabinet: (() => { try { return localStorage.getItem('ava_cabinet_name') || 'AVA Dashboard'; } catch(_) { return 'AVA Dashboard'; } })(),
   };
 
   try {
@@ -2617,62 +2949,132 @@ function closeSidebar() {
 }
 
 // ══════════════════════════════════════════
-// SETTINGS PERSISTENCE (FIX 10)
+// SETTINGS — Supabase backed
 // ══════════════════════════════════════════
+let _settingsSaveTimer = null;
+
 function saveSettings() {
-  const url    = (document.getElementById('n8n-webhook-url')?.value || '').trim();
-  const secret = (document.getElementById('n8n-secret')?.value    || '').trim();
-  const auth   = document.getElementById('n8n-auth')?.value || 'none';
-  const odoo   = (document.getElementById('odoo-url')?.value || '').trim();
-  const sheets = (document.getElementById('sheets-id')?.value || '').trim();
-  try {
-    if (url)    localStorage.setItem('ava_n8n_webhook', url); else localStorage.removeItem('ava_n8n_webhook');
-    if (secret) localStorage.setItem('ava_n8n_secret', secret);
-    localStorage.setItem('ava_n8n_auth', auth);
-    if (odoo)   localStorage.setItem('ava_odoo_url', odoo);
-    if (sheets) localStorage.setItem('ava_sheets_id', sheets);
-  } catch(_) {}
-  const row = document.getElementById('n8n-header-row');
+  // Immediate UI updates
+  const auth = document.getElementById('n8n-auth')?.value || 'none';
+  const row  = document.getElementById('n8n-header-row');
   if (row) row.style.display = auth === 'header' ? '' : 'none';
+  const url = (document.getElementById('n8n-webhook-url')?.value || '').trim();
   updateWebhookBadge(url ? 'saved' : 'empty');
+  // Also keep localStorage as fallback for webhook URL (used by processUpload/testWebhook)
+  if (url) { try { localStorage.setItem('ava_n8n_webhook', url); } catch(_) {} }
+  const secret = (document.getElementById('n8n-secret')?.value || '').trim();
+  if (secret) { try { localStorage.setItem('ava_n8n_secret', secret); } catch(_) {} }
+  const cabinetName = (document.getElementById('ava-cabinet-name')?.value || '').trim();
+  if (cabinetName) { try { localStorage.setItem('ava_cabinet_name', cabinetName); } catch(_) {} }
+  // Debounce DB write — save 1.5s after last keystroke
+  if (_settingsSaveTimer) clearTimeout(_settingsSaveTimer);
+  _settingsSaveTimer = setTimeout(saveSettingsToDB, 1500);
 }
-function loadSettings() {
+
+async function saveSettingsToDB() {
+  const s = getSession();
+  if (!s) return;
+  const url      = (document.getElementById('n8n-webhook-url')?.value || '').trim();
+  const secret   = (document.getElementById('n8n-secret')?.value    || '').trim();
+  const auth     = document.getElementById('n8n-auth')?.value || 'none';
+  const odoo     = (document.getElementById('odoo-url')?.value || '').trim();
+  const sheets   = (document.getElementById('sheets-id')?.value || '').trim();
+  const cabName  = (document.getElementById('ava-cabinet-name')?.value || '').trim();
+  try {
+    await sbUpdate('cabinet_settings', `cabinet_slug=eq.${encodeURIComponent(s.slug)}`, {
+      n8n_webhook: url,
+      n8n_secret:  secret,
+      n8n_auth:    auth,
+      odoo_url:    odoo,
+      sheets_id:   sheets,
+      ...(cabName ? { cabinet_name: cabName } : {}),
+    });
+    // Update session name if changed
+    if (cabName && cabName !== s.name) {
+      setSession(s.slug, cabName);
+      updateTopbarUser(cabName);
+    }
+  } catch(e) {
+    console.warn('saveSettingsToDB error:', e.message);
+  }
+}
+
+async function loadSettings() {
+  const s = getSession();
   const DEFAULT_WEBHOOK = 'https://symowde.app.n8n.cloud/webhook/ava-invoice';
-  const get = (k, d='') => { try { return localStorage.getItem(k) || d; } catch(_) { return d; } };
-  const urlInput = document.getElementById('n8n-webhook-url');
-  const secInput = document.getElementById('n8n-secret');
-  const authSel  = document.getElementById('n8n-auth');
-  const odooIn   = document.getElementById('odoo-url');
-  const sheetsIn = document.getElementById('sheets-id');
-  if (urlInput)  { urlInput.value = get('ava_n8n_webhook', DEFAULT_WEBHOOK); updateWebhookBadge('saved'); }
-  if (secInput)  secInput.value = get('ava_n8n_secret');
-  if (authSel)   authSel.value = get('ava_n8n_auth', 'none');
-  if (odooIn && get('ava_odoo_url'))   odooIn.value = get('ava_odoo_url');
-  if (sheetsIn && get('ava_sheets_id')) sheetsIn.value = get('ava_sheets_id');
+  let cfg = { n8n_webhook: DEFAULT_WEBHOOK, n8n_secret: '', n8n_auth: 'none', odoo_url: '', sheets_id: '' };
+  if (s) {
+    try {
+      const rows = await sbSelect('cabinet_settings',
+        `cabinet_slug=eq.${encodeURIComponent(s.slug)}&select=cabinet_name,n8n_webhook,n8n_secret,n8n_auth,odoo_url,sheets_id`
+      );
+      if (rows && rows.length > 0) cfg = { ...cfg, ...rows[0] };
+    } catch(e) { console.warn('loadSettings error:', e.message); }
+  }
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
+  set('n8n-webhook-url', cfg.n8n_webhook || DEFAULT_WEBHOOK);
+  set('n8n-secret',      cfg.n8n_secret);
+  set('n8n-auth',        cfg.n8n_auth || 'none');
+  set('odoo-url',        cfg.odoo_url);
+  set('sheets-id',       cfg.sheets_id);
+  if (s) set('ava-cabinet-name', cfg.cabinet_name || s.name);
   const row = document.getElementById('n8n-header-row');
+  const authSel = document.getElementById('n8n-auth');
   if (row && authSel) row.style.display = authSel.value === 'header' ? '' : 'none';
+  if (cfg.n8n_webhook) updateWebhookBadge('saved');
+  // Keep localStorage fallback in sync
+  if (cfg.n8n_webhook) { try { localStorage.setItem('ava_n8n_webhook', cfg.n8n_webhook); } catch(_) {} }
+  if (cfg.n8n_secret)  { try { localStorage.setItem('ava_n8n_secret',  cfg.n8n_secret); } catch(_) {} }
+  if (s?.name)         { try { localStorage.setItem('ava_cabinet_name', cfg.cabinet_name || s.name); } catch(_) {} }
+}
+
+// ══════════════════════════════════════════
+// TOPBAR USER
+// ══════════════════════════════════════════
+function updateTopbarUser(name) {
+  const initials = (name || '').split(/\s+/).map(w => w[0] || '').join('').toUpperCase().slice(0, 2) || '—';
+  const el  = document.getElementById('topbar-cabinet-name');
+  const av  = document.getElementById('topbar-avatar');
+  const sub = document.getElementById('page-sub-dashboard');
+  if (el)  el.textContent  = name || '—';
+  if (av)  av.textContent  = initials;
+  if (sub) sub.textContent = (name || '') + ' — ' + new Date().toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
 }
 
 // ══════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', () => {
+async function initDashboard() {
+  const s = getSession();
+  if (!s) { document.getElementById('app-loading').classList.add('hidden'); showLogin(); return; }
+
+  updateTopbarUser(s.name);
+
+  // Wire up form defaults
   document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
-  addLine();
-
-  // FIX 7 — restore persisted invoices (merged with demo), then render + stats.
-  loadInvoices();
-  renderTable();
-  updateStats();
-
+  if (!document.getElementById('line-items-body').children.length) addLine();
   document.getElementById('detail-modal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closeModal();
   });
-
-  // FIX 10 — restore all saved settings.
-  loadSettings();
   const authSel = document.getElementById('n8n-auth');
   if (authSel) authSel.addEventListener('change', saveSettings);
+
+  // Load data from Supabase
+  await Promise.all([loadInvoices(), loadSettings()]);
+  renderTable();
+  updateStats();
+
+  document.getElementById('app-loading').classList.add('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  const s = getSession();
+  if (!s) {
+    document.getElementById('app-loading').classList.add('hidden');
+    showLogin();
+  } else {
+    await initDashboard();
+  }
 });
 </script>
 </body>
