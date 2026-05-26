@@ -890,6 +890,24 @@ textarea { resize: vertical; min-height: 80px; }
         <p class="page-sub" id="page-sub-dashboard">—</p>
       </div>
 
+      <!-- Onboarding checklist — shown only when incomplete -->
+      <div id="onboarding-banner" style="display:none;margin-bottom:24px;background:linear-gradient(135deg,rgba(0,212,255,0.08),rgba(201,168,76,0.06));border:1px solid rgba(0,212,255,0.25);border-radius:12px;padding:20px 24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+          <div>
+            <div style="color:var(--white);font-weight:700;font-size:1rem;">🚀 Bienvenue dans AVA — Démarrez en 4 étapes</div>
+            <div style="color:var(--fg3);font-size:0.8rem;margin-top:2px;">Complétez ces étapes pour activer toutes les fonctionnalités.</div>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="dismissOnboarding()" title="Ne plus afficher">✕</button>
+        </div>
+        <div id="onboarding-steps" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"></div>
+        <div style="margin-top:14px;display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+            <div id="onboarding-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--cyan),var(--gold));border-radius:2px;transition:width 0.4s;"></div>
+          </div>
+          <span id="onboarding-progress-label" style="color:var(--fg3);font-size:12px;white-space:nowrap;">0 / 4</span>
+        </div>
+      </div>
+
       <div class="stats-row">
         <div class="stat-card">
           <div class="stat-value" id="stat-total">0</div>
@@ -916,57 +934,15 @@ textarea { resize: vertical; min-height: 80px; }
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
         <div class="card">
           <div class="card-title"><span class="card-title-cyan">⚡</span> Activité récente</div>
-          <div class="job-list">
-            <div class="job-card">
-              <span class="job-dot dot-ok"></span>
-              <div class="job-info">
-                <div class="job-name">FAC-2026-0048 — Atlas Consulting</div>
-                <div class="job-meta">Achat · il y a 5 min</div>
-              </div>
-              <span class="badge badge-green">✓ Traité</span>
-            </div>
-            <div class="job-card">
-              <span class="job-dot dot-run"></span>
-              <div class="job-info">
-                <div class="job-name">FAC-2026-0047 — Maroc Digital</div>
-                <div class="job-meta">Vente · il y a 12 min</div>
-              </div>
-              <span class="badge badge-cyan">⚡ IA en cours</span>
-            </div>
-            <div class="job-card">
-              <span class="job-dot dot-ok"></span>
-              <div class="job-info">
-                <div class="job-name">FAC-2026-0046 — TechMaroc SARL</div>
-                <div class="job-meta">Achat · il y a 28 min</div>
-              </div>
-              <span class="badge badge-green">✓ Traité</span>
-            </div>
-            <div class="job-card">
-              <span class="job-dot dot-err"></span>
-              <div class="job-info">
-                <div class="job-name">FAC-2026-0045 — PDF illisible</div>
-                <div class="job-meta">Erreur OCR · il y a 1h</div>
-              </div>
-              <span class="badge badge-red">✕ Erreur</span>
-            </div>
+          <div class="job-list" id="home-activity">
+            <div style="color:var(--fg3);text-align:center;padding:24px 0;font-size:13px;">Chargement…</div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-title"><span class="card-title-cyan">🧾</span> Synthèse TVA — Mai 2026</div>
-          <div style="display:flex;flex-direction:column;gap:18px;">
-            <div>
-              <div class="prog-label"><span>TVA collectée</span><span>18 640 MAD</span></div>
-              <div class="prog-wrap"><div class="prog-bar" style="width:74%"></div></div>
-            </div>
-            <div>
-              <div class="prog-label"><span>TVA déductible</span><span>9 280 MAD</span></div>
-              <div class="prog-wrap"><div class="prog-bar" style="width:37%;background:linear-gradient(90deg,var(--green),#00bb88)"></div></div>
-            </div>
-            <div>
-              <div class="prog-label"><span>TVA nette à payer</span><span>9 360 MAD</span></div>
-              <div class="prog-wrap"><div class="prog-bar" style="width:52%;background:linear-gradient(90deg,#f59e0b,#f97316)"></div></div>
-            </div>
+        <div class="card" id="home-tva-card">
+          <div class="card-title"><span class="card-title-cyan">🧾</span> Synthèse TVA — <span id="home-tva-month">—</span></div>
+          <div style="display:flex;flex-direction:column;gap:18px;" id="home-tva-bars">
+            <div style="color:var(--fg3);text-align:center;padding:24px 0;font-size:13px;">Chargement…</div>
           </div>
           <div style="margin-top:20px;display:flex;gap:10px;">
             <button class="btn btn-cyan btn-sm" onclick="showSection('upload')">📤 Ajouter facture</button>
@@ -1023,10 +999,8 @@ textarea { resize: vertical; min-height: 80px; }
           </div>
           <div class="form-group">
             <label>Société concernée</label>
-            <select>
-              <option>Atlas Consulting SARL</option>
-              <option>Maroc Digital Services SARL</option>
-              <option>TechMaroc SARL</option>
+            <select id="upload-societe" class="societe-select">
+              <option value="">— Sélectionner —</option>
             </select>
           </div>
           <div class="form-group">
@@ -1076,10 +1050,8 @@ textarea { resize: vertical; min-height: 80px; }
           </div>
           <div class="form-group">
             <label>Société *</label>
-            <select id="m-societe">
-              <option>Atlas Consulting SARL</option>
-              <option>Maroc Digital Services SARL</option>
-              <option>TechMaroc SARL</option>
+            <select id="m-societe" class="societe-select">
+              <option value="">— Sélectionner —</option>
             </select>
           </div>
           <div class="form-group">
@@ -1103,15 +1075,15 @@ textarea { resize: vertical; min-height: 80px; }
           </div>
           <div class="form-group">
             <label>Téléphone</label>
-            <input type="text" placeholder="+212 5XX XXX XXX">
+            <input type="text" id="m-phone" placeholder="+212 5XX XXX XXX">
           </div>
           <div class="form-group">
             <label>Email</label>
-            <input type="email" placeholder="contact@societe.ma">
+            <input type="email" id="m-email" placeholder="contact@societe.ma">
           </div>
           <div class="form-group full">
             <label>Adresse</label>
-            <input type="text" placeholder="Rue, Ville, Code Postal, Maroc">
+            <input type="text" id="m-address" placeholder="Rue, Ville, Code Postal, Maroc">
           </div>
 
           <hr class="form-divider">
@@ -1142,20 +1114,21 @@ textarea { resize: vertical; min-height: 80px; }
           <div class="form-section-tag">📝 Comptabilité</div>
           <div class="form-group">
             <label>Journal Odoo</label>
-            <select><option>Achats</option><option>Ventes</option><option>Banque</option><option>Caisse</option><option>OD</option></select>
+            <select id="m-journal"><option>Achats</option><option>Ventes</option><option>Banque</option><option>Caisse</option><option>OD</option></select>
           </div>
           <div class="form-group">
             <label>Mode de paiement</label>
-            <select><option>Virement bancaire</option><option>Chèque</option><option>Espèces</option><option>Carte bancaire</option></select>
+            <select id="m-paiement"><option>Virement bancaire</option><option>Chèque</option><option>Espèces</option><option>Carte bancaire</option></select>
           </div>
           <div class="form-group full">
             <label>Notes internes</label>
-            <textarea placeholder="Référence contrat, informations complémentaires…"></textarea>
+            <textarea id="m-notes" placeholder="Référence contrat, informations complémentaires…"></textarea>
           </div>
         </div>
         <div class="form-actions">
+          <span id="draft-indicator" style="font-size:.78rem;color:var(--gold);opacity:0;transition:opacity .5s;align-self:center">✓ Brouillon sauvegardé</span>
           <button class="btn btn-ghost" onclick="resetManualForm()">🔄 Réinitialiser</button>
-          <button class="btn btn-surface" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">💾 Brouillon</button>
+          <button class="btn btn-surface" onclick="saveDraft()">💾 Brouillon</button>
           <button class="btn btn-cyan" onclick="submitManualForm()">✅ Enregistrer dans Odoo</button>
         </div>
       </div>
@@ -1169,81 +1142,41 @@ textarea { resize: vertical; min-height: 80px; }
         <p class="page-sub">Suivi en temps réel de chaque facture dans le pipeline d'automatisation</p>
       </div>
 
-      <div class="card" id="active-job-card">
+      <!-- Active job: shown when a job is processing, hidden otherwise -->
+      <div class="card" id="active-job-card" style="display:none">
         <div class="card-title" style="justify-content:space-between">
-          <span><span class="card-title-cyan">⚡</span> FAC-2026-0047 — Maroc Digital Services SARL</span>
+          <span><span class="card-title-cyan">⚡</span> <span id="active-job-title">—</span></span>
           <span class="badge badge-cyan" id="active-status-badge">IA en cours…</span>
         </div>
-
-        <div class="status-tracker" id="tracker-1">
-          <div class="step-wrap done">
-            <div class="step-circle">✓</div>
-            <div class="step-label">Réception</div>
-            <div class="step-time">14:32</div>
-          </div>
-          <div class="step-wrap done">
-            <div class="step-circle">✓</div>
-            <div class="step-label">OCR</div>
-            <div class="step-time">14:32</div>
-          </div>
-          <div class="step-wrap active">
-            <div class="step-circle">🤖</div>
-            <div class="step-label">Extraction IA</div>
-            <div class="step-time">en cours…</div>
-          </div>
-          <div class="step-wrap">
-            <div class="step-circle">📊</div>
-            <div class="step-label">Validation</div>
-            <div class="step-time">—</div>
-          </div>
-          <div class="step-wrap">
-            <div class="step-circle">🏢</div>
-            <div class="step-label">Odoo</div>
-            <div class="step-time">—</div>
-          </div>
-          <div class="step-wrap">
-            <div class="step-circle">📋</div>
-            <div class="step-label">Sheets</div>
-            <div class="step-time">—</div>
-          </div>
-          <div class="step-wrap">
-            <div class="step-circle">✉️</div>
-            <div class="step-label">Confirmation</div>
-            <div class="step-time">—</div>
-          </div>
-        </div>
-
-        <div class="log-box" id="log-box">
-          <div class="log-success">✓ [14:32:01] PDF reçu — facture_maroc_digital_047.pdf (1.2 MB)</div>
-          <div class="log-success">✓ [14:32:04] OCR Google Vision — 847 mots extraits (confiance: 97%)</div>
-          <div class="log-active">⚡ [14:32:08] GPT-4o — extraction des données en cours…</div>
-          <div class="log-dim">&nbsp;&nbsp; Analyse : fournisseur, montants, lignes, codes TVA PCM…</div>
-        </div>
-
+        <div class="status-tracker" id="tracker-1"></div>
+        <div class="log-box" id="log-box"></div>
         <div style="margin-top:14px;display:flex;gap:10px;align-items:center;">
-          <button class="btn btn-ghost btn-sm" onclick="resetSimulation()">↺ Rejouer</button>
-          <button class="btn btn-danger btn-sm" onclick="cancelProcessing()">⏹ Annuler</button>
-          <span style="color:var(--fg3);font-size:0.76rem;margin-left:8px">← Cliquez pour la démo</span>
+          <button class="btn btn-danger btn-sm" onclick="cancelActiveJob()">⏹ Annuler le traitement</button>
+          <span id="active-job-elapsed" style="color:var(--fg3);font-size:0.76rem;margin-left:8px"></span>
+        </div>
+      </div>
+
+      <!-- No active jobs state -->
+      <div class="card" id="no-active-job-card">
+        <div style="text-align:center;padding:32px 0;">
+          <div style="font-size:2.5rem;margin-bottom:12px">✅</div>
+          <div style="color:var(--white);font-weight:600;font-size:1rem;margin-bottom:6px">Aucun traitement en cours</div>
+          <div style="color:var(--fg3);font-size:0.875rem;margin-bottom:20px">Toutes les factures sont traitées. Soumettez un nouveau PDF pour démarrer un traitement.</div>
+          <button class="btn btn-cyan btn-sm" onclick="showSection('upload')">📤 Soumettre une facture</button>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-title"><span class="card-title-cyan">📋</span> Tous les traitements du jour</div>
+        <div class="card-title" style="justify-content:space-between">
+          <span><span class="card-title-cyan">📋</span> Historique des traitements</span>
+          <button class="btn btn-ghost btn-sm" onclick="renderStatusSection()">🔄 Actualiser</button>
+        </div>
         <table class="data-table">
           <thead>
-            <tr>
-              <th>Facture</th>
-              <th>Société</th>
-              <th>Soumis à</th>
-              <th>Durée</th>
-              <th>Statut</th>
-              <th></th>
-            </tr>
+            <tr><th>Facture</th><th>Tiers</th><th>Société</th><th>Soumis le</th><th>Statut</th><th>Confiance</th><th></th></tr>
           </thead>
           <tbody id="status-tbody">
-            <tr id="status-empty-row">
-              <td colspan="6" style="text-align:center;color:var(--fg3);padding:28px 0;">Aucun traitement pour l'instant — soumettez une facture pour voir les résultats ici.</td>
-            </tr>
+            <tr><td colspan="7" style="text-align:center;color:var(--fg3);padding:28px 0;">Aucun traitement — soumettez une facture pour commencer.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1314,27 +1247,19 @@ textarea { resize: vertical; min-height: 80px; }
         <p class="page-sub">Synthèse mensuelle et déclarations DGI — Mai 2026</p>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-value">18 640</div>
-          <div class="stat-label">TVA collectée (MAD)</div>
-          <div class="stat-change stat-up">▲ Ventes mai</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">9 280</div>
-          <div class="stat-label">TVA déductible (MAD)</div>
-          <div class="stat-change stat-up">▲ Achats mai</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">9 360</div>
-          <div class="stat-label">TVA nette à payer (MAD)</div>
-          <div class="stat-change stat-warn">● Échéance 31/05</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">20%</div>
-          <div class="stat-label">Taux dominant</div>
-          <div class="stat-change stat-up">▲ 87% des lignes</div>
-        </div>
+      <!-- Period selector -->
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+        <label style="color:var(--fg2);font-size:13px;">Période :</label>
+        <select id="tva-period-select" style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;" onchange="renderTVASection()">
+          <option value="">Tout</option>
+        </select>
+      </div>
+
+      <div class="stats-row" id="tva-stats-row">
+        <div class="stat-card"><div class="stat-value" id="tva-stat-collectee">—</div><div class="stat-label">TVA collectée (MAD)</div><div class="stat-change stat-up" id="tva-stat-collectee-sub">▲ Ventes</div></div>
+        <div class="stat-card"><div class="stat-value" id="tva-stat-deductible">—</div><div class="stat-label">TVA déductible (MAD)</div><div class="stat-change stat-up" id="tva-stat-deductible-sub">▲ Achats</div></div>
+        <div class="stat-card"><div class="stat-value" id="tva-stat-nette">—</div><div class="stat-label">TVA nette à payer (MAD)</div><div class="stat-change stat-warn" id="tva-stat-nette-sub">● Calculé</div></div>
+        <div class="stat-card"><div class="stat-value" id="tva-stat-taux">—</div><div class="stat-label">Taux dominant</div><div class="stat-change stat-up" id="tva-stat-taux-sub">▲ Lignes</div></div>
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
@@ -1342,62 +1267,36 @@ textarea { resize: vertical; min-height: 80px; }
           <div class="card-title"><span class="card-title-cyan">📊</span> Détail TVA par taux</div>
           <table class="data-table">
             <thead><tr><th>Taux</th><th style="text-align:right">Base HT</th><th style="text-align:right">TVA</th><th style="text-align:right">Factures</th></tr></thead>
-            <tbody>
-              <tr><td><span class="badge badge-cyan">20%</span></td><td class="amount">84 200 MAD</td><td class="amount">16 840 MAD</td><td style="color:var(--fg3);text-align:right">38</td></tr>
-              <tr><td><span class="badge badge-gray">14%</span></td><td class="amount">12 860 MAD</td><td class="amount">1 800 MAD</td><td style="color:var(--fg3);text-align:right">6</td></tr>
-              <tr><td><span class="badge badge-gray">10%</span></td><td class="amount">0 MAD</td><td class="amount">0 MAD</td><td style="color:var(--fg3);text-align:right">0</td></tr>
-              <tr><td><span class="badge badge-gray">7%</span></td><td class="amount">0 MAD</td><td class="amount">0 MAD</td><td style="color:var(--fg3);text-align:right">0</td></tr>
+            <tbody id="tva-by-rate-body">
+              <tr><td colspan="4" style="color:var(--fg3);text-align:center;">Chargement…</td></tr>
             </tbody>
           </table>
         </div>
 
         <div class="card">
-          <div class="card-title"><span class="card-title-cyan">📅</span> Historique des déclarations</div>
+          <div class="card-title"><span class="card-title-cyan">📅</span> Historique par mois</div>
           <table class="data-table">
-            <thead><tr><th>Période</th><th style="text-align:right">TVA nette</th><th>Statut</th><th></th></tr></thead>
-            <tbody>
-              <tr>
-                <td style="color:var(--fg)">Avril 2026</td>
-                <td class="amount">7 840 MAD</td>
-                <td><span class="badge badge-green">✓ Déposée</span></td>
-                <td><button class="btn btn-ghost btn-sm">Voir</button></td>
-              </tr>
-              <tr>
-                <td style="color:var(--fg)">Mars 2026</td>
-                <td class="amount">9 120 MAD</td>
-                <td><span class="badge badge-green">✓ Déposée</span></td>
-                <td><button class="btn btn-ghost btn-sm">Voir</button></td>
-              </tr>
-              <tr>
-                <td style="color:var(--fg)">Février 2026</td>
-                <td class="amount">6 560 MAD</td>
-                <td><span class="badge badge-green">✓ Déposée</span></td>
-                <td><button class="btn btn-ghost btn-sm">Voir</button></td>
-              </tr>
-              <tr>
-                <td style="color:var(--fg)">Mai 2026</td>
-                <td class="amount">9 360 MAD</td>
-                <td><span class="badge badge-orange">⏳ En cours</span></td>
-                <td><button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">Générer</button></td>
-              </tr>
+            <thead><tr><th>Période</th><th style="text-align:right">TVA collectée</th><th style="text-align:right">TVA déduc.</th><th style="text-align:right">Nette</th></tr></thead>
+            <tbody id="tva-history-body">
+              <tr><td colspan="4" style="color:var(--fg3);text-align:center;">Chargement…</td></tr>
             </tbody>
           </table>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title"><span class="card-title-cyan">🧾</span> Détail des opérations TVA — Mai 2026</div>
+      <div class="card" style="margin-top:20px;">
+        <div class="card-title" style="justify-content:space-between;">
+          <span><span class="card-title-cyan">🧾</span> Opérations TVA — <span id="tva-detail-period">—</span></span>
+          <span style="color:var(--fg3);font-size:12px;" id="tva-detail-count">0 ligne(s)</span>
+        </div>
         <table class="data-table">
-          <thead><tr><th>Facture</th><th>Tiers</th><th>Type</th><th style="text-align:right">Base HT</th><th style="text-align:right">Taux</th><th style="text-align:right">TVA</th></tr></thead>
-          <tbody>
-            <tr><td><strong style="color:var(--white)">FAC-2026-0048</strong></td><td style="color:var(--fg2)">Atlas Consulting SARL</td><td><span class="badge badge-gray">🛒 Achat</span></td><td class="amount">15 000 MAD</td><td style="color:var(--fg3);text-align:right">20%</td><td class="amount">3 000 MAD</td></tr>
-            <tr><td><strong style="color:var(--white)">FAC-2026-0047</strong></td><td style="color:var(--fg2)">Maroc Digital Services</td><td><span class="badge badge-gray">💼 Vente</span></td><td class="amount">31 500 MAD</td><td style="color:var(--fg3);text-align:right">20%</td><td class="amount">6 300 MAD</td></tr>
-            <tr><td><strong style="color:var(--white)">FAC-2026-0046</strong></td><td style="color:var(--fg2)">TechMaroc SARL</td><td><span class="badge badge-gray">🛒 Achat</span></td><td class="amount">8 000 MAD</td><td style="color:var(--fg3);text-align:right">20%</td><td class="amount">1 600 MAD</td></tr>
-            <tr><td><strong style="color:var(--white)">FAC-2026-0044</strong></td><td style="color:var(--fg2)">Société Générale Maroc</td><td><span class="badge badge-gray">🛒 Achat</span></td><td class="amount">22 400 MAD</td><td style="color:var(--fg3);text-align:right">20%</td><td class="amount">4 480 MAD</td></tr>
+          <thead><tr><th>Facture</th><th>Tiers</th><th>Société</th><th>Type</th><th style="text-align:right">Base HT</th><th style="text-align:right">Taux</th><th style="text-align:right">TVA</th></tr></thead>
+          <tbody id="tva-detail-body">
+            <tr><td colspan="7" style="color:var(--fg3);text-align:center;">Chargement…</td></tr>
           </tbody>
         </table>
         <div style="margin-top:16px;display:flex;gap:10px;">
-          <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥 Export Excel</button>
+          <button class="btn btn-cyan btn-sm" onclick="exportTVAExcel()">📥 Export Excel</button>
           <button class="btn btn-ghost btn-sm" onclick="showSection('dgi')">📁 Générer fichier DGI</button>
         </div>
       </div>
@@ -1408,99 +1307,62 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="page-header">
         <span class="page-tag">Banque</span>
         <h1 class="page-title">Rapprochement Bancaire</h1>
-        <p class="page-sub">Correspondance automatique entre relevés bancaires et écritures Odoo</p>
+        <p class="page-sub">Correspondance automatique entre relevés bancaires et écritures comptables</p>
       </div>
 
-      <div class="stats-row">
-        <div class="stat-card">
-          <div class="stat-value">34</div>
-          <div class="stat-label">Lignes rapprochées</div>
-          <div class="stat-change stat-up">▲ Auto-matching IA</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">5</div>
-          <div class="stat-label">En attente de révision</div>
-          <div class="stat-change stat-warn">● Faible confiance</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">3</div>
-          <div class="stat-label">Non rapprochées</div>
-          <div class="stat-change stat-warn">● Action requise</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">81%</div>
-          <div class="stat-label">Taux d'automatisation</div>
-          <div class="stat-change stat-up">▲ Excellent</div>
+      <!-- Stats row — dynamically computed -->
+      <div class="stats-row" id="bank-stats-row">
+        <div class="stat-card"><div class="stat-value" id="bank-stat-matched">—</div><div class="stat-label">Lignes rapprochées</div><div class="stat-change stat-up" id="bank-stat-matched-pct">—</div></div>
+        <div class="stat-card"><div class="stat-value" id="bank-stat-review">—</div><div class="stat-label">En attente de révision</div><div class="stat-change stat-warn">● Faible confiance</div></div>
+        <div class="stat-card"><div class="stat-value" id="bank-stat-unmatched">—</div><div class="stat-label">Non rapprochées</div><div class="stat-change stat-warn">● Action requise</div></div>
+        <div class="stat-card"><div class="stat-value" id="bank-stat-auto">—</div><div class="stat-label">Taux d'automatisation</div><div class="stat-change stat-up" id="bank-stat-auto-label">—</div></div>
+      </div>
+
+      <!-- Upload zone (shown when no bank entries) -->
+      <div class="card" id="bank-upload-card" style="display:none;text-align:center;padding:48px 24px">
+        <div style="font-size:2.5rem;margin-bottom:12px">🏦</div>
+        <div style="font-size:1.1rem;font-weight:600;color:var(--fg);margin-bottom:8px">Importer un relevé bancaire</div>
+        <div style="color:var(--fg3);margin-bottom:20px;font-size:.88rem">Formats acceptés : CSV (séparateur ; ou ,) — colonnes : Date · Libellé · Débit · Crédit ou Montant</div>
+        <label class="btn btn-cyan" style="cursor:pointer">
+          📤 Choisir un fichier CSV
+          <input type="file" id="bank-csv-input" accept=".csv,.txt" style="display:none" onchange="importBankCSV(this)">
+        </label>
+        <div style="margin-top:16px;color:var(--fg3);font-size:.8rem">
+          Ou coller des lignes CSV directement :<br>
+          <textarea id="bank-csv-paste" rows="4" style="width:100%;margin-top:8px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--fg);padding:8px;font-size:.8rem;resize:vertical" placeholder="Date;Libellé;Débit;Crédit;Solde&#10;19/05/2026;VIR CLIENT ATLAS;18000;;1245000"></textarea>
+          <button class="btn btn-surface btn-sm" style="margin-top:8px" onclick="importBankCSVText()">Importer le texte collé</button>
         </div>
       </div>
 
-      <div class="card">
-        <div class="card-title" style="justify-content:space-between">
-          <span><span class="card-title-cyan">🏦</span> Lignes à réviser manuellement</span>
-          <span class="badge badge-orange">5 en attente</span>
+      <!-- Main rapprochement table (shown when entries loaded) -->
+      <div id="bank-main-card" style="display:none">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-title" style="justify-content:space-between">
+            <span><span class="card-title-cyan">🏦</span> Lignes du relevé bancaire</span>
+            <div style="display:flex;gap:8px;align-items:center">
+              <select id="bank-filter" onchange="renderBankSection()" style="font-size:.8rem;padding:4px 8px;background:var(--surface2);border:1px solid var(--border);color:var(--fg);border-radius:6px">
+                <option value="all">Toutes les lignes</option>
+                <option value="review">En attente</option>
+                <option value="matched">Rapprochées</option>
+                <option value="unmatched">Non rapprochées</option>
+              </select>
+              <span id="bank-pending-badge" class="badge badge-orange" style="display:none">0 en attente</span>
+            </div>
+          </div>
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Libellé relevé</th><th style="text-align:right">Montant</th><th>Facture suggérée</th><th>Confiance</th><th>Statut</th><th></th></tr></thead>
+            <tbody id="bank-tbody"></tbody>
+          </table>
+          <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-cyan btn-sm" onclick="bankValidateAll()">✓ Valider toutes suggestions &gt;80%</button>
+            <button class="btn btn-surface btn-sm" onclick="bankExportCSV()">⬇ Exporter rapport</button>
+            <button class="btn btn-ghost btn-sm" onclick="bankClear()" style="margin-left:auto;color:var(--red,#f45)">🗑 Effacer relevé</button>
+          </div>
         </div>
-        <table class="data-table">
-          <thead><tr><th>Date</th><th>Libellé relevé bancaire</th><th style="text-align:right">Montant</th><th>Suggestion AVA</th><th>Confiance</th><th></th></tr></thead>
-          <tbody>
-            <tr>
-              <td style="color:var(--fg3)">19/05/2026</td>
-              <td style="color:var(--fg)">VIR INWI BUSINESS 0523</td>
-              <td class="amount">-4 200 MAD</td>
-              <td style="color:var(--fg2)">FAC-2026-0043 — Inwi Business</td>
-              <td><span class="badge badge-green">97%</span></td>
-              <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
-                <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✕</button>
-              </td>
-            </tr>
-            <tr>
-              <td style="color:var(--fg3)">18/05/2026</td>
-              <td style="color:var(--fg)">PRELEVEMENT SG MAROC 0518</td>
-              <td class="amount">-26 880 MAD</td>
-              <td style="color:var(--fg2)">FAC-2026-0044 — Société Générale</td>
-              <td><span class="badge badge-green">94%</span></td>
-              <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
-                <button class="btn btn-ghost btn-sm">✕</button>
-              </td>
-            </tr>
-            <tr>
-              <td style="color:var(--fg3)">17/05/2026</td>
-              <td style="color:var(--fg)">REMISE CHEQUE 00412</td>
-              <td class="amount">+54 000 MAD</td>
-              <td style="color:var(--fg2)">FAC-2026-0039 — Afrique Logistics</td>
-              <td><span class="badge badge-orange">72%</span></td>
-              <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
-                <button class="btn btn-ghost btn-sm">✕</button>
-              </td>
-            </tr>
-            <tr>
-              <td style="color:var(--fg3)">16/05/2026</td>
-              <td style="color:var(--fg)">FRAIS TENUE COMPTE MAI</td>
-              <td class="amount">-120 MAD</td>
-              <td style="color:var(--fg3);font-style:italic">Aucune correspondance</td>
-              <td><span class="badge badge-red">—</span></td>
-              <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">Saisir</button>
-              </td>
-            </tr>
-            <tr>
-              <td style="color:var(--fg3)">15/05/2026</td>
-              <td style="color:var(--fg)">VIR CLIENT ATLAS CONS 0515</td>
-              <td class="amount">+18 000 MAD</td>
-              <td style="color:var(--fg2)">FAC-2026-0048 — Atlas Consulting</td>
-              <td><span class="badge badge-green">99%</span></td>
-              <td style="display:flex;gap:6px;padding:8px 0">
-                <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓</button>
-                <button class="btn btn-ghost btn-sm">✕</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <div style="margin-top:16px;display:flex;gap:10px;">
-          <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">✓ Valider toutes les suggestions</button>
-          <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📤 Importer relevé bancaire</button>
+        <!-- Unmatched: create manual entry shortcuts -->
+        <div class="card" id="bank-unmatched-card" style="display:none">
+          <div class="card-title"><span class="card-title-cyan">⚠</span> Lignes sans correspondance — action requise</div>
+          <div id="bank-unmatched-body"></div>
         </div>
       </div>
     </section>
@@ -1519,23 +1381,21 @@ textarea { resize: vertical; min-height: 80px; }
           <div class="form-grid">
             <div class="form-group">
               <label>Société</label>
-              <select>
-                <option>Atlas Consulting SARL</option>
-                <option>Maroc Digital Services SARL</option>
-                <option>TechMaroc SARL</option>
+              <select id="dgi-societe" class="societe-select">
+                <option value="">— Toutes les sociétés —</option>
               </select>
             </div>
             <div class="form-group">
               <label>Exercice fiscal</label>
-              <select><option>2026</option><option>2025</option><option>2024</option></select>
+              <select id="dgi-annee"><option>2026</option><option>2025</option><option>2024</option></select>
             </div>
             <div class="form-group">
               <label>Période du</label>
-              <input type="date" value="2026-05-01">
+              <input type="date" id="dgi-date-from" value="2026-05-01">
             </div>
             <div class="form-group">
               <label>Au</label>
-              <input type="date" value="2026-05-31">
+              <input type="date" id="dgi-date-to" value="2026-05-31">
             </div>
             <div class="form-group full">
               <label>Inclure dans l'export</label>
@@ -1548,31 +1408,15 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
           <div style="margin-top:16px;display:flex;gap:10px;">
-            <button class="btn btn-cyan" onclick="generateDGI()">⚡ Générer le fichier FEC</button>
-            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">Aperçu</button>
+            <button class="btn btn-cyan" onclick="previewDGI()">👁 Aperçu + Téléchargement</button>
+            <button class="btn btn-ghost btn-sm" onclick="generateDGI()">⬇ Téléchargement direct</button>
           </div>
         </div>
 
-        <div class="card">
+        <div class="card" id="dgi-checks-card">
           <div class="card-title"><span class="card-title-cyan">✅</span> Vérifications avant export</div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--green-dim);border:1px solid rgba(34,211,160,0.2);border-radius:var(--r)">
-              <span style="color:var(--green);font-size:1.1rem">✓</span>
-              <div style="flex:1"><div style="color:var(--green);font-weight:600;font-size:0.85rem">Balance équilibrée</div><div style="color:var(--fg3);font-size:0.76rem">Débits = Crédits sur toutes les écritures</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--green-dim);border:1px solid rgba(34,211,160,0.2);border-radius:var(--r)">
-              <span style="color:var(--green);font-size:1.1rem">✓</span>
-              <div style="flex:1"><div style="color:var(--green);font-weight:600;font-size:0.85rem">Comptes PCM valides</div><div style="color:var(--fg3);font-size:0.76rem">48 / 48 lignes avec compte correct</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--green-dim);border:1px solid rgba(34,211,160,0.2);border-radius:var(--r)">
-              <span style="color:var(--green);font-size:1.1rem">✓</span>
-              <div style="flex:1"><div style="color:var(--green);font-weight:600;font-size:0.85rem">ICE fournisseurs renseignés</div><div style="color:var(--fg3);font-size:0.76rem">42 / 42 partenaires avec ICE</div></div>
-            </div>
-            <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:var(--r)">
-              <span style="color:var(--orange);font-size:1.1rem">⚠</span>
-              <div style="flex:1"><div style="color:var(--orange);font-weight:600;font-size:0.85rem">2 factures non rapprochées</div><div style="color:var(--fg3);font-size:0.76rem">Vérifiez le rapprochement bancaire avant l'export</div></div>
-              <button class="btn btn-ghost btn-sm" onclick="showSection('bank')">Corriger</button>
-            </div>
+          <div id="dgi-checks-list" style="display:flex;flex-direction:column;gap:10px">
+            <div style="color:var(--fg3);font-size:13px;padding:12px 0;">Chargement…</div>
           </div>
         </div>
       </div>
@@ -1580,35 +1424,9 @@ textarea { resize: vertical; min-height: 80px; }
       <div class="card">
         <div class="card-title"><span class="card-title-cyan">🗂️</span> Historique des exports</div>
         <table class="data-table">
-          <thead><tr><th>Fichier</th><th>Société</th><th>Période</th><th>Généré le</th><th>Écritures</th><th>Statut</th><th></th></tr></thead>
-          <tbody>
-            <tr>
-              <td style="color:var(--fg);font-weight:600">FEC_AtlasConsulting_2026-04.txt</td>
-              <td style="color:var(--fg2)">Atlas Consulting</td>
-              <td style="color:var(--fg3)">Avr 2026</td>
-              <td style="color:var(--fg3)">01/05/2026</td>
-              <td style="color:var(--fg3);text-align:center">124</td>
-              <td><span class="badge badge-green">✓ Déposé DGI</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥</button></td>
-            </tr>
-            <tr>
-              <td style="color:var(--fg);font-weight:600">FEC_MarocDigital_2026-04.txt</td>
-              <td style="color:var(--fg2)">Maroc Digital</td>
-              <td style="color:var(--fg3)">Avr 2026</td>
-              <td style="color:var(--fg3)">01/05/2026</td>
-              <td style="color:var(--fg3);text-align:center">88</td>
-              <td><span class="badge badge-green">✓ Déposé DGI</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥</button></td>
-            </tr>
-            <tr>
-              <td style="color:var(--fg);font-weight:600">FEC_TechMaroc_2026-04.txt</td>
-              <td style="color:var(--fg2)">TechMaroc SARL</td>
-              <td style="color:var(--fg3)">Avr 2026</td>
-              <td style="color:var(--fg3)">01/05/2026</td>
-              <td style="color:var(--fg3);text-align:center">61</td>
-              <td><span class="badge badge-green">✓ Déposé DGI</span></td>
-              <td><button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">📥</button></td>
-            </tr>
+          <thead><tr><th>Fichier</th><th>Société</th><th>Période</th><th>Généré le</th><th>Écritures</th></tr></thead>
+          <tbody id="dgi-history-body">
+            <tr><td colspan="5" style="color:var(--fg3);text-align:center;">Aucun export généré pour le moment.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1671,24 +1489,24 @@ textarea { resize: vertical; min-height: 80px; }
           <div class="form-grid">
             <div class="form-group full">
               <label>URL de l'instance Odoo</label>
-              <input type="text" id="odoo-url" value="https://cabinet-samir.odoo.com" oninput="saveSettings()">
+              <input type="text" id="odoo-url" placeholder="https://monodoo.odoo.com" oninput="saveSettings()">
             </div>
             <div class="form-group">
-              <label>Base de données</label>
-              <input type="text" value="cabinet_samir_prod">
+              <label>Base de données Odoo</label>
+              <input type="text" id="odoo-db" placeholder="nom_base_odoo" oninput="saveSettings()">
             </div>
             <div class="form-group">
               <label>Utilisateur API</label>
-              <input type="text" value="api@cabinet-samir.ma">
+              <input type="text" id="odoo-user" placeholder="api@cabinet.ma" oninput="saveSettings()">
             </div>
             <div class="form-group full">
-              <label>Clé API</label>
-              <input type="text" value="••••••••••••••••••••••••••••••••" readonly style="color:var(--fg3)">
+              <label>Clé API Odoo</label>
+              <input type="password" id="odoo-apikey" placeholder="Votre clé API Odoo" oninput="saveSettings()">
             </div>
           </div>
           <div style="margin-top:16px;display:flex;gap:10px;align-items:center">
-            <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚡ Tester la connexion</button>
-            <span class="badge badge-green" style="margin-left:4px">● Connecté</span>
+            <button class="btn btn-cyan btn-sm" onclick="testOdooConnection()">⚡ Tester la connexion</button>
+            <span id="odoo-status-badge" style="display:none;font-size:0.8rem"></span>
           </div>
         </div>
 
@@ -1709,62 +1527,55 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
           <div style="margin-top:16px;display:flex;gap:10px">
-            <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚡ Tester</button>
-            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">🔄 Reconnecter</button>
+            <button class="btn btn-cyan btn-sm" onclick="testSheetsConnection()">⚡ Tester la connexion</button>
+            <button class="btn btn-ghost btn-sm" onclick="reconnectSheets()">🔄 Réinitialiser l'ID</button>
           </div>
         </div>
 
         <div class="card">
-          <div class="card-title"><span class="card-title-cyan">🤖</span> Intelligence Artificielle</div>
+          <div class="card-title"><span class="card-title-cyan">🔔</span> Notifications & Préférences</div>
           <div class="form-grid">
+            <div class="form-group full">
+              <label>Email de notification (alertes, leads, erreurs IA)</label>
+              <input type="email" id="notif-email" placeholder="votre@cabinet.ma" oninput="saveSettings()">
+            </div>
             <div class="form-group">
-              <label>Modèle IA</label>
-              <select><option>GPT-4o (recommandé)</option><option>Claude Sonnet</option><option>Gemini Pro</option></select>
+              <label>Alertes par email</label>
+              <select id="notif-level" onchange="saveSettings()">
+                <option value="all">Toutes (recommandé)</option>
+                <option value="errors">Erreurs seulement</option>
+                <option value="none">Désactivées</option>
+              </select>
             </div>
             <div class="form-group">
               <label>Confiance minimale OCR</label>
-              <select><option>85% (recommandé)</option><option>70%</option><option>95%</option></select>
+              <select id="min-confidence" onchange="saveSettings()">
+                <option value="85">85% (recommandé)</option>
+                <option value="70">70%</option>
+                <option value="95">95%</option>
+              </select>
             </div>
             <div class="form-group full">
               <label>Plan comptable par défaut</label>
-              <select><option>PCM — Plan Comptable Marocain</option><option>PCG — France</option></select>
+              <select id="plan-comptable" onchange="saveSettings()">
+                <option value="PCM">PCM — Plan Comptable Marocain</option>
+                <option value="PCG">PCG — France</option>
+              </select>
             </div>
           </div>
           <div style="margin-top:16px">
-            <button class="btn btn-cyan btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">💾 Sauvegarder</button>
+            <button class="btn btn-cyan btn-sm" onclick="saveSettings();showToast('success','✅ Sauvegardé','Préférences enregistrées.')">💾 Sauvegarder</button>
           </div>
         </div>
 
         <div class="card">
           <div class="card-title"><span class="card-title-cyan">🏭</span> Sociétés gérées</div>
-          <div class="job-list">
-            <div class="job-card">
-              <span class="job-dot dot-ok"></span>
-              <div class="job-info">
-                <div class="job-name">Atlas Consulting SARL</div>
-                <div class="job-meta">ICE: 001234567000089 · TVA: 20%</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚙️</button>
-            </div>
-            <div class="job-card">
-              <span class="job-dot dot-ok"></span>
-              <div class="job-info">
-                <div class="job-name">Maroc Digital Services SARL</div>
-                <div class="job-meta">ICE: 002345678000012 · TVA: 20%</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚙️</button>
-            </div>
-            <div class="job-card">
-              <span class="job-dot dot-ok"></span>
-              <div class="job-info">
-                <div class="job-name">TechMaroc SARL</div>
-                <div class="job-meta">ICE: 003456789000034 · TVA: 20%</div>
-              </div>
-              <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Cette action sera connectée dans la prochaine version.')">⚙️</button>
-            </div>
+          <div class="job-list" id="settings-societes-list">
+            <div style="color:var(--fg3);font-size:13px;padding:12px 0;">Chargement…</div>
           </div>
-          <div style="margin-top:14px">
-            <button class="btn btn-ghost btn-sm" onclick="showToast('info','Fonctionnalité disponible en v2','Ajout de société à venir.')">+ Ajouter une société</button>
+          <div style="margin-top:14px;display:flex;gap:8px;align-items:center;">
+            <input type="text" id="new-societe-input" placeholder="Nom de la société…" style="flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--white);font-size:13px;">
+            <button class="btn btn-cyan btn-sm" onclick="addSociete()">+ Ajouter</button>
           </div>
         </div>
 
@@ -1799,22 +1610,49 @@ textarea { resize: vertical; min-height: 80px; }
 <!-- ══ TOASTS ══ -->
 <div class="toast-container" id="toast-container"></div>
 
+<!-- ══ FEC PREVIEW MODAL ══ -->
+<div id="fec-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);overflow-y:auto">
+  <div style="max-width:960px;margin:40px auto;background:var(--surface1);border:1px solid var(--border);border-radius:14px;padding:0;overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-family:var(--font-h);font-size:1.1rem;color:var(--fg)">👁 Aperçu FEC — <span id="fec-modal-filename" style="color:var(--cyan)"></span></div>
+        <div style="font-size:.8rem;color:var(--fg3);margin-top:4px"><span id="fec-modal-count"></span></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-cyan btn-sm" onclick="downloadFECFromModal()">⬇ Télécharger</button>
+        <button class="btn btn-ghost btn-sm" onclick="closeFECModal()">✕ Fermer</button>
+      </div>
+    </div>
+    <div style="overflow-x:auto;padding:16px 24px">
+      <pre id="fec-modal-content" style="font-size:.72rem;line-height:1.6;color:var(--fg2);white-space:pre;font-family:'Courier New',monospace;margin:0;max-height:460px;overflow-y:auto"></pre>
+    </div>
+    <div style="padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+      <div style="color:var(--fg3);font-size:.8rem">Format : FEC DGI Maroc · Séparateur pipe (|) · Encodage UTF-8</div>
+      <button class="btn btn-cyan" onclick="downloadFECFromModal()">⬇ Télécharger le fichier complet</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════
 // SUPABASE CONFIG
 // ══════════════════════════════════════════
 const SB_URL = 'https://rkahfwukwnrfchagmisz.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrYWhmd3Vrd25yZmNoYWdtaXN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyOTQ0NTgsImV4cCI6MjA5NDg3MDQ1OH0.b39al02BZqj2tu0p6xmR08mg9tQkADzRbfsYTyzcfyo';
-const SB_H  = { 'apikey': SB_KEY, 'Authorization': `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' };
+// Dynamic headers — user JWT when logged in, anon key otherwise
+function sbHeaders(extra = {}) {
+  const tok = getAccessToken() || SB_KEY;
+  return { 'apikey': SB_KEY, 'Authorization': `Bearer ${tok}`, 'Content-Type': 'application/json', ...extra };
+}
 
 async function sbSelect(table, qs = '') {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { headers: SB_H });
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { headers: sbHeaders() });
   if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
   return r.json();
 }
 async function sbInsert(table, data) {
   const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
-    method: 'POST', headers: { ...SB_H, 'Prefer': 'return=representation' },
+    method: 'POST', headers: sbHeaders({ 'Prefer': 'return=representation' }),
     body: JSON.stringify(data),
   });
   if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
@@ -1822,7 +1660,7 @@ async function sbInsert(table, data) {
 }
 async function sbUpdate(table, qs, data) {
   const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, {
-    method: 'PATCH', headers: { ...SB_H, 'Prefer': 'return=representation' },
+    method: 'PATCH', headers: sbHeaders({ 'Prefer': 'return=representation' }),
     body: JSON.stringify(data),
   });
   if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
@@ -1830,49 +1668,79 @@ async function sbUpdate(table, qs, data) {
 }
 async function sbUpsert(table, data, onConflict) {
   const r = await fetch(`${SB_URL}/rest/v1/${table}?on_conflict=${onConflict}`, {
-    method: 'POST', headers: { ...SB_H, 'Prefer': 'return=representation,resolution=merge-duplicates' },
+    method: 'POST', headers: sbHeaders({ 'Prefer': 'return=representation,resolution=merge-duplicates' }),
     body: JSON.stringify(data),
   });
   if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
   return r.json();
 }
 async function sbDelete(table, qs) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { method: 'DELETE', headers: SB_H });
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${qs}`, { method: 'DELETE', headers: sbHeaders() });
   if (!r.ok) throw new Error(`DB ${r.status}: ${await r.text()}`);
   return true;
 }
 
 // ══════════════════════════════════════════
-// AUTH — SHA-256 + session
+// AUTH — Supabase Auth JWT (secure)
+// Emails are synthetic: slug@ava.internal
+// Requires: Auth → Settings → "Confirm email" OFF in Supabase
 // ══════════════════════════════════════════
-async function sha256(str) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
-}
 
-let _session = null; // { slug, name, expires }
-
-function getSession() {
-  if (_session) return _session;
+function getAccessToken() {
   try {
-    const s = JSON.parse(localStorage.getItem('ava_session') || 'null');
-    if (s && s.expires > Date.now()) { _session = s; return s; }
+    const s = JSON.parse(localStorage.getItem('ava_auth') || 'null');
+    if (s && s.expires_at > Math.floor(Date.now() / 1000)) return s.access_token;
   } catch(_) {}
   return null;
 }
-function setSession(slug, name) {
-  _session = { slug, name, expires: Date.now() + 8 * 3600 * 1000 };
-  try { localStorage.setItem('ava_session', JSON.stringify(_session)); } catch(_) {}
-}
-function clearSession() {
-  _session = null;
-  try { localStorage.removeItem('ava_session'); } catch(_) {}
+
+function getSession() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ava_auth') || 'null');
+    if (s && s.expires_at > Math.floor(Date.now() / 1000)) return { slug: s.slug, name: s.name };
+  } catch(_) {}
+  return null;
 }
 
-function logout() {
+function _storeAuth(access_token, refresh_token, expires_at, slug, name) {
+  try {
+    localStorage.setItem('ava_auth', JSON.stringify({ access_token, refresh_token, expires_at, slug, name }));
+  } catch(_) {}
+}
+
+function clearSession() {
+  try { localStorage.removeItem('ava_auth'); } catch(_) {}
+}
+
+async function logout() {
+  try {
+    const tok = getAccessToken();
+    if (tok) await fetch(`${SB_URL}/auth/v1/logout`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Authorization': `Bearer ${tok}`, 'Content-Type': 'application/json' }
+    });
+  } catch(_) {}
   clearSession();
   invoicesData = []; filteredData = []; originalOrder = [];
   showLogin();
+}
+
+// Auto-refresh token if within 5 min of expiry
+async function maybeRefreshToken() {
+  try {
+    const s = JSON.parse(localStorage.getItem('ava_auth') || 'null');
+    if (!s) return;
+    const secsLeft = s.expires_at - Math.floor(Date.now() / 1000);
+    if (secsLeft > 300) return; // still fresh
+    const r = await fetch(`${SB_URL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: s.refresh_token })
+    });
+    if (!r.ok) { clearSession(); showLogin(); return; }
+    const data = await r.json();
+    _storeAuth(data.access_token, data.refresh_token, data.expires_at, s.slug, s.name);
+  } catch(_) {}
 }
 
 // ── Login form helpers ──
@@ -1919,12 +1787,24 @@ async function doLogin() {
   const btn = document.getElementById('login-btn');
   btn.disabled = true; btn.textContent = 'Connexion…';
   try {
-    const rows = await sbSelect('cabinet_settings', `cabinet_slug=eq.${encodeURIComponent(slug)}&select=cabinet_slug,cabinet_name,password_hash`);
-    if (!rows || rows.length === 0) { loginError('Cabinet introuvable. Vérifiez l\'identifiant.'); return; }
-    const cabinet = rows[0];
-    const hash = await sha256(slug + ':' + pass);
-    if (hash !== cabinet.password_hash) { loginError('Mot de passe incorrect.'); return; }
-    setSession(cabinet.cabinet_slug, cabinet.cabinet_name);
+    const r = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: slug + '@ava.internal', password: pass })
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      if (r.status === 400 || r.status === 422) {
+        loginError('Identifiant ou mot de passe incorrect.'); return;
+      }
+      throw new Error(err.error_description || err.msg || `Erreur ${r.status}`);
+    }
+    const data = await r.json();
+    // Fetch cabinet name
+    const authH = { 'apikey': SB_KEY, 'Authorization': `Bearer ${data.access_token}`, 'Content-Type': 'application/json' };
+    const rows = await fetch(`${SB_URL}/rest/v1/cabinet_settings?cabinet_slug=eq.${encodeURIComponent(slug)}&select=cabinet_name`, { headers: authH }).then(x => x.json()).catch(() => []);
+    const name = (rows && rows[0]) ? rows[0].cabinet_name : slug;
+    _storeAuth(data.access_token, data.refresh_token, data.expires_at, slug, name);
     hideLogin();
     await initDashboard();
   } catch(e) {
@@ -1947,12 +1827,33 @@ async function doSetup() {
   const btn = document.getElementById('setup-btn');
   btn.disabled = true; btn.textContent = 'Création…';
   try {
-    // Check slug not taken
-    const existing = await sbSelect('cabinet_settings', `cabinet_slug=eq.${encodeURIComponent(slug)}&select=cabinet_slug`);
-    if (existing && existing.length > 0) { setupError('Cet identifiant est déjà utilisé. Choisissez-en un autre.'); return; }
-    const hash = await sha256(slug + ':' + pass);
-    await sbInsert('cabinet_settings', { cabinet_slug: slug, cabinet_name: name, password_hash: hash });
-    setSession(slug, name);
+    // Create Supabase Auth user
+    const r = await fetch(`${SB_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'apikey': SB_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: slug + '@ava.internal', password: pass })
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      if (data.code === 'user_already_exists' || (data.msg || '').includes('already')) {
+        setupError('Cet identifiant est déjà utilisé. Choisissez-en un autre.'); return;
+      }
+      throw new Error(data.error_description || data.msg || `Erreur ${r.status}`);
+    }
+    const access_token = data.access_token || data.session?.access_token;
+    const refresh_token = data.refresh_token || data.session?.refresh_token;
+    const expires_at = data.expires_at || data.session?.expires_at;
+    if (!access_token) {
+      setupError('Activation requise — désactivez "Confirm email" dans Supabase Auth → Settings.'); return;
+    }
+    // Insert cabinet_settings row
+    const authH = { 'apikey': SB_KEY, 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+    const ins = await fetch(`${SB_URL}/rest/v1/cabinet_settings`, {
+      method: 'POST', headers: authH,
+      body: JSON.stringify({ cabinet_slug: slug, cabinet_name: name, user_id: data.user?.id || data.id })
+    });
+    if (!ins.ok) { const e = await ins.json(); throw new Error(e.message || e.details || ins.status); }
+    _storeAuth(access_token, refresh_token, expires_at, slug, name);
     hideLogin();
     await initDashboard();
   } catch(e) {
@@ -1969,6 +1870,9 @@ document.addEventListener('keydown', e => {
     else doLogin();
   }
 });
+
+// Refresh token every 4 minutes while logged in
+setInterval(maybeRefreshToken, 4 * 60 * 1000);
 
 // ══════════════════════════════════════════
 // DATA — Supabase backed, zero rows on start
@@ -2091,10 +1995,458 @@ function updateStats() {
   set('stat-confiance', pct + '%');
   const badge = document.getElementById('processing-badge');
   if (badge) { badge.textContent = enCours; badge.style.display = enCours ? '' : 'none'; }
+  renderHomeDashboard();
+  populateSocieteSelects();
+  populateTVAPeriodSelect();
+  renderOnboarding();
 }
 function fmtMADk(n) {
   if (n >= 1000) return (n / 1000).toLocaleString('fr-FR', { maximumFractionDigits: n >= 100000 ? 0 : 1 }) + 'k';
   return String(Math.round(n));
+}
+
+// ── HOME DASHBOARD — live activity + TVA synthesis ──
+function renderHomeDashboard() {
+  _renderHomeActivity();
+  _renderHomeTVA();
+}
+
+function _renderHomeActivity() {
+  const el = document.getElementById('home-activity');
+  if (!el) return;
+  if (!invoicesData.length) {
+    el.innerHTML = '<div style="color:var(--fg3);text-align:center;padding:24px 0;font-size:13px;">Aucune facture enregistrée pour le moment.</div>';
+    return;
+  }
+  const recent = invoicesData.slice(0, 5);
+  const now = Date.now();
+  el.innerHTML = recent.map(r => {
+    const statusMap = {
+      'Traité':        { dot: 'dot-ok',  badge: '<span class="badge badge-green">✓ Traité</span>' },
+      'En traitement': { dot: 'dot-run', badge: '<span class="badge badge-cyan">⚡ IA en cours</span>' },
+      'En cours':      { dot: 'dot-run', badge: '<span class="badge badge-cyan">⚡ IA en cours</span>' },
+      'Erreur':        { dot: 'dot-err', badge: '<span class="badge badge-red">✕ Erreur</span>' },
+    };
+    const s = statusMap[r.status] || { dot: 'dot-ok', badge: '<span class="badge badge-gray">' + (r.status || '—') + '</span>' };
+    const typeLabel = r.type === 'Vente' ? 'Vente' : 'Achat';
+    const label = r.tiers ? r.num + ' — ' + r.tiers : r.num;
+    const meta = typeLabel + (r.date ? ' · ' + r.date : '');
+    return `<div class="job-card">
+      <span class="job-dot ${s.dot}"></span>
+      <div class="job-info">
+        <div class="job-name">${label}</div>
+        <div class="job-meta">${meta}</div>
+      </div>
+      ${s.badge}
+    </div>`;
+  }).join('');
+}
+
+function _renderHomeTVA() {
+  const barsEl  = document.getElementById('home-tva-bars');
+  const monthEl = document.getElementById('home-tva-month');
+  if (!barsEl) return;
+
+  // Current month YYYY-MM
+  const now   = new Date();
+  const curYM = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  const monthNames = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
+  if (monthEl) monthEl.textContent = monthNames[now.getMonth()] + ' ' + now.getFullYear();
+
+  // Filter to current month (date field is YYYY-MM-DD or similar)
+  const monthRows = invoicesData.filter(r => r.date && String(r.date).startsWith(curYM));
+
+  // If no rows this month, fall back to ALL data so there's always something to show
+  const rows = monthRows.length ? monthRows : invoicesData;
+  if (monthEl && !monthRows.length && invoicesData.length) {
+    monthEl.textContent = 'Cumulé total';
+  }
+
+  const collectee  = rows.filter(r => r.type === 'Vente').reduce((s, r) => s + (Number(r.tva) || 0), 0);
+  const deductible = rows.filter(r => r.type === 'Achat').reduce((s, r) => s + (Number(r.tva) || 0), 0);
+  const nette      = Math.max(0, collectee - deductible);
+  const maxVal     = Math.max(collectee, deductible, nette, 1);
+
+  const fmt = n => n.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' MAD';
+  const pct = n => Math.round((n / maxVal) * 100);
+
+  if (!rows.length) {
+    barsEl.innerHTML = '<div style="color:var(--fg3);text-align:center;padding:24px 0;font-size:13px;">Aucune donnée TVA ce mois.</div>';
+    return;
+  }
+
+  barsEl.innerHTML = `
+    <div>
+      <div class="prog-label"><span>TVA collectée</span><span>${fmt(collectee)}</span></div>
+      <div class="prog-wrap"><div class="prog-bar" style="width:${pct(collectee)}%"></div></div>
+    </div>
+    <div>
+      <div class="prog-label"><span>TVA déductible</span><span>${fmt(deductible)}</span></div>
+      <div class="prog-wrap"><div class="prog-bar" style="width:${pct(deductible)}%;background:linear-gradient(90deg,var(--green),#00bb88)"></div></div>
+    </div>
+    <div>
+      <div class="prog-label"><span>TVA nette à payer</span><span>${fmt(nette)}</span></div>
+      <div class="prog-wrap"><div class="prog-bar" style="width:${pct(nette)}%;background:linear-gradient(90deg,#f59e0b,#f97316)"></div></div>
+    </div>
+  `;
+}
+
+// ── ONBOARDING CHECKLIST ──────────────────────────────────────────
+const ONBOARDING_STEPS = [
+  {
+    id: 'ob_invoice',
+    label: 'Soumettre votre 1ère facture',
+    desc: 'Uploadez un PDF ou saisissez manuellement.',
+    action: () => showSection('upload'),
+    actionLabel: '📤 Aller soumettre',
+    done: () => invoicesData.length > 0,
+  },
+  {
+    id: 'ob_webhook',
+    label: 'Configurer le webhook n8n',
+    desc: 'L\'URL de traitement IA est nécessaire.',
+    action: () => showSection('settings'),
+    actionLabel: '⚙️ Aller configurer',
+    done: () => {
+      const v = document.getElementById('n8n-webhook-url')?.value || localStorage.getItem('ava_n8n_webhook') || '';
+      return v.startsWith('http') && !v.includes('your-webhook');
+    },
+  },
+  {
+    id: 'ob_societe',
+    label: 'Ajouter votre première société cliente',
+    desc: 'Créez la liste des sociétés que vous gérez.',
+    action: () => showSection('settings'),
+    actionLabel: '🏭 Ajouter une société',
+    done: () => getSocieteList().length > 0,
+  },
+  {
+    id: 'ob_odoo',
+    label: 'Connecter Odoo',
+    desc: 'Renseignez l\'URL de votre instance Odoo.',
+    action: () => showSection('settings'),
+    actionLabel: '🏢 Configurer Odoo',
+    done: () => {
+      const v = document.getElementById('odoo-url')?.value || '';
+      return v.startsWith('http');
+    },
+  },
+];
+
+function renderOnboarding() {
+  const s = getSession();
+  if (!s) return;
+
+  // Check if dismissed
+  const dismissKey = `ava_onboarding_dismissed_${s.slug}`;
+  try { if (localStorage.getItem(dismissKey) === '1') { const b = document.getElementById('onboarding-banner'); if (b) b.style.display = 'none'; return; } } catch(_) {}
+
+  const banner = document.getElementById('onboarding-banner');
+  const stepsEl = document.getElementById('onboarding-steps');
+  const barEl = document.getElementById('onboarding-progress-bar');
+  const labelEl = document.getElementById('onboarding-progress-label');
+  if (!banner || !stepsEl) return;
+
+  const doneCount = ONBOARDING_STEPS.filter(step => step.done()).length;
+
+  // Hide if all done and already have invoices
+  if (doneCount === ONBOARDING_STEPS.length) {
+    try { localStorage.setItem(dismissKey, '1'); } catch(_) {}
+    banner.style.display = 'none';
+    return;
+  }
+
+  banner.style.display = '';
+
+  if (barEl)   barEl.style.width = Math.round(doneCount / ONBOARDING_STEPS.length * 100) + '%';
+  if (labelEl) labelEl.textContent = doneCount + ' / ' + ONBOARDING_STEPS.length;
+
+  stepsEl.innerHTML = ONBOARDING_STEPS.map(step => {
+    const done = step.done();
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:${done ? 'var(--green-dim)' : 'var(--surface)'};border:1px solid ${done ? 'rgba(34,211,160,0.2)' : 'var(--border)'};border-radius:8px;">
+      <span style="font-size:1.1rem;margin-top:1px">${done ? '✅' : '⬜'}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="color:${done ? 'var(--green)' : 'var(--white)'};font-weight:600;font-size:0.85rem">${step.label}</div>
+        <div style="color:var(--fg3);font-size:0.75rem;margin-top:2px">${step.desc}</div>
+      </div>
+      ${!done ? `<button class="btn btn-ghost btn-sm" style="font-size:0.75rem;white-space:nowrap;" onclick="(${step.action.toString()})()">${step.actionLabel}</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function dismissOnboarding() {
+  const s = getSession();
+  if (!s) return;
+  try { localStorage.setItem(`ava_onboarding_dismissed_${s.slug}`, '1'); } catch(_) {}
+  const b = document.getElementById('onboarding-banner');
+  if (b) b.style.display = 'none';
+}
+
+// ── TVA SECTION ───────────────────────────────────────────────────
+const MONTH_NAMES_FR = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const MAD_RATES = [7, 10, 14, 20];
+
+function _tvaRowsForPeriod(ym) {
+  // ym = 'YYYY-MM' or '' for all
+  if (!ym) return invoicesData;
+  return invoicesData.filter(r => r.date && String(r.date).startsWith(ym));
+}
+
+function _derivePeriodLabel(ym) {
+  if (!ym) return 'Tous les mois';
+  const [y, m] = ym.split('-');
+  return MONTH_NAMES_FR[parseInt(m, 10) - 1] + ' ' + y;
+}
+
+function _fmtMAD(n) {
+  return n.toLocaleString('fr-FR', { maximumFractionDigits: 0 }) + ' MAD';
+}
+
+function _deriveTaxRate(row) {
+  // Compute taux from ht/tva if possible
+  if (row.ht && row.tva) {
+    const r = Math.round((row.tva / row.ht) * 100);
+    if (MAD_RATES.includes(r)) return r;
+  }
+  return 20; // default
+}
+
+function populateTVAPeriodSelect() {
+  const sel = document.getElementById('tva-period-select');
+  if (!sel) return;
+  const prev = sel.value;
+  // Derive unique YYYY-MM from invoicesData
+  const months = [...new Set(invoicesData.map(r => r.date ? String(r.date).slice(0, 7) : null).filter(Boolean))];
+  months.sort().reverse();
+  sel.innerHTML = '<option value="">Tout — cumul</option>';
+  months.forEach(ym => {
+    const opt = document.createElement('option');
+    opt.value = ym; opt.textContent = _derivePeriodLabel(ym);
+    sel.appendChild(opt);
+  });
+  if (prev && months.includes(prev)) sel.value = prev;
+  else if (months.length) sel.value = months[0]; // default to most recent
+}
+
+function renderTVASection() {
+  const sel = document.getElementById('tva-period-select');
+  const ym = sel ? sel.value : '';
+  const rows = _tvaRowsForPeriod(ym);
+
+  const collectee  = rows.filter(r => r.type === 'Vente').reduce((s, r) => s + (Number(r.tva) || 0), 0);
+  const deductible = rows.filter(r => r.type === 'Achat').reduce((s, r) => s + (Number(r.tva) || 0), 0);
+  const nette      = Math.max(0, collectee - deductible);
+
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('tva-stat-collectee', _fmtMAD(collectee));
+  set('tva-stat-deductible', _fmtMAD(deductible));
+  set('tva-stat-nette', _fmtMAD(nette));
+  set('tva-stat-collectee-sub', '▲ ' + rows.filter(r => r.type === 'Vente').length + ' ventes');
+  set('tva-stat-deductible-sub', '▲ ' + rows.filter(r => r.type === 'Achat').length + ' achats');
+  set('tva-stat-nette-sub', nette > 0 ? '● À verser à la DGI' : '● Crédit TVA');
+
+  // Taux dominant
+  const rateCount = {};
+  rows.forEach(r => { const rt = _deriveTaxRate(r); rateCount[rt] = (rateCount[rt] || 0) + 1; });
+  const dominant = Object.entries(rateCount).sort((a, b) => b[1] - a[1])[0];
+  set('tva-stat-taux', dominant ? dominant[0] + '%' : '—');
+  set('tva-stat-taux-sub', dominant ? '▲ ' + Math.round(dominant[1] / Math.max(rows.length, 1) * 100) + '% des lignes' : '—');
+
+  // By rate breakdown
+  const byRateBody = document.getElementById('tva-by-rate-body');
+  if (byRateBody) {
+    const rateGroups = {};
+    rows.forEach(r => {
+      const rt = _deriveTaxRate(r);
+      if (!rateGroups[rt]) rateGroups[rt] = { ht: 0, tva: 0, count: 0 };
+      rateGroups[rt].ht    += Number(r.ht)  || 0;
+      rateGroups[rt].tva   += Number(r.tva) || 0;
+      rateGroups[rt].count += 1;
+    });
+    const ratesPresent = Object.keys(rateGroups).map(Number).sort((a, b) => b - a);
+    const allRates = ratesPresent.length ? ratesPresent : MAD_RATES;
+    byRateBody.innerHTML = allRates.map(rt => {
+      const g = rateGroups[rt] || { ht: 0, tva: 0, count: 0 };
+      const cls = g.count ? 'badge-cyan' : 'badge-gray';
+      return `<tr>
+        <td><span class="badge ${cls}">${rt}%</span></td>
+        <td class="amount">${_fmtMAD(g.ht)}</td>
+        <td class="amount">${_fmtMAD(g.tva)}</td>
+        <td style="color:var(--fg3);text-align:right">${g.count}</td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="4" style="color:var(--fg3);text-align:center;">Aucune donnée</td></tr>';
+  }
+
+  // Monthly history
+  const histBody = document.getElementById('tva-history-body');
+  if (histBody) {
+    const monthMap = {};
+    invoicesData.forEach(r => {
+      if (!r.date) return;
+      const m = String(r.date).slice(0, 7);
+      if (!monthMap[m]) monthMap[m] = { coll: 0, ded: 0 };
+      if (r.type === 'Vente') monthMap[m].coll += Number(r.tva) || 0;
+      else                    monthMap[m].ded  += Number(r.tva) || 0;
+    });
+    const months = Object.keys(monthMap).sort().reverse();
+    if (!months.length) {
+      histBody.innerHTML = '<tr><td colspan="4" style="color:var(--fg3);text-align:center;">Aucune donnée</td></tr>';
+    } else {
+      histBody.innerHTML = months.map(m => {
+        const { coll, ded } = monthMap[m];
+        const net = Math.max(0, coll - ded);
+        return `<tr>
+          <td style="color:var(--fg)">${_derivePeriodLabel(m)}</td>
+          <td class="amount">${_fmtMAD(coll)}</td>
+          <td class="amount">${_fmtMAD(ded)}</td>
+          <td class="amount" style="${net > 0 ? 'color:var(--cyan)' : 'color:var(--green)'}">${_fmtMAD(net)}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+
+  // Detail table
+  const detailBody  = document.getElementById('tva-detail-body');
+  const detailTitle = document.getElementById('tva-detail-period');
+  const detailCount = document.getElementById('tva-detail-count');
+  if (detailTitle) detailTitle.textContent = ym ? _derivePeriodLabel(ym) : 'Toutes périodes';
+  if (detailCount) detailCount.textContent = rows.length + ' ligne(s)';
+  if (detailBody) {
+    if (!rows.length) {
+      detailBody.innerHTML = '<tr><td colspan="7" style="color:var(--fg3);text-align:center;">Aucune facture pour cette période.</td></tr>';
+    } else {
+      detailBody.innerHTML = rows.map(r => {
+        const typeBadge = r.type === 'Vente'
+          ? '<span class="badge badge-cyan">💼 Vente</span>'
+          : '<span class="badge badge-gray">🛒 Achat</span>';
+        const rt = _deriveTaxRate(r);
+        return `<tr>
+          <td><strong style="color:var(--white)">${r.num || '—'}</strong></td>
+          <td style="color:var(--fg2)">${r.tiers || '—'}</td>
+          <td style="color:var(--fg2)">${r.societe || '—'}</td>
+          <td>${typeBadge}</td>
+          <td class="amount">${_fmtMAD(Number(r.ht) || 0)}</td>
+          <td style="color:var(--fg3);text-align:right">${rt}%</td>
+          <td class="amount">${_fmtMAD(Number(r.tva) || 0)}</td>
+        </tr>`;
+      }).join('');
+    }
+  }
+}
+
+function exportTVAExcel() {
+  const sel = document.getElementById('tva-period-select');
+  const ym = sel ? sel.value : '';
+  const rows = _tvaRowsForPeriod(ym);
+  if (!rows.length) { showToast('info', 'Aucune donnée', 'Aucune facture pour cette période.'); return; }
+  const header = 'Facture\tTiers\tSociété\tType\tBase HT\tTVA\tTaux\n';
+  const body = rows.map(r => [
+    r.num, r.tiers || '', r.societe || '', r.type || '',
+    (Number(r.ht) || 0).toFixed(2),
+    (Number(r.tva) || 0).toFixed(2),
+    _deriveTaxRate(r) + '%'
+  ].join('\t')).join('\n');
+  const blob = new Blob([header + body], { type: 'text/tab-separated-values;charset=utf-8;' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'TVA_' + (ym || 'total') + '.tsv'; a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('success', '📥 Export prêt', 'Ouvrez le fichier dans Excel.');
+}
+
+// ── SOCIÉTÉ DROPDOWN MANAGEMENT ──────────────────────────────────
+function _societeStorageKey() {
+  const s = getSession();
+  return s ? `ava_societes_${s.slug}` : null;
+}
+
+function getSocieteList() {
+  // Merge stored list + unique values from invoicesData
+  const key = _societeStorageKey();
+  let stored = [];
+  try { stored = JSON.parse(localStorage.getItem(key) || '[]'); } catch(_) {}
+  const fromData = [...new Set(invoicesData.map(r => r.societe).filter(Boolean))];
+  const merged = [...new Set([...stored, ...fromData])].sort((a, b) => a.localeCompare(b, 'fr'));
+  return merged;
+}
+
+function _saveSocieteList(list) {
+  const key = _societeStorageKey();
+  if (!key) return;
+  try { localStorage.setItem(key, JSON.stringify([...new Set(list)].sort((a,b) => a.localeCompare(b,'fr')))); } catch(_) {}
+}
+
+function populateSocieteSelects(preserveValues = true) {
+  const list = getSocieteList();
+  document.querySelectorAll('select.societe-select').forEach(sel => {
+    const prev = preserveValues ? sel.value : '';
+    // Keep first option (placeholder or "— Toutes —")
+    const first = sel.options[0] ? sel.options[0].outerHTML : '';
+    sel.innerHTML = first;
+    list.forEach(name => {
+      const opt = document.createElement('option');
+      opt.value = name; opt.textContent = name;
+      sel.appendChild(opt);
+    });
+    // "+ Nouvelle société" option
+    const newOpt = document.createElement('option');
+    newOpt.value = '__new__'; newOpt.textContent = '+ Nouvelle société…';
+    sel.appendChild(newOpt);
+    if (prev && prev !== '__new__') sel.value = prev;
+    sel.onchange = function() {
+      if (this.value === '__new__') {
+        const name = prompt('Nom de la nouvelle société :');
+        if (name && name.trim()) {
+          const trimmed = name.trim();
+          const updated = [...new Set([...getSocieteList(), trimmed])];
+          _saveSocieteList(updated);
+          populateSocieteSelects();
+          // Re-select the new society in this specific dropdown
+          this.value = trimmed;
+        } else {
+          this.value = prev || '';
+        }
+      }
+    };
+  });
+
+  // Also render settings société list
+  _renderSettingsSocietes(list);
+}
+
+function _renderSettingsSocietes(list) {
+  const el = document.getElementById('settings-societes-list');
+  if (!el) return;
+  if (!list.length) {
+    el.innerHTML = '<div style="color:var(--fg3);font-size:13px;padding:12px 0;">Aucune société enregistrée. Ajoutez votre premier client ci-dessous.</div>';
+    return;
+  }
+  el.innerHTML = list.map(name => `
+    <div class="job-card">
+      <span class="job-dot dot-ok"></span>
+      <div class="job-info">
+        <div class="job-name">${name}</div>
+        <div class="job-meta">Société cliente</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="removeSociete('${name.replace(/'/g, "\\'")}')">✕</button>
+    </div>`).join('');
+}
+
+function addSociete() {
+  const input = document.getElementById('new-societe-input');
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) return;
+  const updated = [...new Set([...getSocieteList(), name])];
+  _saveSocieteList(updated);
+  input.value = '';
+  populateSocieteSelects();
+  showToast('success', '🏭 Société ajoutée', name + ' est maintenant disponible dans les formulaires.');
+}
+
+function removeSociete(name) {
+  const list = getSocieteList().filter(s => s !== name);
+  _saveSocieteList(list);
+  populateSocieteSelects();
 }
 
 const sectionTitles = {
@@ -2122,9 +2474,22 @@ function showSection(id) {
   });
   document.getElementById('topbar-section-title').textContent = sectionTitles[id] || '';
   if (id === 'invoices') renderTable();
+  if (id === 'tva') { populateTVAPeriodSelect(); renderTVASection(); }
+  if (id === 'dgi') renderDGISection();
+  if (id === 'status') renderStatusSection();
+  if (id === 'bank') renderBankSection();
   if (id === 'manual') {
-    document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
-    if (!document.getElementById('line-items-body').children.length) addLine();
+    const hasLines = document.getElementById('line-items-body').children.length > 0;
+    if (!hasLines) {
+      // Try to restore draft first; if no draft, set defaults
+      const hasDraft = (() => { try { return !!localStorage.getItem(DRAFT_KEY()); } catch(_) { return false; } })();
+      if (hasDraft) {
+        restoreDraft();
+      } else {
+        document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
+        addLine();
+      }
+    }
   }
 }
 
@@ -2411,21 +2776,375 @@ function updateTotals() {
 function fmtMAD(n) { return n.toLocaleString('fr-MA',{minimumFractionDigits:2,maximumFractionDigits:2})+' MAD'; }
 
 // ══════════════════════════════════════════
+// BANK RECONCILIATION
+// ══════════════════════════════════════════
+const BANK_KEY = () => { try { return `ava_bank_entries_${getSession()?.slug||'default'}`; } catch(_) { return 'ava_bank_entries_default'; }};
+
+function _getBankEntries() { try { return JSON.parse(localStorage.getItem(BANK_KEY()) || '[]'); } catch(_) { return []; } }
+function _saveBankEntries(entries) { try { localStorage.setItem(BANK_KEY(), JSON.stringify(entries)); } catch(_) {} }
+
+// Fuzzy match score 0-100 between a bank line and an invoice
+function _bankMatchScore(bankLine, inv) {
+  let score = 0;
+  // 1. Amount match (±2 MAD exact or ±5%)
+  const bAmt = Math.abs(bankLine.montant);
+  const iAmt = Math.abs(inv.ttc || inv.ht || 0);
+  if (iAmt > 0) {
+    const diff = Math.abs(bAmt - iAmt);
+    if (diff < 2) score += 60;
+    else if (diff / iAmt < 0.02) score += 55;
+    else if (diff / iAmt < 0.05) score += 40;
+    else if (diff / iAmt < 0.15) score += 20;
+  }
+  // 2. Tiers name in libellé (case-insensitive substring)
+  const lib = bankLine.libelle.toLowerCase().replace(/[^a-z0-9]/g,' ').split(/\s+/).filter(w=>w.length>2);
+  const tier = (inv.tiers||'').toLowerCase().replace(/[^a-z0-9]/g,' ').split(/\s+/).filter(w=>w.length>2);
+  const commonWords = lib.filter(w => tier.some(t => t.includes(w) || w.includes(t)));
+  if (commonWords.length > 0) score += Math.min(commonWords.length * 15, 35);
+  // 3. Invoice number in libellé
+  if (inv.num && bankLine.libelle.toLowerCase().includes(inv.num.toLowerCase())) score += 20;
+  return Math.min(score, 100);
+}
+
+// Match all bank entries against invoicesData
+function _runMatching(entries) {
+  return entries.map(entry => {
+    if (entry.decision === 'approved' || entry.decision === 'rejected') return entry; // already decided
+    if (entry.decision === 'ignored') return entry;
+    // Find best invoice match
+    let best = null, bestScore = 0;
+    (invoicesData || []).forEach(inv => {
+      const s = _bankMatchScore(entry, inv);
+      if (s > bestScore) { bestScore = s; best = inv; }
+    });
+    return { ...entry, matchedInv: best || null, matchScore: bestScore,
+      decision: bestScore >= 80 ? 'auto' : (bestScore >= 40 ? 'review' : 'none') };
+  });
+}
+
+function _parseBankCSV(text) {
+  const lines = text.trim().split(/\r?\n/).filter(l => l.trim());
+  if (!lines.length) return [];
+  // Detect separator
+  const sep = lines[0].includes(';') ? ';' : ',';
+  // Detect columns from header
+  const header = lines[0].split(sep).map(h => h.trim().toLowerCase().replace(/"/g,''));
+  const idxDate   = header.findIndex(h => h.includes('date'));
+  const idxLib    = header.findIndex(h => h.includes('lib') || h.includes('desc') || h.includes('operat') || h.includes('motif') || h.includes('detail'));
+  const idxDebit  = header.findIndex(h => h.includes('deb') || h.includes('déb'));
+  const idxCredit = header.findIndex(h => h.includes('cred') || h.includes('créd'));
+  const idxMont   = header.findIndex(h => h.includes('mont') && !h.includes('deb') && !h.includes('cred'));
+  const results = [];
+  const dataLines = idxDate >= 0 ? lines.slice(1) : lines; // skip header if found
+  (idxDate >= 0 ? lines.slice(1) : lines).forEach((line, idx) => {
+    const cols = line.split(sep).map(c => c.trim().replace(/"/g,''));
+    if (cols.length < 2) return;
+    const rawDate = cols[idxDate >= 0 ? idxDate : 0] || '';
+    const libelle = cols[idxLib >= 0 ? idxLib : 1] || '';
+    let montant = 0;
+    if (idxMont >= 0) {
+      montant = parseFloat((cols[idxMont]||'').replace(/\s/g,'').replace(',','.')) || 0;
+    } else {
+      const debit  = parseFloat((cols[idxDebit  >= 0 ? idxDebit  : 2]||'').replace(/\s/g,'').replace(',','.')) || 0;
+      const credit = parseFloat((cols[idxCredit >= 0 ? idxCredit : 3]||'').replace(/\s/g,'').replace(',','.')) || 0;
+      montant = credit > 0 ? credit : -debit;
+    }
+    if (!libelle) return;
+    // Normalise date to YYYY-MM-DD
+    let date = rawDate;
+    const dm = rawDate.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+    if (dm) {
+      const y = dm[3].length === 2 ? '20' + dm[3] : dm[3];
+      date = `${y}-${dm[2].padStart(2,'0')}-${dm[1].padStart(2,'0')}`;
+    }
+    results.push({ id: `bk_${Date.now()}_${idx}`, date, libelle, montant, decision: 'pending', matchedInv: null, matchScore: 0 });
+  });
+  return results;
+}
+
+function importBankCSV(input) {
+  const file = input?.files?.[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => _processBankText(e.target.result, file.name);
+  reader.readAsText(file, 'UTF-8');
+}
+
+function importBankCSVText() {
+  const txt = (document.getElementById('bank-csv-paste')?.value || '').trim();
+  if (!txt) { showToast('error','Texte vide','Collez des lignes CSV avant d\'importer.'); return; }
+  _processBankText(txt, 'collé');
+}
+
+function _processBankText(text, source) {
+  const raw = _parseBankCSV(text);
+  if (!raw.length) { showToast('error','Format non reconnu','Vérifiez le format CSV : Date ; Libellé ; Montant'); return; }
+  const matched = _runMatching(raw);
+  _saveBankEntries(matched);
+  showToast('success', `✓ ${raw.length} lignes importées`, `Relevé "${source}" chargé et analysé.`);
+  renderBankSection();
+}
+
+function renderBankSection() {
+  let entries = _getBankEntries();
+  const hasEntries = entries.length > 0;
+
+  document.getElementById('bank-upload-card').style.display  = hasEntries ? 'none' : 'block';
+  document.getElementById('bank-main-card').style.display    = hasEntries ? 'block' : 'none';
+
+  if (!hasEntries) { _updateBankStats([]); return; }
+
+  // Re-run matching in case new invoices were added
+  entries = _runMatching(entries);
+  _saveBankEntries(entries);
+
+  const filter = document.getElementById('bank-filter')?.value || 'all';
+  const filtered = entries.filter(e => {
+    if (filter === 'review')    return e.decision === 'review';
+    if (filter === 'matched')   return e.decision === 'approved' || e.decision === 'auto';
+    if (filter === 'unmatched') return e.decision === 'none' || e.decision === 'ignored';
+    return true;
+  });
+
+  const tbody = document.getElementById('bank-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = filtered.map(e => {
+    const amt    = e.montant >= 0 ? `+${_fmt(e.montant)} MAD` : `${_fmt(e.montant)} MAD`;
+    const amtCls = e.montant >= 0 ? 'color:var(--cyan)' : 'color:#f45';
+    let suggestion = '<span style="color:var(--fg3);font-style:italic">Aucune correspondance</span>';
+    let confBadge  = '<span class="badge badge-red">—</span>';
+    if (e.matchedInv) {
+      suggestion = `<span style="color:var(--fg2)">${e.matchedInv.num||'—'} — ${e.matchedInv.tiers||'—'}</span>`;
+      const pct = e.matchScore;
+      const cls = pct >= 80 ? 'badge-green' : (pct >= 50 ? 'badge-orange' : 'badge-red');
+      confBadge = `<span class="badge ${cls}">${pct}%</span>`;
+    }
+    let statusBadge = '';
+    let actions = '';
+    if (e.decision === 'approved') {
+      statusBadge = '<span class="badge badge-green">✓ Rapproché</span>';
+      actions = `<button class="btn btn-ghost btn-sm" onclick="bankDecide('${e.id}','rejected')">Annuler</button>`;
+    } else if (e.decision === 'rejected') {
+      statusBadge = '<span class="badge badge-red">✕ Rejeté</span>';
+      actions = `<button class="btn btn-ghost btn-sm" onclick="bankDecide('${e.id}','review')">Réviser</button>`;
+    } else if (e.decision === 'auto') {
+      statusBadge = '<span class="badge badge-cyan">⚡ Auto</span>';
+      actions = `<button class="btn btn-cyan btn-sm" onclick="bankDecide('${e.id}','approved')">✓ Confirmer</button><button class="btn btn-ghost btn-sm" onclick="bankDecide('${e.id}','rejected')">✕</button>`;
+    } else if (e.decision === 'review') {
+      statusBadge = '<span class="badge badge-orange">⏳ Révision</span>';
+      actions = `<button class="btn btn-cyan btn-sm" onclick="bankDecide('${e.id}','approved')">✓</button><button class="btn btn-ghost btn-sm" onclick="bankDecide('${e.id}','rejected')">✕</button>`;
+    } else {
+      statusBadge = '<span class="badge badge-red">Aucune</span>';
+      actions = `<button class="btn btn-ghost btn-sm" onclick="bankCreateManual('${e.id}')">+ Saisir</button>`;
+    }
+    const dateDisp = e.date ? e.date.split('-').reverse().join('/') : '—';
+    return `<tr>
+      <td style="color:var(--fg3)">${dateDisp}</td>
+      <td style="color:var(--fg)">${e.libelle}</td>
+      <td style="text-align:right;font-weight:600;${amtCls}">${amt}</td>
+      <td>${suggestion}</td>
+      <td>${confBadge}</td>
+      <td>${statusBadge}</td>
+      <td style="display:flex;gap:6px;padding:8px 0">${actions}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" style="text-align:center;color:var(--fg3);padding:24px">Aucune ligne pour ce filtre</td></tr>`;
+
+  // Unmatched card
+  const unmatched = entries.filter(e => e.decision === 'none' || e.decision === 'ignored');
+  const unmatchedCard = document.getElementById('bank-unmatched-card');
+  const unmatchedBody = document.getElementById('bank-unmatched-body');
+  if (unmatchedCard && unmatchedBody) {
+    if (unmatched.length) {
+      unmatchedCard.style.display = 'block';
+      unmatchedBody.innerHTML = unmatched.map(e => {
+        const amt = e.montant >= 0 ? `+${_fmt(e.montant)} MAD` : `${_fmt(e.montant)} MAD`;
+        const dateDisp = e.date ? e.date.split('-').reverse().join('/') : '—';
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div><div style="color:var(--fg)">${e.libelle}</div><div style="color:var(--fg3);font-size:.8rem">${dateDisp} · <span style="color:${e.montant>=0?'var(--cyan)':'#f45'}">${amt}</span></div></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-surface btn-sm" onclick="bankCreateManual('${e.id}')">+ Créer facture</button>
+            <button class="btn btn-ghost btn-sm" onclick="bankDecide('${e.id}','ignored')">Ignorer</button>
+          </div>
+        </div>`;
+      }).join('');
+    } else {
+      unmatchedCard.style.display = 'none';
+    }
+  }
+
+  // Pending badge
+  const pending = entries.filter(e => e.decision === 'review' || e.decision === 'auto').length;
+  const badge = document.getElementById('bank-pending-badge');
+  if (badge) { if (pending > 0) { badge.textContent = `${pending} en attente`; badge.style.display=''; } else { badge.style.display='none'; } }
+
+  _updateBankStats(entries);
+}
+
+function _updateBankStats(entries) {
+  const total    = entries.length;
+  const approved = entries.filter(e => e.decision === 'approved' || e.decision === 'auto').length;
+  const review   = entries.filter(e => e.decision === 'review').length;
+  const none     = entries.filter(e => e.decision === 'none' || e.decision === 'ignored').length;
+  const autoPct  = total > 0 ? Math.round(approved / total * 100) : 0;
+  const _s = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  _s('bank-stat-matched',     total > 0 ? approved : '—');
+  _s('bank-stat-matched-pct', total > 0 ? `▲ ${autoPct}% du relevé` : '—');
+  _s('bank-stat-review',      total > 0 ? review   : '—');
+  _s('bank-stat-unmatched',   total > 0 ? none     : '—');
+  _s('bank-stat-auto',        total > 0 ? autoPct + '%' : '—');
+  _s('bank-stat-auto-label',  total > 0 ? (autoPct >= 80 ? '▲ Excellent' : autoPct >= 60 ? '▲ Bon' : '● À améliorer') : '—');
+}
+
+function bankDecide(id, decision) {
+  const entries = _getBankEntries();
+  const idx = entries.findIndex(e => e.id === id);
+  if (idx < 0) return;
+  entries[idx].decision = decision;
+  _saveBankEntries(entries);
+  renderBankSection();
+}
+
+function bankValidateAll() {
+  const entries = _getBankEntries().map(e =>
+    (e.decision === 'auto' || (e.decision === 'review' && e.matchScore >= 80))
+      ? { ...e, decision: 'approved' } : e
+  );
+  _saveBankEntries(entries);
+  showToast('success','✓ Validation effectuée','Toutes les suggestions à ≥80% ont été approuvées.');
+  renderBankSection();
+}
+
+function bankExportCSV() {
+  const entries = _getBankEntries();
+  if (!entries.length) { showToast('error','Aucune donnée','Importez un relevé d\'abord.'); return; }
+  const header = 'Date;Libellé;Montant (MAD);Facture liée;Score;Statut';
+  const rows = entries.map(e => [
+    e.date, e.libelle, e.montant,
+    e.matchedInv ? `${e.matchedInv.num||''} - ${e.matchedInv.tiers||''}` : '',
+    e.matchScore || 0,
+    e.decision === 'approved' ? 'Rapproché' : e.decision === 'rejected' ? 'Rejeté' :
+    e.decision === 'auto' ? 'Auto (confirmé)' : e.decision === 'review' ? 'En révision' :
+    e.decision === 'ignored' ? 'Ignoré' : 'Non rapproché'
+  ].join(';')).join('\n');
+  const blob = new Blob(['﻿' + header + '\n' + rows], { type:'text/csv;charset=utf-8' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `rapprochement_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click(); URL.revokeObjectURL(a.href);
+  showToast('success','⬇ Export téléchargé','Rapport de rapprochement exporté.');
+}
+
+function bankClear() {
+  if (!confirm('Effacer tout le relevé importé ? Cette action est irréversible.')) return;
+  try { localStorage.removeItem(BANK_KEY()); } catch(_) {}
+  renderBankSection();
+  showToast('info','🗑 Relevé effacé','Importez un nouveau relevé pour recommencer.');
+}
+
+function bankCreateManual(id) {
+  // Pre-fill manual entry with bank line data
+  const entries = _getBankEntries();
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+  showSection('manual');
+  setTimeout(() => {
+    const dateEl = document.getElementById('m-date');
+    if (dateEl && entry.date) dateEl.value = entry.date;
+    const tiersEl = document.getElementById('m-tiers');
+    if (tiersEl) tiersEl.value = entry.libelle;
+    const notesEl = document.getElementById('m-notes');
+    if (notesEl) notesEl.value = `Rapprochement bancaire — ${entry.libelle} — ${entry.date}`;
+    // Pre-fill amount in first line
+    const priceEl = document.querySelector('#line-items-body .price');
+    if (priceEl) { priceEl.value = Math.abs(entry.montant); recalcLine(priceEl); }
+    showToast('info','📋 Formulaire pré-rempli','Vérifiez et complétez les informations de la facture.');
+  }, 200);
+}
+
+// ══════════════════════════════════════════
 // MANUAL FORM
 // ══════════════════════════════════════════
+const DRAFT_KEY = () => { try { return `ava_draft_${getSession()?.slug||'default'}`; } catch(_) { return 'ava_draft_default'; }};
+
+function saveDraft() {
+  const lines = [];
+  document.querySelectorAll('#line-items-body tr').forEach(r => {
+    lines.push({
+      desc:  r.querySelector('input[type=text]')?.value || '',
+      qty:   r.querySelector('.qty')?.value || '1',
+      price: r.querySelector('.price')?.value || '0',
+      tva:   r.querySelector('.tva')?.value || '20',
+    });
+  });
+  const draft = {
+    type:     document.getElementById('m-type')?.value || '',
+    societe:  document.getElementById('m-societe')?.value || '',
+    num:      document.getElementById('m-num')?.value || '',
+    date:     document.getElementById('m-date')?.value || '',
+    tiers:    document.getElementById('m-tiers')?.value || '',
+    ice:      document.getElementById('m-ice')?.value || '',
+    phone:    document.getElementById('m-phone')?.value || '',
+    email:    document.getElementById('m-email')?.value || '',
+    address:  document.getElementById('m-address')?.value || '',
+    journal:  document.getElementById('m-journal')?.value || '',
+    paiement: document.getElementById('m-paiement')?.value || '',
+    notes:    document.getElementById('m-notes')?.value || '',
+    lines,
+    saved_at: new Date().toISOString(),
+  };
+  try { localStorage.setItem(DRAFT_KEY(), JSON.stringify(draft)); } catch(_) {}
+  const ind = document.getElementById('draft-indicator');
+  if (ind) { ind.style.opacity = '1'; setTimeout(() => { ind.style.opacity = '0'; }, 2500); }
+  showToast('success', '💾 Brouillon sauvegardé', 'Retrouvez votre saisie à la prochaine ouverture.');
+}
+
+function restoreDraft() {
+  let draft;
+  try { draft = JSON.parse(localStorage.getItem(DRAFT_KEY()) || 'null'); } catch(_) { return; }
+  if (!draft) return;
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined) el.value = val; };
+  set('m-type', draft.type); set('m-societe', draft.societe); set('m-num', draft.num);
+  set('m-date', draft.date); set('m-tiers', draft.tiers); set('m-ice', draft.ice);
+  set('m-phone', draft.phone); set('m-email', draft.email); set('m-address', draft.address);
+  set('m-journal', draft.journal); set('m-paiement', draft.paiement); set('m-notes', draft.notes);
+  if (Array.isArray(draft.lines) && draft.lines.length) {
+    document.getElementById('line-items-body').innerHTML = '';
+    draft.lines.forEach(l => {
+      addLine();
+      const rows = document.querySelectorAll('#line-items-body tr');
+      const r = rows[rows.length - 1];
+      if (r) {
+        const ti = r.querySelector('input[type=text]'); if (ti) ti.value = l.desc || '';
+        const qi = r.querySelector('.qty');  if (qi) qi.value = l.qty || '1';
+        const pi = r.querySelector('.price'); if (pi) pi.value = l.price || '0';
+        const vi = r.querySelector('.tva');  if (vi) vi.value = l.tva || '20';
+        recalcLine(r.querySelector('.price'));
+      }
+    });
+    updateTotals();
+  }
+  const when = draft.saved_at ? new Date(draft.saved_at).toLocaleTimeString('fr-MA',{hour:'2-digit',minute:'2-digit'}) : '';
+  showToast('info', '📋 Brouillon restauré', when ? `Saisie du ${when} récupérée.` : 'Saisie précédente récupérée.');
+}
+
+function clearDraft() {
+  try { localStorage.removeItem(DRAFT_KEY()); } catch(_) {}
+}
+
 function resetManualForm() {
-  ['m-num','m-tiers','m-ice'].forEach(id => document.getElementById(id).value = '');
+  ['m-num','m-tiers','m-ice','m-phone','m-email','m-address'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
   document.getElementById('m-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('m-type').selectedIndex = 0;
   document.getElementById('m-societe').selectedIndex = 0;
-  // Clear all text/email/tel inputs in the manual section (except the ones with IDs already reset)
-  document.querySelectorAll('#section-manual input[type=text], #section-manual input[type=email]').forEach(inp => {
-    if (!['m-num','m-tiers','m-ice'].includes(inp.id)) inp.value = '';
-  });
-  document.querySelectorAll('#section-manual textarea').forEach(t => t.value = '');
+  const mj = document.getElementById('m-journal'); if (mj) mj.selectedIndex = 0;
+  const mp = document.getElementById('m-paiement'); if (mp) mp.selectedIndex = 0;
+  const mn = document.getElementById('m-notes'); if (mn) mn.value = '';
   document.getElementById('line-items-body').innerHTML = '';
   addLine();
   updateTotals();
+  clearDraft();
   showToast('info', '🔄 Formulaire réinitialisé', 'Tous les champs ont été effacés.');
 }
 async function submitManualForm() {
@@ -2469,6 +3188,7 @@ async function submitManualForm() {
   // FIX 1 — push skeleton row immediately as 'En traitement'.
   pushInvoice({ num, date, tiers, societe, type, ht, tva, ttc, status:'En traitement', sc:'badge-cyan', confiance, compte });
   addStatusRow({ num, societe, status: 'En cours', duration: '—' });
+  clearDraft(); // Draft no longer needed — submission in progress
   showToast('info','⚡ Envoi vers n8n…','Transmission du formulaire au workflow…');
   resetSimulation(num);          // FIX 5/8 — cosmetic animation only
   showSection('status');
@@ -2908,25 +3628,441 @@ function exportExcel() {
   showToast('success', '📥 Export Excel', `${rows.length} factures exportées.`);
 }
 
+// ── STATUS SECTION — live processing tracker ──────────────────────
+let _statusPollTimer = null;
+
+function renderStatusSection() {
+  const processing = invoicesData.filter(r => r.status === 'En traitement' || r.status === 'En cours');
+  const activeCard = document.getElementById('active-job-card');
+  const noActiveCard = document.getElementById('no-active-job-card');
+
+  if (processing.length > 0) {
+    const job = processing[0];
+    activeCard.style.display = '';
+    noActiveCard.style.display = 'none';
+    document.getElementById('active-job-title').textContent = (job.num || '—') + (job.tiers ? ' — ' + job.tiers : '');
+    _renderTracker(job);
+    _renderLog(job);
+    _startStatusPoll();
+  } else {
+    activeCard.style.display = 'none';
+    noActiveCard.style.display = '';
+    _stopStatusPoll();
+  }
+
+  // History table — all invoices sorted newest first
+  const tbody = document.getElementById('status-tbody');
+  if (!tbody) return;
+  if (!invoicesData.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--fg3);padding:28px 0;">Aucun traitement — soumettez une facture pour commencer.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = invoicesData.slice(0, 50).map(r => {
+    const stMap = {
+      'Traité':        { cls:'badge-green',  icon:'✓' },
+      'En traitement': { cls:'badge-cyan',   icon:'⚡' },
+      'En cours':      { cls:'badge-cyan',   icon:'⚡' },
+      'Erreur':        { cls:'badge-red',    icon:'✕' },
+    };
+    const st = stMap[r.status] || { cls:'badge-gray', icon:'•' };
+    const conf = typeof r.confiance === 'number' ? Math.round(r.confiance) + '%' : '—';
+    const confCls = r.confiance >= 85 ? 'badge-green' : r.confiance >= 70 ? 'badge-orange' : 'badge-red';
+    return `<tr>
+      <td style="color:var(--white);font-weight:600">${r.num || '—'}</td>
+      <td style="color:var(--fg2)">${r.tiers || '—'}</td>
+      <td style="color:var(--fg3)">${r.societe || '—'}</td>
+      <td style="color:var(--fg3)">${r.date || '—'}</td>
+      <td><span class="badge ${st.cls}">${st.icon} ${r.status || '—'}</span></td>
+      <td>${r.confiance != null ? `<span class="badge ${confCls}">${conf}</span>` : '<span style="color:var(--fg3)">—</span>'}</td>
+      <td>
+        ${r.status === 'Erreur' ? `<button class="btn btn-ghost btn-sm" onclick="retryInvoice('${r.num}')">↺ Réessayer</button>` : ''}
+        ${r.status === 'Traité' ? `<button class="btn btn-ghost btn-sm" onclick="openModal('${r.num}')">👁 Détail</button>` : ''}
+        ${r.status === 'En traitement' || r.status === 'En cours' ? `<button class="btn btn-danger btn-sm" onclick="cancelJobByNum('${r.num}')">⏹</button>` : ''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function _renderTracker(job) {
+  const tracker = document.getElementById('tracker-1');
+  if (!tracker) return;
+  const steps = [
+    { label: 'Réception', icon: '📥', done: true },
+    { label: 'OCR',       icon: '🔍', done: true },
+    { label: 'IA Extract',icon: '🤖', done: job.status === 'Traité' },
+    { label: 'Validation',icon: '📊', done: job.status === 'Traité' },
+    { label: 'Odoo',      icon: '🏢', done: job.status === 'Traité' && !!localStorage.getItem('ava_odoo_url') },
+    { label: 'Sheets',    icon: '📋', done: job.status === 'Traité' },
+    { label: 'Terminé',   icon: '✅', done: job.status === 'Traité' },
+  ];
+  const activeIdx = job.status === 'Traité' ? 6 : 2;
+  tracker.innerHTML = steps.map((s, i) => {
+    const cls = s.done ? 'done' : i === activeIdx ? 'active' : '';
+    return `<div class="step-wrap ${cls}">
+      <div class="step-circle">${s.done ? '✓' : s.icon}</div>
+      <div class="step-label">${s.label}</div>
+      <div class="step-time">${s.done ? '✓' : i === activeIdx ? 'en cours…' : '—'}</div>
+    </div>`;
+  }).join('');
+}
+
+function _renderLog(job) {
+  const box = document.getElementById('log-box');
+  if (!box) return;
+  const lines = [
+    { cls:'log-success', txt:`✓ PDF reçu — ${job.filename || job.num + '.pdf'}` },
+    { cls:'log-success', txt:`✓ OCR terminé — confiance ${job.confiance != null ? Math.round(job.confiance) + '%' : '?'}` },
+  ];
+  if (job.status === 'Traité') {
+    lines.push({ cls:'log-success', txt:`✓ IA — fournisseur: ${job.tiers || '?'}, HT: ${job.ht || '?'} MAD, TVA: ${job.tva || '?'} MAD` });
+    lines.push({ cls:'log-success', txt:`✓ Compte PCM assigné: ${job.compte || '61110'}` });
+    lines.push({ cls:'log-success', txt:`✓ Enregistrement Supabase — num: ${job.num}` });
+  } else {
+    lines.push({ cls:'log-active', txt:`⚡ GPT-4o — extraction en cours… (fournisseur, montants, TVA)` });
+    lines.push({ cls:'log-dim',   txt:`&nbsp;&nbsp; Analyse PCM, ICE, lignes de facture…` });
+  }
+  if (job.status === 'Erreur') {
+    lines.push({ cls:'log-error', txt:`✕ Erreur: ${job.error_msg || 'Traitement échoué'}` });
+  }
+  box.innerHTML = lines.map(l => `<div class="${l.cls}">${l.txt}</div>`).join('');
+}
+
+function _startStatusPoll() {
+  if (_statusPollTimer) return;
+  _statusPollTimer = setInterval(async () => {
+    const processing = invoicesData.filter(r => r.status === 'En traitement' || r.status === 'En cours');
+    if (!processing.length) { _stopStatusPoll(); renderStatusSection(); return; }
+    // Re-fetch status of processing jobs from Supabase
+    const s = getSession();
+    if (!s) return;
+    try {
+      const nums = processing.map(r => `num.eq.${encodeURIComponent(r.num)}`).join(',');
+      const updated = await sbSelect('invoices', `or=(${nums})&cabinet_slug=eq.${encodeURIComponent(s.slug)}&select=num,status,confiance,tiers,ht,tva,compte,error_msg,filename`);
+      if (updated && updated.length) {
+        updated.forEach(u => {
+          const idx = invoicesData.findIndex(r => r.num === u.num);
+          if (idx !== -1) Object.assign(invoicesData[idx], u);
+        });
+        renderStatusSection();
+        updateStats();
+        renderTable();
+      }
+    } catch(_) {}
+  }, 8000);
+}
+
+function _stopStatusPoll() {
+  if (_statusPollTimer) { clearInterval(_statusPollTimer); _statusPollTimer = null; }
+}
+
+function cancelActiveJob() {
+  const processing = invoicesData.filter(r => r.status === 'En traitement' || r.status === 'En cours');
+  if (processing.length) cancelJobByNum(processing[0].num);
+}
+
+async function cancelJobByNum(num) {
+  if (!confirm('Annuler ce traitement ? La facture restera dans la liste avec le statut "Erreur".')) return;
+  await patchInvoice(num, { status: 'Erreur', error_msg: 'Annulé manuellement' });
+  renderStatusSection();
+  updateStats();
+  showToast('info', '⏹ Traitement annulé', num + ' marqué comme erreur.');
+}
+
+async function retryInvoice(num) {
+  const row = invoicesData.find(r => r.num === num);
+  if (!row) return;
+  const webhookUrl = localStorage.getItem('ava_n8n_webhook') || document.getElementById('n8n-webhook-url')?.value;
+  if (!webhookUrl) { showToast('error', 'Webhook manquant', 'Configurez l\'URL n8n dans Paramètres.'); return; }
+  await patchInvoice(num, { status: 'En traitement', error_msg: null });
+  updateStats(); renderStatusSection();
+  try {
+    await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source: 'retry', invoice: row, cabinet_slug: getSession()?.slug }),
+    });
+    showToast('info', '↺ Re-traitement lancé', num + ' renvoyé au pipeline IA.');
+  } catch(e) {
+    showToast('error', 'Erreur réseau', e.message);
+  }
+}
+
+// ── DGI FEC EXPORT (norme DGI Maroc) ────────────────────────────
+// PCM account map
+const PCM = {
+  // Charges
+  'achat_ht':  { num: '61110', lib: 'Achats de marchandises' },
+  // Produits
+  'vente_ht':  { num: '71110', lib: 'Ventes de marchandises' },
+  // TVA
+  'tva_ded':   { num: '34550', lib: 'État TVA déductible' },
+  'tva_coll':  { num: '44550', lib: 'État TVA collectée' },
+  // Tiers
+  'fourn':     { num: '44110', lib: 'Fournisseurs' },
+  'client':    { num: '34210', lib: 'Clients' },
+};
+
+function _fecDate(d) {
+  // Convert YYYY-MM-DD to YYYYMMDD
+  if (!d) return new Date().toISOString().slice(0,10).replace(/-/g,'');
+  return String(d).replace(/-/g,'').slice(0,8);
+}
+
+function _fecAmt(n) {
+  return (Number(n) || 0).toFixed(2);
+}
+
+function _fecLine(fields) {
+  // Pipe-separated, no quotes needed for basic data
+  return fields.map(f => String(f ?? '').replace(/\|/g, ' ')).join('|');
+}
+
+function _buildFECLines(rows, cabinetName) {
+  const lines = [];
+  let ecrNum = 1;
+
+  rows.forEach(inv => {
+    const dt = _fecDate(inv.date);
+    const piece = inv.num || ('FAC' + ecrNum);
+    const tiers = inv.tiers || '';
+    const lib = (inv.type === 'Vente' ? 'Vente ' : 'Achat ') + tiers + ' ' + (inv.num || '');
+    const ht  = Number(inv.ht)  || 0;
+    const tva = Number(inv.tva) || 0;
+    const ttc = ht + tva;
+    const ecNum = String(ecrNum).padStart(6, '0');
+
+    if (inv.type === 'Vente') {
+      // Line 1 — Client debit TTC
+      lines.push(_fecLine(['VT', 'Journal Ventes', ecNum, dt,
+        PCM.client.num, PCM.client.lib, '', tiers,
+        piece, dt, lib, _fecAmt(ttc), '0.00', '', '', dt, '', '']));
+      // Line 2 — Produits credit HT
+      const cpte = inv.compte || PCM.vente_ht.num;
+      lines.push(_fecLine(['VT', 'Journal Ventes', ecNum, dt,
+        cpte, PCM.vente_ht.lib, '', tiers,
+        piece, dt, lib, '0.00', _fecAmt(ht), '', '', dt, '', '']));
+      // Line 3 — TVA collectée credit
+      if (tva > 0) lines.push(_fecLine(['VT', 'Journal Ventes', ecNum, dt,
+        PCM.tva_coll.num, PCM.tva_coll.lib, '', tiers,
+        piece, dt, lib, '0.00', _fecAmt(tva), '', '', dt, '', '']));
+    } else {
+      // Line 1 — Charge debit HT
+      const cpte = inv.compte || PCM.achat_ht.num;
+      lines.push(_fecLine(['AC', 'Journal Achats', ecNum, dt,
+        cpte, PCM.achat_ht.lib, '', tiers,
+        piece, dt, lib, _fecAmt(ht), '0.00', '', '', dt, '', '']));
+      // Line 2 — TVA déductible debit
+      if (tva > 0) lines.push(_fecLine(['AC', 'Journal Achats', ecNum, dt,
+        PCM.tva_ded.num, PCM.tva_ded.lib, '', tiers,
+        piece, dt, lib, _fecAmt(tva), '0.00', '', '', dt, '', '']));
+      // Line 3 — Fournisseur credit TTC
+      lines.push(_fecLine(['AC', 'Journal Achats', ecNum, dt,
+        PCM.fourn.num, PCM.fourn.lib, '', tiers,
+        piece, dt, lib, '0.00', _fecAmt(ttc), '', '', dt, '', '']));
+    }
+    ecrNum++;
+  });
+
+  return lines;
+}
+
+function renderDGISection() {
+  // Render pre-export checks based on live invoicesData
+  const checksEl = document.getElementById('dgi-checks-list');
+  if (checksEl) {
+    const total = invoicesData.length;
+    const noCompte = invoicesData.filter(r => !r.compte || r.compte === '').length;
+    const noDate   = invoicesData.filter(r => !r.date).length;
+    const noTiers  = invoicesData.filter(r => !r.tiers).length;
+
+    const check = (ok, label, detail) => `
+      <div style="display:flex;align-items:center;gap:12px;padding:10px 14px;background:${ok ? 'var(--green-dim)' : 'rgba(245,158,11,0.08)'};border:1px solid ${ok ? 'rgba(34,211,160,0.2)' : 'rgba(245,158,11,0.2)'};border-radius:var(--r)">
+        <span style="color:${ok ? 'var(--green)' : 'var(--orange)'};font-size:1.1rem">${ok ? '✓' : '⚠'}</span>
+        <div style="flex:1"><div style="color:${ok ? 'var(--green)' : 'var(--orange)'};font-weight:600;font-size:0.85rem">${label}</div><div style="color:var(--fg3);font-size:0.76rem">${detail}</div></div>
+      </div>`;
+
+    checksEl.innerHTML = [
+      check(total > 0, total + ' écritures prêtes', total > 0 ? 'Toutes les factures enregistrées dans la base.' : 'Aucune facture — soumettez d\'abord des factures.'),
+      check(noCompte === 0, noCompte === 0 ? 'Comptes PCM valides' : noCompte + ' compte(s) manquant(s)', noCompte === 0 ? (total - noCompte) + ' / ' + total + ' lignes avec compte PCM.' : 'Ouvrez ces factures et assignez un compte PCM.'),
+      check(noDate === 0, noDate === 0 ? 'Dates renseignées' : noDate + ' date(s) manquante(s)', noDate === 0 ? 'Toutes les factures ont une date.' : 'Corrigez les factures sans date.'),
+      check(noTiers === 0, noTiers === 0 ? 'Tiers renseignés' : noTiers + ' tiers manquant(s)', noTiers === 0 ? 'Tous les partenaires sont identifiés.' : 'Complétez le nom du tiers sur ces factures.'),
+    ].join('');
+  }
+
+  // Render export history from localStorage
+  renderDGIHistory();
+}
+
+function renderDGIHistory() {
+  const el = document.getElementById('dgi-history-body');
+  if (!el) return;
+  const s = getSession();
+  const key = s ? `ava_dgi_history_${s.slug}` : null;
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(_) {}
+  if (!history.length) {
+    el.innerHTML = '<tr><td colspan="5" style="color:var(--fg3);text-align:center;">Aucun export généré pour le moment.</td></tr>';
+    return;
+  }
+  el.innerHTML = history.slice().reverse().map(h => `<tr>
+    <td style="color:var(--white);font-weight:600">${h.filename}</td>
+    <td style="color:var(--fg2)">${h.societe || '—'}</td>
+    <td style="color:var(--fg3)">${h.periode}</td>
+    <td style="color:var(--fg3)">${h.generatedAt}</td>
+    <td style="color:var(--fg3);text-align:center">${h.lines}</td>
+  </tr>`).join('');
+}
+
 function generateDGI() {
   if (!invoicesData.length) { showToast('info', 'Aucune donnée', 'Aucune écriture à exporter.'); return; }
-  const esc = v => {
-    const s = String(v ?? '');
-    return /[",;\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-  };
-  const header = ['Date','Fournisseur','N° Facture','HT','TVA','TTC','Compte PCM'];
-  const lines = [header.join(';')];
-  invoicesData.forEach(i => {
-    lines.push([i.date, i.tiers, i.num, i.ht, i.tva, i.ttc, i.compte || '61110'].map(esc).join(';'));
-  });
-  const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-  const url = URL.createObjectURL(blob);
+
+  // Read filter values
+  const societeFilter = (document.getElementById('dgi-societe')?.value || '').trim();
+  const dateFrom = (document.getElementById('dgi-date-from')?.value || '').trim();
+  const dateTo   = (document.getElementById('dgi-date-to')?.value || '').trim();
+
+  let rows = [...invoicesData];
+  if (societeFilter) rows = rows.filter(r => r.societe === societeFilter);
+  if (dateFrom)      rows = rows.filter(r => r.date && r.date >= dateFrom);
+  if (dateTo)        rows = rows.filter(r => r.date && r.date <= dateTo);
+
+  if (!rows.length) { showToast('info', 'Aucun résultat', 'Aucune facture pour ces critères.'); return; }
+
+  const s = getSession();
+  const cabinetName = s?.name || 'Cabinet';
+
+  const FEC_HEADER = 'JournalCode|JournalLib|EcritureNum|EcritureDate|CompteNum|CompteLib|CompAuxNum|CompAuxLib|PieceRef|PieceDate|EcritureLib|Debit|Credit|EcritureLet|DateLet|ValidDate|Montantdevise|Idevise';
+  const lines = _buildFECLines(rows, cabinetName);
+  const content = FEC_HEADER + '\n' + lines.join('\n');
+
+  const societeSlug = (societeFilter || cabinetName).replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_-]/g,'');
+  const periode = dateFrom && dateTo ? dateFrom.slice(0,7) + '_' + dateTo.slice(0,7) : new Date().toISOString().slice(0,7);
+  const filename = `FEC_${societeSlug}_${periode}.txt`;
+
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
   const a = document.createElement('a');
-  a.href = url;
-  a.download = `FEC_AVA_${new Date().toISOString().slice(0,10)}.csv`;
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
   document.body.appendChild(a); a.click(); a.remove();
-  URL.revokeObjectURL(url);
-  showToast('success', '📄 Export DGI', `Fichier FEC généré (${invoicesData.length} écritures).`);
+  URL.revokeObjectURL(a.href);
+
+  // Save to export history
+  const key = s ? `ava_dgi_history_${s.slug}` : null;
+  if (key) {
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(_) {}
+    history.push({
+      filename,
+      societe: societeFilter || 'Toutes',
+      periode,
+      generatedAt: new Date().toLocaleDateString('fr-FR'),
+      lines: lines.length,
+    });
+    try { localStorage.setItem(key, JSON.stringify(history.slice(-20))); } catch(_) {}
+    renderDGIHistory();
+  }
+
+  showToast('success', '📄 Fichier FEC généré', `${lines.length} lignes · ${filename}`);
+}
+
+// ── FEC PREVIEW MODAL ────────────────────
+let _fecPreviewData = null; // { content, filename }
+
+function _buildFECContent() {
+  if (!invoicesData.length) return null;
+  const societeFilter = (document.getElementById('dgi-societe')?.value || '').trim();
+  const dateFrom = (document.getElementById('dgi-date-from')?.value || '').trim();
+  const dateTo   = (document.getElementById('dgi-date-to')?.value || '').trim();
+  let rows = [...invoicesData];
+  if (societeFilter) rows = rows.filter(r => r.societe === societeFilter);
+  if (dateFrom)      rows = rows.filter(r => r.date && r.date >= dateFrom);
+  if (dateTo)        rows = rows.filter(r => r.date && r.date <= dateTo);
+  if (!rows.length) return null;
+  const s = getSession();
+  const cabinetName = s?.name || 'Cabinet';
+  const FEC_HEADER = 'JournalCode|JournalLib|EcritureNum|EcritureDate|CompteNum|CompteLib|CompAuxNum|CompAuxLib|PieceRef|PieceDate|EcritureLib|Debit|Credit|EcritureLet|DateLet|ValidDate|Montantdevise|Idevise';
+  const lines = _buildFECLines(rows, cabinetName);
+  const content = FEC_HEADER + '\n' + lines.join('\n');
+  const societeSlug = (societeFilter || cabinetName).replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_-]/g,'');
+  const periode = dateFrom && dateTo ? dateFrom.slice(0,7) + '_' + dateTo.slice(0,7) : new Date().toISOString().slice(0,7);
+  const filename = `FEC_${societeSlug}_${periode}.txt`;
+  return { content, filename, lineCount: lines.length };
+}
+
+function previewDGI() {
+  if (!invoicesData.length) { showToast('info', 'Aucune donnée', 'Aucune écriture à exporter.'); return; }
+  const data = _buildFECContent();
+  if (!data) { showToast('info', 'Aucun résultat', 'Aucune facture pour ces critères.'); return; }
+  _fecPreviewData = data;
+  // Show first 50 lines in preview
+  const previewLines = data.content.split('\n').slice(0, 51);
+  const truncated = data.content.split('\n').length > 51;
+  document.getElementById('fec-modal-filename').textContent = data.filename;
+  document.getElementById('fec-modal-count').textContent = `${data.lineCount} lignes d'écriture · ${truncated ? 'Aperçu des 50 premières lignes' : 'Fichier complet'}`;
+  document.getElementById('fec-modal-content').textContent = previewLines.join('\n') + (truncated ? '\n…\n[Téléchargez pour voir les lignes suivantes]' : '');
+  document.getElementById('fec-modal').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeFECModal() {
+  document.getElementById('fec-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function downloadFECFromModal() {
+  if (!_fecPreviewData) { generateDGI(); closeFECModal(); return; }
+  const { content, filename } = _fecPreviewData;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+  closeFECModal();
+  // Save to history
+  const s = getSession();
+  const key = s ? `ava_dgi_history_${s.slug}` : null;
+  if (key) {
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem(key) || '[]'); } catch(_) {}
+    history.push({ filename: _fecPreviewData.filename, societe: document.getElementById('dgi-societe')?.value || 'Toutes',
+      periode: new Date().toISOString().slice(0,7), generatedAt: new Date().toLocaleDateString('fr-FR'), lines: _fecPreviewData.lineCount });
+    try { localStorage.setItem(key, JSON.stringify(history.slice(-20))); } catch(_) {}
+    renderDGIHistory();
+  }
+  showToast('success', '📄 Fichier FEC téléchargé', `${_fecPreviewData.lineCount} lignes · ${_fecPreviewData.filename}`);
+  _fecPreviewData = null;
+}
+
+// Close modal on overlay click
+document.addEventListener('click', e => {
+  const modal = document.getElementById('fec-modal');
+  if (modal && e.target === modal) closeFECModal();
+});
+
+// ── GOOGLE SHEETS TEST ────────────────────
+async function testSheetsConnection() {
+  const sheetsId = (document.getElementById('sheets-id')?.value || '').trim();
+  if (!sheetsId) {
+    showToast('error', 'ID manquant', 'Entrez l\'ID de votre classeur Google Sheets d\'abord.');
+    return;
+  }
+  // Attempt to fetch the public metadata URL (works for sheets with link-access)
+  showToast('info', '⏳ Test en cours…', 'Vérification de l\'accès au classeur…');
+  const url = `https://docs.google.com/spreadsheets/d/${sheetsId}/gviz/tq?tqx=out:json&sheet=Factures`;
+  try {
+    const resp = await fetch(url, { mode: 'no-cors' });
+    // no-cors always resolves if network is OK — if it reaches here it's likely accessible
+    showToast('success', '✓ Google Sheets accessible', `Classeur ${sheetsId.slice(0,12)}… détecté. Vérifiez que votre feuille s\'appelle "Factures".`);
+  } catch(e) {
+    showToast('error', 'Inaccessible', 'Vérifiez que le classeur est partagé avec le compte de service n8n.');
+  }
+}
+
+function reconnectSheets() {
+  const el = document.getElementById('sheets-id');
+  if (el) { el.value = ''; el.focus(); }
+  showToast('info', '🔄 ID effacé', 'Collez le nouvel ID de classeur Google Sheets ci-dessus, puis sauvegardez.');
 }
 
 // FIX 4 — open the configured Odoo instance.
@@ -2934,6 +4070,36 @@ function openInOdoo() {
   const url = (document.getElementById('odoo-url')?.value || localStorage.getItem('ava_odoo_url') || '').trim();
   if (url) window.open(url, '_blank', 'noopener');
   else showToast('info', 'URL Odoo manquante', 'Configurez l\'URL Odoo dans Paramètres.');
+}
+
+async function testOdooConnection() {
+  const url  = (document.getElementById('odoo-url')?.value  || '').trim();
+  const db   = (document.getElementById('odoo-db')?.value   || '').trim();
+  const user = (document.getElementById('odoo-user')?.value || '').trim();
+  const key  = (document.getElementById('odoo-apikey')?.value || '').trim();
+  const badge = document.getElementById('odoo-status-badge');
+  if (!url) { showToast('info', 'URL manquante', 'Renseignez l\'URL Odoo avant de tester.'); return; }
+  if (badge) { badge.style.display = ''; badge.textContent = '⏳ Test en cours…'; badge.style.color = 'var(--fg3)'; }
+  try {
+    // Odoo XML-RPC common endpoint — just check if it's reachable
+    const resp = await fetch(url + '/web/dataset/call_kw', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ jsonrpc: '2.0', method: 'call', id: 1,
+        params: { model: 'res.users', method: 'search_read', args: [[['login', '=', user || 'admin']]],
+          kwargs: { fields: ['id','name'], limit: 1, context: {} } } }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (resp.ok) {
+      if (badge) { badge.textContent = '✓ Odoo accessible'; badge.style.color = 'var(--green)'; }
+      showToast('success', '✅ Odoo accessible', 'L\'URL Odoo répond correctement.');
+    } else {
+      throw new Error('HTTP ' + resp.status);
+    }
+  } catch(e) {
+    if (badge) { badge.textContent = '✕ Erreur : ' + e.message; badge.style.color = 'var(--red)'; }
+    showToast('error', 'Connexion Odoo échouée', e.message);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -2974,19 +4140,33 @@ function saveSettings() {
 async function saveSettingsToDB() {
   const s = getSession();
   if (!s) return;
-  const url      = (document.getElementById('n8n-webhook-url')?.value || '').trim();
-  const secret   = (document.getElementById('n8n-secret')?.value    || '').trim();
-  const auth     = document.getElementById('n8n-auth')?.value || 'none';
-  const odoo     = (document.getElementById('odoo-url')?.value || '').trim();
-  const sheets   = (document.getElementById('sheets-id')?.value || '').trim();
-  const cabName  = (document.getElementById('ava-cabinet-name')?.value || '').trim();
+  const url        = (document.getElementById('n8n-webhook-url')?.value || '').trim();
+  const secret     = (document.getElementById('n8n-secret')?.value    || '').trim();
+  const auth       = document.getElementById('n8n-auth')?.value || 'none';
+  const odoo       = (document.getElementById('odoo-url')?.value || '').trim();
+  const odooDb     = (document.getElementById('odoo-db')?.value || '').trim();
+  const odooUser   = (document.getElementById('odoo-user')?.value || '').trim();
+  const odooKey    = (document.getElementById('odoo-apikey')?.value || '').trim();
+  const sheets     = (document.getElementById('sheets-id')?.value || '').trim();
+  const cabName    = (document.getElementById('ava-cabinet-name')?.value || '').trim();
+  const notifEmail = (document.getElementById('notif-email')?.value || '').trim();
+  const notifLevel = document.getElementById('notif-level')?.value || 'all';
+  const minConf    = document.getElementById('min-confidence')?.value || '85';
+  const planCpt    = document.getElementById('plan-comptable')?.value || 'PCM';
   try {
     await sbUpdate('cabinet_settings', `cabinet_slug=eq.${encodeURIComponent(s.slug)}`, {
-      n8n_webhook: url,
-      n8n_secret:  secret,
-      n8n_auth:    auth,
-      odoo_url:    odoo,
-      sheets_id:   sheets,
+      n8n_webhook:   url,
+      n8n_secret:    secret,
+      n8n_auth:      auth,
+      odoo_url:      odoo,
+      odoo_db:       odooDb,
+      odoo_user:     odooUser,
+      odoo_apikey:   odooKey,
+      sheets_id:     sheets,
+      notif_email:   notifEmail,
+      notif_level:   notifLevel,
+      min_confidence: parseInt(minConf, 10),
+      plan_comptable: planCpt,
       ...(cabName ? { cabinet_name: cabName } : {}),
     });
     // Update session name if changed
@@ -3002,21 +4182,28 @@ async function saveSettingsToDB() {
 async function loadSettings() {
   const s = getSession();
   const DEFAULT_WEBHOOK = 'https://symowde.app.n8n.cloud/webhook/ava-invoice';
-  let cfg = { n8n_webhook: DEFAULT_WEBHOOK, n8n_secret: '', n8n_auth: 'none', odoo_url: '', sheets_id: '' };
+  let cfg = { n8n_webhook: DEFAULT_WEBHOOK, n8n_secret: '', n8n_auth: 'none', odoo_url: '', odoo_db: '', odoo_user: '', odoo_apikey: '', sheets_id: '', notif_email: '', notif_level: 'all', min_confidence: 85, plan_comptable: 'PCM' };
   if (s) {
     try {
       const rows = await sbSelect('cabinet_settings',
-        `cabinet_slug=eq.${encodeURIComponent(s.slug)}&select=cabinet_name,n8n_webhook,n8n_secret,n8n_auth,odoo_url,sheets_id`
+        `cabinet_slug=eq.${encodeURIComponent(s.slug)}&select=cabinet_name,n8n_webhook,n8n_secret,n8n_auth,odoo_url,odoo_db,odoo_user,odoo_apikey,sheets_id,notif_email,notif_level,min_confidence,plan_comptable`
       );
       if (rows && rows.length > 0) cfg = { ...cfg, ...rows[0] };
     } catch(e) { console.warn('loadSettings error:', e.message); }
   }
-  const set = (id, val) => { const el = document.getElementById(id); if (el && val) el.value = val; };
-  set('n8n-webhook-url', cfg.n8n_webhook || DEFAULT_WEBHOOK);
-  set('n8n-secret',      cfg.n8n_secret);
-  set('n8n-auth',        cfg.n8n_auth || 'none');
-  set('odoo-url',        cfg.odoo_url);
-  set('sheets-id',       cfg.sheets_id);
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val != null && val !== '') el.value = val; };
+  set('n8n-webhook-url',  cfg.n8n_webhook || DEFAULT_WEBHOOK);
+  set('n8n-secret',       cfg.n8n_secret);
+  set('n8n-auth',         cfg.n8n_auth || 'none');
+  set('odoo-url',         cfg.odoo_url);
+  set('odoo-db',          cfg.odoo_db);
+  set('odoo-user',        cfg.odoo_user);
+  // Don't pre-fill odoo-apikey for security
+  set('sheets-id',        cfg.sheets_id);
+  set('notif-email',      cfg.notif_email);
+  set('notif-level',      cfg.notif_level || 'all');
+  set('min-confidence',   cfg.min_confidence || '85');
+  set('plan-comptable',   cfg.plan_comptable || 'PCM');
   if (s) set('ava-cabinet-name', cfg.cabinet_name || s.name);
   const row = document.getElementById('n8n-header-row');
   const authSel = document.getElementById('n8n-auth');
